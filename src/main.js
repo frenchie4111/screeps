@@ -2,6 +2,7 @@ const creeps = require( './creeps' ),
     tasks = require( './tasks' );
 
 const UPGRADING_CONTROLLER = false;
+const MAX_SPAWNED = 8;
 
 const things_to_harvest_to = [
     Game.spawns[ 'Spawn1' ],
@@ -52,16 +53,53 @@ const assignTasks = function( creeps, tasks ) {
         } )
 }
 
+const createMaxCreep = function( spawn, energy ) {
+    let parts = [];
+    let part_types = [ MOVE, WORK, CARRY ];
+    let part_start = 0;
+
+    while( energy > 0 ) {
+        let found_part = null;
+        let part_i = part_start;
+
+        do {
+            let current_part = part_types[ part_i ];
+            if( energy >= BODYPART_COST[ current_part ] ) {
+                found_part = current_part;
+                break;
+            }
+
+            part_i ++;
+            part_i %= part_types.length;
+        } while( part_i !== part_start );
+
+        if( !found_part ) {
+            console.log( 'Couldnt fit in the last ' + energy + ' energy' );
+            break;
+        }
+        parts.push( found_part );
+        energy -= BODYPART_COST[ found_part ];
+        part_start ++;
+        part_start %= part_types.length;
+    }
+
+    spawn.createCreep( parts );
+}
+
 module.exports.loop = function() {
     let task_list = generateTaskList();
-    let assigned_tasks = assignTasks( _.filter( Game.creeps, () => true ), task_list );
+    let assigned_tasks = assignTasks( _.values( Game.creeps ), task_list );
+
+    if( Game.spawns[ 'Spawn1' ].energy === Game.spawns[ 'Spawn1' ].energyCapacity && _.values < MAX_SPAWNED ) {
+        console.log( 'Spawning' );
+        createMaxCreep( Game.spawns[ 'Spawn1' ], Game.spawns[ 'Spawn1' ].energy );
+    }
 
     _
         .each( assigned_tasks, ( assigned_task ) => {
             _
                 .each( assigned_task.creeps, ( creep ) => {
                     if( !creep ) {
-                        console.log( 'Was not creep' );
                         return;
                     }
                     assigned_task.task.run( creep );
