@@ -15,10 +15,6 @@ class Harvest extends StateTask {
         return 'harvest' + this.target.id;
     }
 
-    getTaskName() {
-        return 'Harvest';
-    }
-
     getRequirements() {
         return [ WORK, HARVEST, MOVE ];
     }
@@ -29,6 +25,7 @@ class Harvest extends StateTask {
         if( !state_memory.path ) {
             state_memory.path = creep.pos.findPathTo( thing );
         }
+
         creep.room.visual.line( creep.pos, thing.pos, { color: 'white' } );
         creep.moveByPath( state_memory.path );
     }
