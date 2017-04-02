@@ -25,7 +25,8 @@ const getThingsThatNeedHarvesting = function() {
 
 const getThingsThatNeedBuilding = function() {
     const priorities = {
-        [ STRUCTURE_ROAD ]: 1
+        [ STRUCTURE_ROAD ]: 2,
+        [ STRUCTURE_EXTENSION ]: 1
     };
 
     return Game.spawns[ 'Spawn1' ].room
