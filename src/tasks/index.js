@@ -1,3 +1,4 @@
 module.exports = {
-    Harvest: require( './Harvest' )
+    Harvest: require( './Harvest' ),
+    Build: require( './Build' )
 };

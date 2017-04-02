@@ -9,7 +9,7 @@ class Task {
     }
 
     getTaskName() {
-        return 'Unnamed Task';
+        return this.getTaskHash();
     }
 
     getRequirements() {

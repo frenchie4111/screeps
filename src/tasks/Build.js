@@ -1,22 +1,18 @@
 const StateTask = require( './StateTask' );
 
-const HARVEST_STATES = {
+const BUILD_STATES = {
     HARVESTING: 'HARVESTING',
-    TRANSFERRING: 'TRANSFERRING'
+    BUILDING: 'BUILDING'
 };
 
-class Harvest extends StateTask {
+class Build extends StateTask {
     constructor( target ) {
-        super( HARVEST_STATES.HARVESTING );
+        super( BUILD_STATES.HARVESTING );
         this.target = target;
     }
 
     getTaskHash() {
-        return 'harvest' + this.target.id;
-    }
-
-    getTaskName() {
-        return 'Harvest';
+        return 'build' + this.target.id;
     }
 
     getRequirements() {
@@ -35,7 +31,7 @@ class Harvest extends StateTask {
 
     getStates() {
         return {
-            [ HARVEST_STATES.HARVESTING ]: ( creep, task_memory, state_memory ) => {
+            [ BUILD_STATES.HARVESTING ]: ( creep, task_memory, state_memory ) => {
                 let source = state_memory.target_source ? Game.getObjectById( state_memory.target_source ) : null;
 
                 if( !source ) {
@@ -49,20 +45,20 @@ class Harvest extends StateTask {
                 }
 
                 if( creep.carry.energy === creep.carryCapacity ) {
-                    return HARVEST_STATES.TRANSFERRING;
+                    return BUILD_STATES.BUILDING;
                 }
             },
-            [ HARVEST_STATES.TRANSFERRING ]: ( creep, task_memory, state_memory ) => {
-                if( creep.transfer( this.target, RESOURCE_ENERGY ) === ERR_NOT_IN_RANGE ) {
+            [ BUILD_STATES.BUILDING ]: ( creep, task_memory, state_memory ) => {
+                if( creep.build( this.target, RESOURCE_ENERGY ) === ERR_NOT_IN_RANGE ) {
                     this.moveTo( creep, this.target );
                 }
 
                 if( creep.carry.energy === 0 ) {
-                    return HARVEST_STATES.HARVESTING;
+                    return BUILD_STATES.HARVESTING;
                 }
             }
         }
     }
 }
 
-module.exports = Harvest;
+module.exports = Build;
