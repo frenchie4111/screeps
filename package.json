@@ -15,6 +15,9 @@
     "grunt-contrib-copy": "^1.0.0",
     "grunt-file-append": "0.0.7",
     "grunt-jsbeautifier": "^0.2.13",
-    "grunt-screeps": "^1.2.1"
+    "grunt-screeps": "^1.2.1",
+    "grunt-webpack": "^2.0.1",
+    "random-string": "^0.1.2",
+    "webpack": "^2.3.2"
   }
 }

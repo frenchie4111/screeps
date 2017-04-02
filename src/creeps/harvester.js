@@ -1,15 +1,13 @@
-const creeps = require( 'creeps' );
+const CreepType = require( './CreepType' );
 
-module.exports.loop = function() {
-    for( let creep_name in Game.creeps ) {
-        let creep = Game.creeps[ creep_name ];
-
+const Harvester = {
+    run: ( creep ) => {
         if( creep.carry.energy < creep.carryCapacity ) {
             let sources = creep.room.find( FIND_SOURCES );
-            source = creep.pos.findClosestByPath( sources );
+            let source = creep.pos.findClosestByPath( sources );
 
             if( creep.harvest( source ) === ERR_NOT_IN_RANGE ) {
-                creep.moveTo( source );
+                creep.moveTo( source, { visualizePathStyle: { stroke: '#ffffff' } } );
             }
         } else {
             let transfer_targets = creep.room.find( FIND_STRUCTURES, {
@@ -25,8 +23,10 @@ module.exports.loop = function() {
             } );
 
             if( creep.transfer( transfer_targets[ 0 ], RESOURCE_ENERGY ) === ERR_NOT_IN_RANGE ) {
-                creep.moveTo( transfer_targets[ 0 ] );
+                creep.moveTo( transfer_targets[ 0 ], { visualizePathStyle: { stroke: '#ffffff' } } );
             }
         }
     }
-}
+};
+
+module.exports = Harvester;

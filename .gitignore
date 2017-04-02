@@ -29,3 +29,4 @@ $RECYCLE.BIN/
 
 node_modules
 .screeps.json
+dist/
