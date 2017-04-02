@@ -37,6 +37,25 @@ class StateTask extends Task {
         throw new Error( 'abstract method' );
     }
 
+    moveTo( creep, thing ) {
+        let state_memory = creep.memory.task_memory.state_memory;
+
+        if( !state_memory.path ) {
+            console.log( 'Finding new path ' + creep.id );
+            state_memory.path = creep.pos.findPathTo( thing );
+        } else {
+            // Do some logic to make sure we aren't stuck
+            if( state_memory.previous_position && creep.pos.isEqualTo( state_memory.previous_position ) ) {
+                console.log( 'I seem to be standing still ' + creep.id );
+            } else {
+                state_memory.previous_position = creep.pos;
+            }
+        }
+
+        creep.room.visual.line( creep.pos, thing.pos, { color: 'white' } );
+        creep.moveByPath( state_memory.path );
+    }
+
     performTask( creep ) {
         const task_memory = creep.memory.task_memory;
         if( !task_memory.state_memory ) task_memory.state_memory = {};

@@ -19,16 +19,6 @@ class Build extends StateTask {
         return [ WORK, HARVEST, MOVE ];
     }
 
-    moveTo( creep, thing ) {
-        let state_memory = creep.memory.task_memory.state_memory;
-
-        if( !state_memory.path ) {
-            state_memory.path = creep.pos.findPathTo( thing );
-        }
-        creep.room.visual.line( creep.pos, thing.pos, { color: 'white' } );
-        creep.moveByPath( state_memory.path );
-    }
-
     getStates() {
         return {
             [ BUILD_STATES.HARVESTING ]: ( creep, task_memory, state_memory ) => {

@@ -90,7 +90,7 @@ module.exports.loop = function() {
     let task_list = generateTaskList();
     let assigned_tasks = assignTasks( _.values( Game.creeps ), task_list );
 
-    if( Game.spawns[ 'Spawn1' ].energy === Game.spawns[ 'Spawn1' ].energyCapacity && _.values < MAX_SPAWNED ) {
+    if( Game.spawns[ 'Spawn1' ].energy === Game.spawns[ 'Spawn1' ].energyCapacity && _.values( Game.creeps ).length < MAX_SPAWNED ) {
         console.log( 'Spawning' );
         createMaxCreep( Game.spawns[ 'Spawn1' ], Game.spawns[ 'Spawn1' ].energy );
     }
