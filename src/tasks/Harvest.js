@@ -6,9 +6,10 @@ const HARVEST_STATES = {
 };
 
 class Harvest extends StateTask {
-    constructor( target ) {
+    constructor( target, source ) {
         super( HARVEST_STATES.HARVESTING );
         this.target = target;
+        this.source = source;
     }
 
     getTaskHash() {

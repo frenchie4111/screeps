@@ -37,6 +37,13 @@ class StateTask extends Task {
         throw new Error( 'abstract method' );
     }
 
+    positionsEqual( a, b ) {
+        return( a && b &&
+            a.x === b.x &&
+            a.y === b.y &&
+            a.world === b.world );
+    }
+
     moveTo( creep, thing ) {
         let state_memory = creep.memory.task_memory.state_memory;
 
@@ -45,8 +52,8 @@ class StateTask extends Task {
             state_memory.path = creep.pos.findPathTo( thing );
         } else {
             // Do some logic to make sure we aren't stuck
-            if( state_memory.previous_position && creep.pos.isEqualTo( state_memory.previous_position ) ) {
-                console.log( 'I seem to be standing still ' + creep.id );
+            if( state_memory.previous_position && this.positionsEqual( creep.pos, state_memory.previous_position ) ) {
+                state_memory.path = creep.pos.findPathTo( thing );
             } else {
                 state_memory.previous_position = creep.pos;
             }

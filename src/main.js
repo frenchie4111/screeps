@@ -27,15 +27,46 @@ const getThingsThatNeedBuilding = function() {
     return Game.spawns[ 'Spawn1' ].room.find( FIND_CONSTRUCTION_SITES );
 };
 
+const sources = [
+    Game.getObjectById( '58dbc4328283ff5308a3eac5' ),
+    Game.getObjectById( '58dbc4328283ff5308a3eac6' )
+];
+
+class SourceChooser {
+    constructor() {
+        this.assigned_sources = {
+            '58dbc4328283ff5308a3eac5': {
+                assigned: 0,
+                object: Game.getObjectById( '58dbc4328283ff5308a3eac5' )
+            },
+            '58dbc4328283ff5308a3eac6': {
+                assigned: 0,
+                object: Game.getObjectById( '58dbc4328283ff5308a3eac6' )
+            }
+        };
+    }
+
+    chooseSource() {
+        let source = _
+            .sortBy( this.assigned_sources, ( item ) => item.assigned )[ 0 ]
+
+        source.assigned ++;
+
+        return source;
+    }
+};
+
 const generateTaskList = function() {
+    let source_chooser = new SourceChooser();
+
     let harvest_tasks = _
         .map( getThingsThatNeedHarvesting(), ( thing ) => {
-            return new tasks.Harvest( thing );
+            return new tasks.Harvest( thing, source_chooser.chooseSource().id );
         } );
 
     let build_tasks = _
         .map( getThingsThatNeedBuilding(), ( thing ) => {
-            return new tasks.Build( thing )
+            return new tasks.Build( thing, source_chooser.chooseSource().id );
         } );
 
     return _.union( harvest_tasks, build_tasks );
