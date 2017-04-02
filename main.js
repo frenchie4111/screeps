@@ -12,8 +12,20 @@ module.exports.loop = function() {
                 creep.moveTo( source );
             }
         } else {
-            if( creep.transfer( Game.spawns[ 'Spawn1' ], RESOURCE_ENERGY ) === ERR_NOT_IN_RANGE ) {
-                creep.moveTo( Game.spawns[ 'Spawn1' ] );
+            let transfer_targets = creep.room.find( FIND_STRUCTURES, {
+                filter: ( structure ) => {
+                    if( structure.structureType === STRUCTURE_SPAWN ) {
+                        return structure.energy < structure.energyCapacity;
+                    }
+                    if( structure.structureType === STRUCTURE_CONTROLLER ) {
+                        return true;
+                    }
+                    return false;
+                }
+            } );
+
+            if( creep.transfer( transfer_targets[ 0 ], RESOURCE_ENERGY ) === ERR_NOT_IN_RANGE ) {
+                creep.moveTo( transfer_targets[ 0 ] );
             }
         }
     }
