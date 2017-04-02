@@ -1,5 +1,7 @@
 const randomString = require( 'random-string' );
 
+const SPEAK_INTERVAL = 20;
+
 class Task {
     constructor() {
     }
@@ -33,10 +35,17 @@ class Task {
         if( !creep.memory.current_task_hash || creep.memory.current_task_hash !== this.getTaskHash() ) {
             console.log( 'Reassigned' );
             creep.memory.current_task_hash = this.getTaskHash();
-            creep.memory.task_memory = {};
+            creep.memory.task_memory = {
+                speak_counter: 0
+            };
         }
 
-        creep.say( this.getTaskName() );
+        if( creep.memory.speak_counter === SPEAK_INTERVAL ) {
+            creep.memory.speak_counter = 0;
+            creep.say( this.getTaskName() );
+        }
+        creep.memory.speak_counter++;
+
         this.performTask( creep );
     }
 };
