@@ -24,7 +24,18 @@ const getThingsThatNeedHarvesting = function() {
 };
 
 const getThingsThatNeedBuilding = function() {
-    return Game.spawns[ 'Spawn1' ].room.find( FIND_CONSTRUCTION_SITES );
+    const priorities = {
+        [ STRUCTURE_ROAD ]: 1
+    };
+
+    return Game.spawns[ 'Spawn1' ].room
+        .find( FIND_CONSTRUCTION_SITES )
+        .sort( ( a, b ) => {
+            a = priorities[ a.structureType ] || 0;
+            b = priorities[ b.structureType ] || 0;
+
+            return b - a;
+        } );
 };
 
 const sources = [

@@ -50,6 +50,11 @@ class Harvest extends StateTask {
             }
         }
     }
+
+    performTask( creep ) {
+        super.performTask( creep );
+        creep.room.visual.line( creep.pos, this.target.pos, { color: 'red' } );
+    }
 }
 
 module.exports = Harvest;
