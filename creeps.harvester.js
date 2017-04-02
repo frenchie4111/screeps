@@ -2,7 +2,7 @@ const CreepType = require( 'CreepType' );
 
 class Harvester extends CreepType {
     run() {
-        
+
     }
 };
 
