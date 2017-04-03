@@ -1,7 +1,8 @@
 const creeps = require( './creeps' ),
     tasks = require( './tasks' );
 
-const UPGRADING_CONTROLLER = false;
+const UPGRADING_CONTROLLER = true;
+const CONTROLLER_TICK_THRESHOLD = 2000;
 const MAX_SPAWNED = 8;
 
 const things_to_harvest_to = [
@@ -16,7 +17,7 @@ const getThingsThatNeedHarvesting = function() {
         things.push( Game.spawns[ 'Spawn1' ] );
     }
 
-    if( Game.spawns[ 'Spawn1' ].room.controller.ticksToDowngrade < 4800 || UPGRADING_CONTROLLER ) {
+    if( Game.spawns[ 'Spawn1' ].room.controller.ticksToDowngrade < CONTROLLER_TICK_THRESHOLD || UPGRADING_CONTROLLER ) {
         things.push( Game.spawns[ 'Spawn1' ].room.controller );
     }
 
