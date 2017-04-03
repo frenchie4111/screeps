@@ -30,6 +30,9 @@ class Build extends StateTask {
 
                     if( !source ) {
                         console.log( creep.id, ' couldnt find available source' );
+                        if( creep.carry.energy > 0 ) {
+                            return BUILD_STATES.BUILDING;
+                        }
                         return;
                     }
 
