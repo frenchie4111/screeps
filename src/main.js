@@ -17,6 +17,15 @@ const getThingsThatNeedHarvesting = function() {
         things.push( Game.spawns[ 'Spawn1' ] );
     }
 
+    let extensions = Game.spawns[ 'Spawn1' ].room
+        .find( FIND_STRUCTURES, {
+            filter: ( structure ) => {
+                return structure.structureType === STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+            }
+        } );
+
+    things = _.union( things, extensions );
+
     if( Game.spawns[ 'Spawn1' ].room.controller.ticksToDowngrade < CONTROLLER_TICK_THRESHOLD || UPGRADING_CONTROLLER ) {
         things.push( Game.spawns[ 'Spawn1' ].room.controller );
     }
@@ -86,15 +95,26 @@ const generateTaskList = function() {
 };
 
 const assignTasks = function( creeps, tasks ) {
-    return _
+    let unassigned_creeps = _.clone( creeps );
+
+    let assigned_tasks = _
         .map( tasks, ( task, i ) => {
             return {
                 task,
                 creeps: [
-                    creeps[ i ]
+                    unassigned_creeps.pop()
                 ]
             };
-        } )
+        } );
+
+    if( unassigned_creeps.length > 0 ) {
+        let upgrade_task = _.find( assigned_tasks, ( task ) => task.task.getTaskHash() === 'harvest58dbc4328283ff5308a3eac7' );
+        if( upgrade_task ) {
+            upgrade_task.creeps = _.union( upgrade_task.creeps, unassigned_creeps );
+        }
+    }
+
+    return assigned_tasks;
 }
 
 const createMaxCreep = function( spawn, energy ) {
@@ -136,7 +156,22 @@ module.exports.loop = function() {
 
     if( Game.spawns[ 'Spawn1' ].energy === Game.spawns[ 'Spawn1' ].energyCapacity && _.values( Game.creeps ).length < MAX_SPAWNED ) {
         console.log( 'Spawning' );
-        createMaxCreep( Game.spawns[ 'Spawn1' ], Game.spawns[ 'Spawn1' ].energy );
+
+        let extensions = Game.spawns[ 'Spawn1' ].room
+            .find( FIND_STRUCTURES, {
+                filter: ( structure ) => {
+                    return structure.structureType === STRUCTURE_EXTENSION;
+                }
+            } );
+
+        let extension_energy = _.reduce( extensions, ( full, extension ) => {
+            console.log( extension.energy );
+            return full + extension.energy;
+        }, 0 );
+        console.log( 'extension_energy', extension_energy );
+        console.log( 'spawn energy', Game.spawns[ 'Spawn1' ].energy );
+
+        createMaxCreep( Game.spawns[ 'Spawn1' ], Game.spawns[ 'Spawn1' ].energy + extension_energy );
     }
 
     _
