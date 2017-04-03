@@ -48,7 +48,7 @@ class StateTask extends Task {
         let state_memory = creep.memory.task_memory.state_memory;
 
         if( !state_memory.path ) {
-            console.log( 'Finding new path ' + creep.id );
+            console.log( creep.id, 'finding new path ' + creep.id );
             state_memory.path = creep.pos.findPathTo( thing );
         } else {
             // Do some logic to make sure we aren't stuck

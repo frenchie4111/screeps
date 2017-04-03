@@ -26,8 +26,15 @@ class Harvest extends StateTask {
                 let source = state_memory.target_source ? Game.getObjectById( state_memory.target_source ) : null;
 
                 if( !source ) {
+                    console.log( creep.id, 'looking for source' );
                     let sources = creep.room.find( FIND_SOURCES );
                     source = creep.pos.findClosestByPath( sources );
+
+                    if( !source ) {
+                        console.log( creep.id, ' couldnt find available source' );
+                        return;
+                    }
+
                     state_memory.target_source = source.id;
                 }
 

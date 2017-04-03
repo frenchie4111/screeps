@@ -33,7 +33,7 @@ class Task {
 
     run( creep ) {
         if( !creep.memory.current_task_hash || creep.memory.current_task_hash !== this.getTaskHash() ) {
-            console.log( 'Reassigned from', creep.memory.current_task_hash, 'to', this.getTaskHash() );
+            console.log( creep.id, 'reassigned from', creep.memory.current_task_hash, 'to', this.getTaskHash() );
             creep.memory.current_task_hash = this.getTaskHash();
             creep.memory.task_memory = {
                 speak_counter: 0
