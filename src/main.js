@@ -146,7 +146,13 @@ module.exports.loop = function() {
                     if( !creep ) {
                         return;
                     }
-                    assigned_task.task.run( creep );
+                    try {
+                        assigned_task.task.run( creep );
+                    } catch( err ) {
+                        console.log( 'Failed to run task ' + assigned_task.task.getTaskHash() + ' on creep ' + creep.id );
+                        console.log( err );
+                        console.log( err.stack );
+                    }
                 } );
         } );
 
