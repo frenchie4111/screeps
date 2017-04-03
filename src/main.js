@@ -147,6 +147,8 @@ module.exports.loop = function() {
                         return;
                     }
                     assigned_task.task.run( creep );
-                } )
+                } );
         } );
+
+    console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );
 }
