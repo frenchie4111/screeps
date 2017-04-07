@@ -58,7 +58,5 @@ export function assignTasks( creeps, tasks, previously_assigned_tasks ) {
             return assigned_task;
         } );
 
-    console.log( assigned_tasks );
-
     return assigned_tasks;
 };
