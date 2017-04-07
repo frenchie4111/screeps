@@ -31,7 +31,20 @@ class Task {
         throw new Error( 'abstract method' );
     }
 
+    isEqualTo( task ) {
+        return this.getTaskHash() === task.getTaskHash();
+    }
+
+    toJSON() {
+        return this.getTaskHash();
+    }
+
     run( creep ) {
+        if( !creep ) {
+            console.log( creep );
+            throw new Error( 'Was not given a creep' );
+        }
+
         if( !creep.memory.current_task_hash || creep.memory.current_task_hash !== this.getTaskHash() ) {
             console.log( creep.id, 'reassigned from', creep.memory.current_task_hash, 'to', this.getTaskHash() );
             creep.memory.current_task_hash = this.getTaskHash();

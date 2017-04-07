@@ -1,5 +1,5 @@
-const creeps = require( './creeps' ),
-    tasks = require( './tasks' );
+const tasks = require( './tasks' ),
+    TaskManager = require( './TaskManager' );
 
 const UPGRADING_CONTROLLER = true;
 const CONTROLLER_TICK_THRESHOLD = 2000;
@@ -94,29 +94,6 @@ const generateTaskList = function() {
     return _.union( harvest_tasks, build_tasks );
 };
 
-const assignTasks = function( creeps, tasks ) {
-    let unassigned_creeps = _.clone( creeps );
-
-    let assigned_tasks = _
-        .map( tasks, ( task, i ) => {
-            return {
-                task,
-                creeps: [
-                    unassigned_creeps.pop()
-                ]
-            };
-        } );
-
-    if( unassigned_creeps.length > 0 ) {
-        let upgrade_task = _.find( assigned_tasks, ( task ) => task.task.getTaskHash() === 'harvest58dbc4328283ff5308a3eac7' );
-        if( upgrade_task ) {
-            upgrade_task.creeps = _.union( upgrade_task.creeps, unassigned_creeps );
-        }
-    }
-
-    return assigned_tasks;
-}
-
 const createMaxCreep = function( spawn, energy ) {
     let parts = [];
     let part_types = [ MOVE, WORK, CARRY ];
@@ -152,7 +129,7 @@ const createMaxCreep = function( spawn, energy ) {
 
 module.exports.loop = function() {
     let task_list = generateTaskList();
-    let assigned_tasks = assignTasks( _.values( Game.creeps ), task_list );
+    let assigned_tasks = TaskManager.assignTasks( _.values( Game.creeps ), task_list, Memory.assigned_tasks );
 
     if( Game.spawns[ 'Spawn1' ].energy === Game.spawns[ 'Spawn1' ].energyCapacity && _.values( Game.creeps ).length < MAX_SPAWNED ) {
         console.log( 'Spawning' );
@@ -174,22 +151,31 @@ module.exports.loop = function() {
         createMaxCreep( Game.spawns[ 'Spawn1' ], Game.spawns[ 'Spawn1' ].energy + extension_energy );
     }
 
-    _
-        .each( assigned_tasks, ( assigned_task ) => {
-            _
-                .each( assigned_task.creeps, ( creep ) => {
-                    if( !creep ) {
-                        return;
-                    }
-                    try {
-                        assigned_task.task.run( creep );
-                    } catch( err ) {
-                        console.log( 'Failed to run task ' + assigned_task.task.getTaskHash() + ' on creep ' + creep.id );
-                        console.log( err );
-                        console.log( err.stack );
-                    }
-                } );
-        } );
+    let assigned_task_json = _
+        .reduce( assigned_tasks, ( assigned_task_json, assigned_task ) => {
+            assigned_task_json[ assigned_task.task.getTaskHash() ] = {
+                task: assigned_task.task.getTaskHash(),
+                creeps:  _
+                    .map( assigned_task.creeps, ( creep ) => {
+                        if( !creep ) {
+                            return;
+                        }
+
+                        try {
+                            assigned_task.task.run( creep );
+                        } catch( err ) {
+                            console.log( 'Failed to run task ' + assigned_task.task.getTaskHash() + ' on creep ' + creep.id );
+                            console.log( err );
+                            console.log( err.stack );
+                        }
+
+                        return creep.id;
+                    } )
+            };
+            return assigned_task_json;
+        }, {} );
+
+    Memory.assigned_tasks = assigned_task_json;
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );
 }
