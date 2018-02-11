@@ -12,7 +12,7 @@ export function assignTasks( creeps, tasks, previously_assigned_tasks ) {
     // Remove creeps assigned in old tasks from the creep pool
     _
         .each( tasks, ( task ) => {
-            if( previously_assigned_tasks.hasOwnProperty( task.getTaskHash() ) ) {
+            if( previously_assigned_tasks && previously_assigned_tasks.hasOwnProperty( task.getTaskHash() ) ) {
                 const previously_assigned_task = previously_assigned_tasks[ task.getTaskHash() ];
 
 
