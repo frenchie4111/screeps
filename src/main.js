@@ -149,7 +149,6 @@ const loopItem = ( func ) => {
         func();
     } catch ( e ) {
         console.log( e );
-        throw e;
     }
 }
 
@@ -166,6 +165,8 @@ module.exports.loop = function() {
             .forEach( ( collector ) => {
                 collector.collect( room );
             } );
+
+        // collectors[ 0 ].drawHotSpots( room );
     } );
 
     loopItem( () => {

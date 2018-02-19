@@ -7,11 +7,15 @@ class MetricCollector {
         throw new Error( 'Abstract method' );
     }
 
-    collect( room ) {
+    getMemory( room ) {
+        console.log( 'getMemory', room );
         if( !room.memory.hasOwnProperty( '_metrics' ) ) room.memory._metrics = {};
         if( !room.memory._metrics.hasOwnProperty( this.name ) ) room.memory._metrics[ this.name ] = {};
-        const memory = room.memory._metrics[ this.name ];
-        this._collect( room, memory );
+        return room.memory._metrics[ this.name ];
+    }
+
+    collect( room ) {
+        this._collect( room, this.getMemory( room ) );
     }
 }
 
