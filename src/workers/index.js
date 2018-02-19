@@ -1,11 +1,13 @@
 const worker_type_conversion = {
     HARVESTER: require( './HarvestWorker' ),
-    BUILDER: require( './BuildWorker' )
+    BUILDER: require( './BuildWorker' ),
+    UPGRADER: require( './UpgradeWorker' ),
 };
 
 const types = {
     HARVESTER: 'HARVESTER',
-    BUILDER: 'BUILDER'
+    BUILDER: 'BUILDER',
+    UPGRADER: 'UPGRADER'
 };
 
 module.exports = {

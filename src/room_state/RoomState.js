@@ -8,3 +8,5 @@ class RoomState {
         this.options = options;
     }
 }
+
+module.exports = RoomState;

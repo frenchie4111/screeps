@@ -66,7 +66,7 @@ class HarvestWorker extends StateWorker {
                 if( !this.isNear( creep, worker_memory.source_id ) ) return STATES.MOVE_TO_HARVEST;
                 if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
 
-                this.log( creep.harvest( Game.getObjectById( worker_memory.source_id ) ) );
+                creep.harvest( Game.getObjectById( worker_memory.source_id ) );
             },
             [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) {
@@ -83,12 +83,17 @@ class HarvestWorker extends StateWorker {
                         break;
                     case constants.ERR_FULL: // HACK: To make sure we don't get stuck doing nothing
                         creep.drop( constants.RESOURCE_ENERGY );
+                        return STATES.MOVE_TO_HARVEST;
+                        break;
+                    case constants.ERR_NOT_IN_RANGE:
+                        this.moveTo( Game.getObjectById( worker_memory.target_id ) );
+                        break;
+                    case constants.ERR_INVALID_TARGET:
+                        worker_memory.target_id = null;
                         break;
                     default:
                         console.log( 'Unknown case', transfer_results, constants.lookup( transfer_results ) );
                 }
-
-                this.moveTo( Game.getObjectById( worker_memory.target_id ) );
             },
             [ STATES.TRANSFERRING ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) return STATES.MOVE_TO_TRANSFER;

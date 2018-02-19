@@ -16,8 +16,6 @@ class StateWorker extends Worker {
         let state_memory = state_worker_memory.state_memory = state_worker_memory.state_memory || {};
         let current_state_name = state_worker_memory.current_state_name = state_worker_memory.current_state_name || this.default_state;
 
-        this.log( current_state_name );
-
         let states = this.states = this.states || this._getStates();
         if( states.hasOwnProperty( current_state_name ) ) {
             let response = states[ current_state_name ]( creep, state_memory, this.getMemory() );
