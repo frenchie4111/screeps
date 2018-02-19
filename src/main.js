@@ -4,12 +4,28 @@ const HarvestWorker = require( '~/workers/HarvestWorker' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     constants = require( '~/constants' );
 
-module.exports.loop = function() {
-    try {
-        let spawn = Game.spawns[ 'Spawn1' ];
+const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
+module.exports.loop = function() {
+    const spawn = Game.spawns[ 'Spawn1' ];
+    const room = spawn.room;
+
+    try {
         let planner = new ExtensionPlanner( spawn );
         planner.createConstructionSites( spawn.room );
+    } catch( e ) {
+        console.log( e );
+    }
+
+    try {
+        const collectors = [
+            new CreepPositionCollector()
+        ];
+
+        collectors
+            .forEach( ( collector ) => {
+                collector.collect( room );
+            } );
     } catch( e ) {
         console.log( e );
     }
