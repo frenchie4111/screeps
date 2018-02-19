@@ -39,7 +39,7 @@ class CreepPositionCollector extends MetricCollector {
             } )
             .forEach( ( creep ) => {
                 const key = this._positionToKey( creep.pos );
-                if( !memory.hasOwnProperty( key ) ) memory.positions[ key ] = 0;
+                if( !memory.positions.hasOwnProperty( key ) ) memory.positions[ key ] = 0;
                 memory.positions[ key ]++;
             } );
     }
