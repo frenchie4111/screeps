@@ -1,6 +1,7 @@
 const _ = require( 'lodash' );
 
 const HarvestWorker = require( '~/workers/HarvestWorker' ),
+    BuildWorker = require( '~/workers/BuildWorker' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     constants = require( '~/constants' );
 
@@ -47,6 +48,14 @@ module.exports.loop = function() {
         let upgrader = new HarvestWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), Game.getObjectById( '05a0e654974d1746539e33d6' ) );
         upgrader.setCreep( Game.creeps[ 'test2' ] );
         upgrader.doWork();
+    } catch( e ) {
+        console.log( e );
+    }
+    
+    try {
+        let builder = new BuildWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), Game.getObjectById( '4f8b2856c51a773cb6503612' ) );
+        builder.setCreep( Game.creeps[ 'test3' ] );
+        builder.doWork();
     } catch( e ) {
         console.log( e );
     }
