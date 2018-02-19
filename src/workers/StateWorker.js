@@ -11,7 +11,7 @@ class StateWorker extends Worker {
         throw new Error( 'Abstract Method' );
     }
 
-    _doWork() {
+    _doWork( creep ) {
         let state_worker_memory = this.getMemory( '_state_worker' );
         let state_memory = state_worker_memory.state_memory = state_worker_memory.state_memory || {};
         let current_state_name = state_worker_memory.current_state_name = state_worker_memory.current_state_name || this.default_state;
@@ -20,7 +20,7 @@ class StateWorker extends Worker {
 
         let states = this.states = this.states || this._getStates();
         if( states.hasOwnProperty( current_state_name ) ) {
-            let response = states[ current_state_name ]( state_memory );
+            let response = states[ current_state_name ]( creep, state_memory, this.getMemory() );
 
             if( response ) {
                 this.log( 'New State', response );

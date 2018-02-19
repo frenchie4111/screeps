@@ -12,18 +12,28 @@ let STATES = {
 };
 
 class HarvestWorker extends StateWorker {
-    constructor( source, target ) {
+    constructor() {
         super( STATES.MOVE_TO_HARVEST );
-        this.source = source;
-        this.target = target;
     }
 
-    isNearSource() {
-        return this.creep.pos.isNearTo( this.source.pos );
+    getSource( creep ) {
+        let sources = creep.room.find( FIND_SOURCES );
+        let source = creep.pos.findClosestByPath( sources );
+
+        if( !source ) {
+            console.log( creep.id, ' couldnt find available source' );
+            return null;
+        }
+
+        return source;
     }
-    
-    isNearTarget() {
-        return this.creep.pos.isNearTo( this.target.pos );
+
+    getTarget( creep ) {
+        return creep.room.find( FIND_MY_SPAWNS )[ 0 ];
+    }
+
+    isNear( creep, id ) {
+        return creep.pos.isNearTo( Game.getObjectById( id ) );
     }
 
     getCurrentCarry() {
@@ -34,40 +44,57 @@ class HarvestWorker extends StateWorker {
         return this.getCurrentCarry() == this.creep.carryCapacity;
     }
 
-    doTransfer() {
-        return this.creep.transfer( this.target, RESOURCE_ENERGY );
+    doTransfer( creep, target ) {
+        return creep.transfer( target, RESOURCE_ENERGY );
     }
 
     _getStates() {
         return {
-            [ STATES.MOVE_TO_HARVEST ]: () => {
-                if( this.isNearSource() ) return STATES.HARVESTING;
+            [ STATES.MOVE_TO_HARVEST ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.source_id ) {
+                    worker_memory.source_id = this.getSource( creep ).id;
+                }
+                worker_memory.target_id = null;
+
+                if( this.isNear( creep, worker_memory.source_id ) ) return STATES.HARVESTING;
                 if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
 
-                this.moveTo( this.source );
+                this.moveTo( Game.getObjectById( worker_memory.source_id ) );
             },
-            [ STATES.HARVESTING ]: () => {
-                if( !this.isNearSource() ) return STATES.MOVE_TO_HARVEST;
+            [ STATES.HARVESTING ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.source_id ) return STATES.MOVE_TO_HARVEST;
+                if( !this.isNear( creep, worker_memory.source_id ) ) return STATES.MOVE_TO_HARVEST;
                 if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
 
-                this.log( this.creep.harvest( this.source ) );
+                this.log( creep.harvest( Game.getObjectById( worker_memory.source_id ) ) );
             },
-            [ STATES.MOVE_TO_TRANSFER ]: () => {
-                const transfer_results = this.doTransfer();
+            [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.target_id ) {
+                    worker_memory.target_id = this.getTarget( creep ).id;
+                }
+
+                const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
 
                 if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
+
                 switch( transfer_results ) {
                     case constants.OK:
                         return STATES.TRANSFERRING;
                         break;
+                    case constants.ERR_FULL: // HACK: To make sure we don't get stuck doing nothing
+                        creep.drop( constants.RESOURCE_ENERGY );
+                        break;
+                    default:
+                        console.log( 'Unknown case', transfer_results, constants.lookup( transfer_results ) );
                 }
 
-                this.moveTo( this.target );
+                this.moveTo( Game.getObjectById( worker_memory.target_id ) );
             },
-            [ STATES.TRANSFERRING ]: () => {
+            [ STATES.TRANSFERRING ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.target_id ) return STATES.MOVE_TO_TRANSFER;
                 if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
 
-                const transfer_results = this.doTransfer();
+                const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
 
                 if( transfer_results !== 0 ) return STATES.MOVE_TO_HARVEST;
             }

@@ -32,12 +32,12 @@ class Worker {
         return moveTo( this.creep, this.getMemory( '_moveTo' ), this.log, target );
     }
 
-    _doWork() {
+    _doWork( creep ) {
         throw new Erorr( 'Abstract Method' );
     }
 
-    doWork() {
-        this._doWork();
+    doWork( creep ) {
+        this._doWork( creep );
     }
 }
 

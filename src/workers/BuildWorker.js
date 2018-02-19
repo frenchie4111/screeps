@@ -1,8 +1,12 @@
 const HarvestWorker = require( './HarvestWorker' );
 
 class BuildWorker extends HarvestWorker {
-    doTransfer() {
-        return this.creep.build( this.target );
+    getTarget( creep ) {
+        creep.room.find( FIND_MY_CONSTRUCTION_SITES )[ 0 ];
+    }
+
+    doTransfer( creep, target ) {
+        return creep.build( target );
     }
 }
 

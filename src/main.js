@@ -1,24 +1,67 @@
 const _ = require( 'lodash' );
 
-const HarvestWorker = require( '~/workers/HarvestWorker' ),
-    BuildWorker = require( '~/workers/BuildWorker' ),
+const workers = require( '~/workers' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
-    constants = require( '~/constants' );
+    constants = require( '~/constants' ),
+    RoomState = require( '~/room_state/RoomState' );
+    
+const HarvestWorker = require( '~/workers/HarvestWorker' );
+const BuildWorker = require( '~/workers/BuildWorker' );
+const UpgradeWorker = require( '~/workers/UpgradeWorker' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
+
+// const room_states = [
+//     new RoomState( {
+//         isComplete: ( room ) => {
+//             return room.controller.level === 2
+//         },
+//         worker_counts: {
+//             [ workers.types.HARVESTER ]: 1,
+//             [ workers.types.UPGRADER ]: 1
+//         },
+//         construction_planners: []
+//     } ),
+//     new RoomState( {
+//         isComplete: ( room ) => {
+//             return room
+//                 .find( FIND_MY_STRUCTURES, {
+//                     filter: {
+//                         structureType: constants.STRUCTURE_EXTENSION
+//                     }
+//                 } )
+//                 .lenth === 5;
+//         },
+//         worker_counts: {
+//             [ workers.types.BUILDER ]: 2,
+//             [ workers.types.HARVESTER ]: 1,
+//             [ workers.types.UPGRADER ]: 1
+//         },
+//         construction_planners: [
+//             new ExtensionPlanner()
+//         ]
+//     } )
+// ];
+
+const loopItem = ( func ) => {
+    try {
+        func();
+    } catch ( e ) {
+        console.log( e );
+        throw e;
+    }
+}
 
 module.exports.loop = function() {
     const spawn = Game.spawns[ 'Spawn1' ];
     const room = spawn.room;
 
-    try {
+    loopItem( () => {
         let planner = new ExtensionPlanner( spawn );
         planner.createConstructionSites( spawn.room );
-    } catch( e ) {
-        console.log( e );
-    }
+    } );
 
-    try {
+    loopItem( () => {
         const collectors = [
             new CreepPositionCollector()
         ];
@@ -27,38 +70,26 @@ module.exports.loop = function() {
             .forEach( ( collector ) => {
                 collector.collect( room );
             } );
-    } catch( e ) {
-        console.log( e );
-    }
+    } );
 
-    try {
-        let target = Game.spawns[ 'Spawn1' ];
-        if( target.energy == target.energyCapacity ) {
-            target = Game.getObjectById( '05a0e654974d1746539e33d6' );
-        }
+    // loopItem( () => {
+    //     let harvest_worker = new UpgradeWorker();
+    //     harvest_worker.setCreep( Game.creeps[ 'test1' ] );
+    //     harvest_worker.doWork( Game.creeps[ 'test1' ] );
+    // } );
 
-        let harvest_worker = new HarvestWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), target );
-        harvest_worker.setCreep( Game.creeps[ 'test' ] );
-        harvest_worker.doWork();
-    } catch( e ) {
-        console.log( e );
-    }
-    
-    try {
-        let upgrader = new HarvestWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), Game.getObjectById( '05a0e654974d1746539e33d6' ) );
-        upgrader.setCreep( Game.creeps[ 'test2' ] );
-        upgrader.doWork();
-    } catch( e ) {
-        console.log( e );
-    }
-    
-    try {
-        let builder = new BuildWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), Game.getObjectById( '4f8b2856c51a773cb6503612' ) );
-        builder.setCreep( Game.creeps[ 'test3' ] );
-        builder.doWork();
-    } catch( e ) {
-        console.log( e );
-    }
+    loopItem( () => {
+        let upgrader = new UpgradeWorker();
+        upgrader.setCreep( Game.creeps[ 'test1' ] );
+        upgrader.doWork( Game.creeps[ 'test1' ] );
+    } );
+
+    // 
+    // loopItem( () => {
+    //     let builder = new BuildWorker( Game.getObjectById( '4f8b2856c51a773cb6503612' ) );
+    //     builder.setCreep( Game.creeps[ 'test3' ] );
+    //     builder.doWork();
+    // } );
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );
 }
