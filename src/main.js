@@ -2,7 +2,12 @@ let HarvestWorker = require( './workers/HarvestWorker' );
 
 module.exports.loop = function() {
     try {
-        let harvest_worker = new HarvestWorker( Game.getObjectById( '75ad024922814d6cddc37871' ), Game.spawns[ 'Spawn1' ] );
+        let target = Game.spawns[ 'Spawn1' ];
+        if( target.energy == target.energyCapacity ) {
+            target = Game.getObjectById( '7bbb58a0e4c2c3c9262850eb' );
+        }
+
+        let harvest_worker = new HarvestWorker( Game.getObjectById( '75ad024922814d6cddc37871' ), target );
         harvest_worker.setCreep( Game.creeps[ 'test' ] );
         harvest_worker.doWork();
     } catch( e ) {

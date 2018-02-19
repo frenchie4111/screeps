@@ -29,7 +29,7 @@ class Worker {
     }
 
     moveTo( target ) {
-        moveTo( this.creep, this.getMemory( '_moveTo' ), this.log, target );
+        return moveTo( this.creep, this.getMemory( '_moveTo' ), this.log, target );
     }
 
     _doWork() {

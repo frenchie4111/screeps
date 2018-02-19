@@ -42,6 +42,7 @@ class HarvestWorker extends StateWorker {
         return {
             [ STATES.MOVE_TO_HARVEST ]: () => {
                 if( this.isNearSource() ) return STATES.HARVESTING;
+                if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
 
                 this.moveTo( this.source );
             },
@@ -66,7 +67,9 @@ class HarvestWorker extends StateWorker {
             [ STATES.TRANSFERRING ]: () => {
                 if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
 
-                this.doTransfer();
+                const transfer_results = this.doTransfer();
+
+                if( transfer_results !== 0 ) return STATES.MOVE_TO_HARVEST;
             }
         }
     }
