@@ -1,25 +1,38 @@
-let HarvestWorker = require( './workers/HarvestWorker' );
+const _ = require( 'lodash' );
+
+const HarvestWorker = require( '~/workers/HarvestWorker' ),
+    ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
+    constants = require( '~/constants' );
 
 module.exports.loop = function() {
     try {
+        let spawn = Game.spawns[ 'Spawn1' ];
+
+        let planner = new ExtensionPlanner( spawn );
+        planner.createConstructionSites( spawn.room );
+    } catch( e ) {
+        console.log( e );
+    }
+
+    try {
         let target = Game.spawns[ 'Spawn1' ];
         if( target.energy == target.energyCapacity ) {
-            target = Game.getObjectById( '7bbb58a0e4c2c3c9262850eb' );
+            target = Game.getObjectById( '05a0e654974d1746539e33d6' );
         }
 
-        let harvest_worker = new HarvestWorker( Game.getObjectById( '75ad024922814d6cddc37871' ), target );
+        let harvest_worker = new HarvestWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), target );
         harvest_worker.setCreep( Game.creeps[ 'test' ] );
         harvest_worker.doWork();
     } catch( e ) {
-        
+        console.log( e );
     }
     
     try {
-        let upgrader = new HarvestWorker( Game.getObjectById( '75ad024922814d6cddc37871' ), Game.getObjectById( '7bbb58a0e4c2c3c9262850eb' ) );
+        let upgrader = new HarvestWorker( Game.getObjectById( 'f0b7e1521242debad92c9126' ), Game.getObjectById( '05a0e654974d1746539e33d6' ) );
         upgrader.setCreep( Game.creeps[ 'test2' ] );
         upgrader.doWork();
     } catch( e ) {
-        
+        console.log( e );
     }
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );
