@@ -81,7 +81,7 @@ module.exports.loop = function() {
     loopItem( () => {
         let upgrader = new UpgradeWorker();
         upgrader.setCreep( Game.creeps[ 'test1' ] );
-        upgrader.doWork( Game.creeps[ 'test1' ] );
+        upgrader.doWork();
     } );
 
     // 

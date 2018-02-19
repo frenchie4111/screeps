@@ -36,8 +36,8 @@ class Worker {
         throw new Erorr( 'Abstract Method' );
     }
 
-    doWork( creep ) {
-        this._doWork( creep );
+    doWork() {
+        this._doWork( this.creep );
     }
 }
 
