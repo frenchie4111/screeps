@@ -2,7 +2,7 @@ const lodash = require( 'lodash' );
 
 const constants = require( '~/constants' );
 
-const StateWorker = require( './StateWorker' );
+const RenewWorker = require( './RenewWorker' );
 
 let STATES = {
     MOVE_TO_HARVEST: 'MOVE_TO_HARVEST',
@@ -11,7 +11,7 @@ let STATES = {
     TRANSFERRING: 'TRANSFERRING'
 };
 
-class HarvestWorker extends StateWorker {
+class HarvestWorker extends RenewWorker {
     constructor() {
         super( STATES.MOVE_TO_HARVEST );
     }
@@ -29,11 +29,24 @@ class HarvestWorker extends StateWorker {
     }
 
     getTarget( creep ) {
-        return creep.room.find( FIND_MY_SPAWNS )[ 0 ];
-    }
+        // HACK allows us to have 0 upgraders
+        if( creep.room.controller.ticksToDowngrade < 1000 ) {
+            return creep.room.controller;
+        }
 
-    isNear( creep, id ) {
-        return creep.pos.isNearTo( Game.getObjectById( id ) );
+        let capacity_structures = creep.room
+            .find( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return ( 'energyCapacity' in structure ) &&
+                        structure.energy < structure.energyCapacity;
+                }
+            } );
+    
+        if( capacity_structures.length === 0 ) {
+            return creep.room.controller;
+        }
+    
+        return capacity_structures[ 0 ];
     }
 
     getCurrentCarry() {

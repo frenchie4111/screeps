@@ -3,11 +3,8 @@ const _ = require( 'lodash' );
 const workers = require( '~/workers' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     constants = require( '~/constants' ),
-    RoomState = require( '~/room_state/RoomState' );
-    
-const HarvestWorker = require( '~/workers/HarvestWorker' );
-const BuildWorker = require( '~/workers/BuildWorker' );
-const UpgradeWorker = require( '~/workers/UpgradeWorker' );
+    RoomState = require( '~/room_state/RoomState' ),
+    RenewWorker = require( '~/workers/RenewWorker' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
@@ -36,8 +33,7 @@ const room_states = [
         },
         worker_counts: {
             [ workers.types.BUILDER ]: 2,
-            [ workers.types.HARVESTER ]: 1,
-            [ workers.types.UPGRADER ]: 1
+            [ workers.types.HARVESTER ]: 2
         },
         construction_planners: [
             new ExtensionPlanner( Game.spawns[ 'Spawn1' ] )
@@ -116,16 +112,33 @@ const handleRoomState = ( room ) => {
     }
 
     const spawn = room.find( FIND_MY_SPAWNS )[ 0 ];
-    const needed_spawns = getNeededSpawns( room, current_state.worker_counts );
+    
+    if( canSpawn( spawn ) ) {
+        const needed_spawns = getNeededSpawns( room, current_state.worker_counts );
 
-    console.log( JSON.stringify( needed_spawns ) );
+        if( Object.keys( needed_spawns ).length > 0 ) {
+            console.log( 'Spawning' );
+            if( needed_spawns[ workers.types.HARVESTER ] ) {
+                spawnCreep( spawn, workers.types.HARVESTER );
+            }
+            spawnCreep( spawn, Object.keys( needed_spawns )[ 0 ] )
+        } else {
+            let renewing_creeps = room.find( FIND_MY_CREEPS, {
+                filter: ( creep ) => {
+                    return RenewWorker.isRenewing( creep );
+                }
+            } );
 
-    if( Object.keys( needed_spawns ).length > 0 && canSpawn( spawn ) ) {
-        console.log( 'Spawning' );
-        if( needed_spawns[ workers.types.HARVESTER ] ) {
-            spawnCreep( spawn, workers.types.HARVESTER );
+            if( renewing_creeps.length === 0 ) {
+                console.log( 'Telling a creep to renew' );
+                let room_creeps = room.find( FIND_MY_CREEPS );
+                room_creeps = _.sortBy( room_creeps, ( creep ) => creep.ticksToLive );
+
+                let temp_worker = new RenewWorker();
+                temp_worker.setCreep( room_creeps[ 0 ] );
+                temp_worker.setRenew( spawn.id );
+            }
         }
-        spawnCreep( spawn, Object.keys( needed_spawns )[ 0 ] )
     }
 
     room
@@ -149,6 +162,7 @@ const loopItem = ( func ) => {
         func();
     } catch ( e ) {
         console.log( e );
+        throw e;
     }
 }
 
