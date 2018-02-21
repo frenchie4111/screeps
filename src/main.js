@@ -52,13 +52,13 @@ const room_states = [
     },
     {
         isComplete: ( room ) => {
-            return room
+            let extensions = room
                 .find( FIND_MY_STRUCTURES, {
                     filter: {
                         structureType: constants.STRUCTURE_EXTENSION
                     }
-                } )
-                .lenth === 5;
+                } );
+            return extensions.length === 5;
         },
         worker_counts: {
             [ workers.types.BUILDER ]: 2,
