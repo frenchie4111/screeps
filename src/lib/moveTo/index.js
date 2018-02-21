@@ -8,20 +8,20 @@ const _drawPath = ( creep, path ) => {
     }
 };
 
-const moveTo = ( creep, move_memory, log, target ) => {
+const moveTo = ( creep, move_memory, target ) => {
     if( target.id !== move_memory.path_target ) {
-        log( JSON.stringify( move_memory.path_target ) );
-        log( 'New Target' );
+        console.log( JSON.stringify( move_memory.path_target ) );
+        console.log( 'New Target' );
         move_memory.path = null;
     }
 
     if( !move_memory.path ) {
-        log( 'Finding new path' );
+        console.log( 'Finding new path' );
         move_memory.path = creep.pos.findPathTo( target );
     } else {
         // Make sure we aren't stuck
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
-            log( 'Was Stuck' );
+            console.log( 'Was Stuck' );
             move_memory.path = creep.pos.findPathTo( target );
         }
     }
@@ -44,7 +44,7 @@ const moveTo = ( creep, move_memory, log, target ) => {
             move_memory.was_tired = true;
             break;
         default:
-            log( 'Got Non-Zero moveByPath result:', move_result, constants.lookup( move_result ) );
+            console.log( 'Got Non-Zero moveByPath result:', move_result, constants.lookup( move_result ) );
     }
 }
 

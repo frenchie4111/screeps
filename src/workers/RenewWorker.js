@@ -29,6 +29,7 @@ class RenewWorker extends StateWorker {
     _getRenewStates() {
         return {
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
+                if( creep.ticksToLive > 1000 ) return this.default_state;
                 if( this.isNear( creep, worker_memory.spawn_id ) ) return STATES.RENEW;
                 this.moveTo( Game.getObjectById( worker_memory.spawn_id ) );
             },

@@ -17,7 +17,7 @@ class StateWorker extends Worker {
     }
 
     setState( new_state_name ) {
-        this.log( 'New State', new_state_name );
+        console.log( 'New State', new_state_name );
         this.creep.say( new_state_name );
         let state_worker_memory = this.getMemory( '_state_worker' );
         state_worker_memory.current_state_name = new_state_name;
@@ -37,7 +37,7 @@ class StateWorker extends Worker {
                 this.setState( response );
             }
         } else {
-            this.log( 'Invalid State name:', current_state_name );
+            console.log( 'Invalid State name:', current_state_name );
 
             if( this.reset_to_default_on_error ) {
                 state_worker_memory.current_state_name = this.default_state;

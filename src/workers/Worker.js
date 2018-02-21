@@ -8,13 +8,10 @@ class Worker {
     constructor() {
         this.creep = null;
         this.memory = null;
-        this._logger = new Logger();
-        this.log = this._logger.log.bind( this._logger );
     }
 
     setCreep( creep ) {
         this.creep = creep;
-        this._logger.setName( 'creep-' + creep.name );
         creep.memory.worker_memory = creep.memory.worker_memory || {};
     }
 
@@ -29,7 +26,7 @@ class Worker {
     }
 
     moveTo( target ) {
-        return moveTo( this.creep, this.getMemory( '_moveTo' ), this.log, target );
+        return moveTo( this.creep, this.getMemory( '_moveTo' ), target );
     }
 
     _doWork( creep ) {

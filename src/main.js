@@ -1,7 +1,9 @@
 const _ = require( 'lodash' );
 
+const Deque = require( '~/lib/deque' ),
+    Logger = require( '~/lib/logger' );
+
 const workers = require( '~/workers' ),
-    Deque = require( '~/lib/deque' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     constants = require( '~/constants' ),
     RoomState = require( '~/room_state/RoomState' ),
@@ -12,6 +14,9 @@ const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 const STATES_VERSION = 2; // Increment this and the code will automatically reset current state on next deploy
 
 const loopItem = ( name, func ) => {
+    logger = new Logger( name );
+    logger.patch();
+
     try {
         return func();
     } catch ( error ) {
@@ -28,6 +33,9 @@ const loopItem = ( name, func ) => {
         console.log( 'Error in ' + name );
         console.log( error );
         console.log( error.stack );
+    }
+    finally {
+        logger.unpatch();
     }
 };
 
@@ -90,7 +98,13 @@ const _getCurrentState = ( room ) => {
 
 const spawnCreep = ( spawn, worker_type ) => {
     spawn
-        .spawnCreep( [ constants.WORK, constants.CARRY, constants.MOVE, constants.MOVE, constants.CARRY ], worker_type + '-' + Game.time.toString(), {
+        .spawnCreep( [ 
+            constants.WORK, 
+            constants.CARRY, 
+            constants.MOVE, 
+            constants.MOVE, 
+            constants.CARRY 
+        ], worker_type + '-' + Game.time.toString(), {
             memory: {
                 worker_type: worker_type
             }
@@ -184,19 +198,9 @@ const handleRoomState = ( room ) => {
         } );
 }
 
-
-let test_throw = true;
-
 module.exports.loop = function() {
     const spawn = Game.spawns[ 'Spawn1' ];
     const room = spawn.room;
-
-    loopItem( 'test', () => {
-        if( test_throw ) {
-            test_throw = false;
-            throw new Error( 'Test Error' );
-        }
-    } )
 
     loopItem( 'collectors', () => {
         const collectors = [
@@ -209,6 +213,14 @@ module.exports.loop = function() {
             } );
 
         collectors[ 0 ].drawHotSpots( room );
+    } );
+    
+    loopItem( 'garbage-collector', () => {
+        for( let i in Memory.creeps ) {
+            if( !Game.creeps[ i ] ) {
+                delete Memory.creeps[ i ];
+            }
+        }
     } );
 
     loopItem( 'handleRoomState', () => {

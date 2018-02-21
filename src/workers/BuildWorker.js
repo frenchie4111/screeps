@@ -4,7 +4,7 @@ const HarvestWorker = require( './HarvestWorker' );
 
 class BuildWorker extends HarvestWorker {
     getTarget( creep ) {
-        this.log( 'getTarget' );
+        console.log( 'getTarget' );
 
         const construction_sites = creep.room.find( FIND_MY_CONSTRUCTION_SITES );
         if( construction_sites.length > 0 ) {

@@ -102,7 +102,7 @@ class HarvestWorker extends RenewWorker {
                         this.moveTo( Game.getObjectById( worker_memory.target_id ) );
                         break;
                     case constants.ERR_INVALID_TARGET:
-                        this.log( 'Tried to transfer to invalid target' );
+                        console.log( 'Tried to transfer to invalid target' );
                         worker_memory.target_id = null;
                         break;
                     default:
