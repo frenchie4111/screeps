@@ -42,8 +42,8 @@ class CreepPositionCollector extends MetricCollector {
                     value: value
                 };
             } );
-            
-        positions = _.sortBy( positions, ( position ) => position.value );
+
+        positions = _.sortBy( positions, ( position ) => position.value ).reverse();
 
         for( let i = 0; i < 10 && i < positions.length; i++ ) {
             room.visual.circle( positions[ i ].pos );

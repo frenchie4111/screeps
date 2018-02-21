@@ -1,6 +1,7 @@
 const _ = require( 'lodash' );
 
 const workers = require( '~/workers' ),
+    Deque = require( '~/lib/deque' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     constants = require( '~/constants' ),
     RoomState = require( '~/room_state/RoomState' ),
@@ -8,7 +9,27 @@ const workers = require( '~/workers' ),
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
-const STATES_VERSION = 1; // Increment this and the code will automatically reset current state on next deploy
+const STATES_VERSION = 2; // Increment this and the code will automatically reset current state on next deploy
+
+const loopItem = ( name, func ) => {
+    try {
+        return func();
+    } catch ( error ) {
+        Memory.error_log = new Deque( Memory.error_log );
+        Memory.error_log.push( {
+            name: name,
+            error: {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            }
+        } );
+
+        console.log( 'Error in ' + name );
+        console.log( error );
+        console.log( error.stack );
+    }
+};
 
 const room_states = [
     {
@@ -69,7 +90,7 @@ const _getCurrentState = ( room ) => {
 
 const spawnCreep = ( spawn, worker_type ) => {
     spawn
-        .spawnCreep( [ constants.WORK, constants.CARRY, constants.MOVE, constants.MOVE, constants.CARRY ], Game.time.toString(), {
+        .spawnCreep( [ constants.WORK, constants.CARRY, constants.MOVE, constants.MOVE, constants.CARRY ], worker_type + '-' + Game.time.toString(), {
             memory: {
                 worker_type: worker_type
             }
@@ -125,7 +146,9 @@ const handleRoomState = ( room ) => {
         } else {
             let renewing_creeps = room.find( FIND_MY_CREEPS, {
                 filter: ( creep ) => {
-                    return RenewWorker.isRenewing( creep );
+                    if( creep ) {
+                        return RenewWorker.isRenewing( creep );
+                    }
                 }
             } );
 
@@ -134,9 +157,11 @@ const handleRoomState = ( room ) => {
                 let room_creeps = room.find( FIND_MY_CREEPS );
                 room_creeps = _.sortBy( room_creeps, ( creep ) => creep.ticksToLive );
 
-                let temp_worker = new RenewWorker();
-                temp_worker.setCreep( room_creeps[ 0 ] );
-                temp_worker.setRenew( spawn.id );
+                if( room_creeps.length > 0 ) {
+                    let temp_worker = new RenewWorker();
+                    temp_worker.setCreep( room_creeps[ 0 ] );
+                    temp_worker.setRenew( spawn.id );
+                }
             }
         }
     }
@@ -144,10 +169,12 @@ const handleRoomState = ( room ) => {
     room
         .find( FIND_MY_CREEPS )
         .forEach( ( creep ) => {
-            const WorkerClass = workers.getClass( creep.memory.worker_type );
-            const worker = new WorkerClass();
-            worker.setCreep( creep );
-            worker.doWork();
+            loopItem( 'creep-work-' + creep.name, () => {
+                const WorkerClass = workers.getClass( creep.memory.worker_type );
+                const worker = new WorkerClass();
+                worker.setCreep( creep );
+                worker.doWork();
+            } );
         } );
 
     current_state
@@ -157,20 +184,21 @@ const handleRoomState = ( room ) => {
         } );
 }
 
-const loopItem = ( func ) => {
-    try {
-        func();
-    } catch ( e ) {
-        console.log( e );
-        throw e;
-    }
-}
+
+let test_throw = true;
 
 module.exports.loop = function() {
     const spawn = Game.spawns[ 'Spawn1' ];
     const room = spawn.room;
 
-    loopItem( () => {
+    loopItem( 'test', () => {
+        if( test_throw ) {
+            test_throw = false;
+            throw new Error( 'Test Error' );
+        }
+    } )
+
+    loopItem( 'collectors', () => {
         const collectors = [
             new CreepPositionCollector()
         ];
@@ -180,10 +208,10 @@ module.exports.loop = function() {
                 collector.collect( room );
             } );
 
-        // collectors[ 0 ].drawHotSpots( room );
+        collectors[ 0 ].drawHotSpots( room );
     } );
 
-    loopItem( () => {
+    loopItem( 'handleRoomState', () => {
         handleRoomState( room );
     } );
 

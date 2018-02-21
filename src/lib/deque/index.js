@@ -1,7 +1,7 @@
 class Deque {
-    constructor( maxlen=10 ) {
-        this.queue = [];
-        this.maxlen = maxlen;
+    constructor( memory_item={}, maxlen ) {
+        this.queue = memory_item.queue || {};
+        this.maxlen = memory_item.maxlen || maxlen || 10;
     }
 
     push( item ) {
@@ -9,6 +9,13 @@ class Deque {
 
         if( this.queue.length > this.maxlen ) {
             this.queue.pop();
+        }
+    }
+
+    toJSON() {
+        return {
+            queue: this.queue,
+            maxlen: this.maxlen
         }
     }
 }

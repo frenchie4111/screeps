@@ -33,10 +33,11 @@ class RenewWorker extends StateWorker {
                 this.moveTo( Game.getObjectById( worker_memory.spawn_id ) );
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
-                console.log( Game.getObjectById( worker_memory.spawn_id ) );
+                if( creep.ticksToLive > 1000 ) {
+                    worker_memory.renewing = false;
+                    return this.default_state;
+                }
                 Game.getObjectById( worker_memory.spawn_id ).renewCreep( creep );
-                worker_memory.renewing = false;
-                return this.default_state;
             }
         }
     }
