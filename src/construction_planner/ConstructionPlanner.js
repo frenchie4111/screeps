@@ -1,11 +1,12 @@
 const constants = require( '~/constants' );
 
 class ConstructionPlanner {
-    constructor( structure_type ) {
+    constructor( structure_type, dry_run=false ) {
         this.structure_type = structure_type;
+        this.dry_run = dry_run;
     }
 
-    _getNewAllowedStructureCount( room ) {
+    getNewAllowedStructureCount( room ) {
         const max_count = constants.CONTROLLER_STRUCTURES[ this.structure_type ][ room.controller.level ];
 
         const current_count = room
@@ -35,22 +36,40 @@ class ConstructionPlanner {
         );
     };
 
+    _shouldCreateNewStructure( room ) {
+        throw new Error( 'Abstract Method' );
+    }
+
     _getNewPosition( room ) {
         throw new Error( 'Abstract Method' );
     }
-    
-    getNewPosition( room ) {
-        return this._getNewPosition( room );
+
+    _getNewPositions( room ) {
+        const pending = [];
+        while( this._shouldCreateNewStructure( room ) ) {
+            let position = this._getNewPosition( room, pending );
+            pending.push( position );
+        }
+        return pending;
     }
 
     createConstructionSites( room ) {
-        const num_new_extensions = this._getNewAllowedStructureCount( room );
-        const pending = [];
-        for( let i = 0; i < num_new_extensions; i++ ) {
-            let position = this.getNewPosition( room, pending );
-            pending.push( position );
-            room.createConstructionSite( position, constants.STRUCTURE_EXTENSION );
-        }
+        if( !this._shouldCreateNewStructure( room ) ) return;
+
+        this
+            ._getNewPositions( room )
+            .forEach( ( position ) => {
+                console.log( position, this.dry_run );
+                if( this.dry_run ) {
+                    room.visual.circle( position );
+                } else {
+                    console.log( position, this.structure_type );
+                    let return_status = room.createConstructionSite( position, this.structure_type );
+                    if( return_status !== constants.OK ) {
+                        console.log( 'createConstructionSite non OK status', return_status );
+                    }
+                }
+            } );
     }
 }
 

@@ -5,6 +5,7 @@ const Deque = require( '~/lib/deque' ),
 
 const workers = require( '~/workers' ),
     ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
+    SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
     constants = require( '~/constants' ),
     RoomState = require( '~/room_state/RoomState' ),
     RenewWorker = require( '~/workers/RenewWorker' );
@@ -70,14 +71,27 @@ const room_states = [
     },
     {
         isComplete: ( room ) => {
+            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+            return construction_sites.length === 0;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.BUILDER ]: 3
+        },
+        construction_planners: [
+            new SourceRoadPlanner( 'spawn', Game.spawns[ 'Spawn1' ] ),
+            new SourceRoadPlanner( 'controller', Game.spawns[ 'Spawn1' ].room.controller )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
             return false;
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
             [ workers.types.UPGRADER ]: 3
         },
-        construction_planners: [
-        ]
+        construction_planners: []
     }
 ];
 
@@ -212,7 +226,7 @@ module.exports.loop = function() {
                 collector.collect( room );
             } );
 
-        collectors[ 0 ].drawHotSpots( room );
+        // collectors[ 0 ].drawHotSpots( room );
     } );
     
     loopItem( 'garbage-collector', () => {

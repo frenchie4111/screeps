@@ -16,6 +16,10 @@ class ExtensionPlanner extends ConstructionPlanner {
         super( constants.STRUCTURE_EXTENSION );
         this.spawn = spawn;
     }
+    
+    _shouldCreateNewStructure( room ) {
+        return this.getNewAllowedStructureCount( room ) > 0;
+    }
 
     _getNewPosition( room, pending=[] ) {
         let start_pos = this.spawn.pos;
