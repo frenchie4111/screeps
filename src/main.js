@@ -175,13 +175,14 @@ const handleRoomState = ( room ) => {
             }
             spawnCreep( spawn, Object.keys( needed_spawns )[ 0 ] )
         } else {
-            let renewing_creeps = room.find( FIND_MY_CREEPS, {
-                filter: ( creep ) => {
-                    if( creep ) {
-                        return RenewWorker.isRenewing( creep );
+            let renewing_creeps = room
+                .find( FIND_MY_CREEPS, {
+                    filter: ( creep ) => {
+                        if( creep ) {
+                            return RenewWorker.isRenewing( creep );
+                        }
                     }
-                }
-            } );
+                } );
 
             if( renewing_creeps.length === 0 ) {
                 console.log( 'Telling a creep to renew' );
