@@ -1,9 +1,20 @@
 const constants = require( '~/constants' );
 
 class ConstructionPlanner {
-    constructor( structure_type, dry_run=false ) {
+    constructor( name, structure_type, dry_run=false ) {
         this.structure_type = structure_type;
         this.dry_run = dry_run;
+        this.name = name;
+    }
+
+    hasRunBefore( room ) {
+        if( !room.memory.hasOwnProperty( '_construction_planners' ) ) room.memory._construction_planners = {};
+        return room.memory._construction_planners[ this.name ];
+    }
+
+    setHasRun( room, value ) {
+        if( !room.memory.hasOwnProperty( '_construction_planners' ) ) room.memory._construction_planners = {};
+        return room.memory._construction_planners[ this.name ] = value;
     }
 
     getNewAllowedStructureCount( room ) {
@@ -37,7 +48,7 @@ class ConstructionPlanner {
     };
 
     _shouldCreateNewStructure( room ) {
-        throw new Error( 'Abstract Method' );
+        return !this.hasRunBefore( room );
     }
 
     _getNewPosition( room ) {
@@ -70,6 +81,8 @@ class ConstructionPlanner {
                     }
                 }
             } );
+
+        this.setHasRun( room, true );
     }
 }
 

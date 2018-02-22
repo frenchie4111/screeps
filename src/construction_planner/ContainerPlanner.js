@@ -2,11 +2,11 @@ const constants = require( '~/constants' );
 
 const ConstructionPlanner = require( './ConstructionPlanner' );
 
-class SourceRoadPlanner extends ConstructionPlanner {
-    constructor( name, target, dry_run, max_sources=2 ) {
-        super( name, constants.STRUCTURE_ROAD, dry_run );
-        this.target = target;
-        this.max_sources = max_sources;
+class ContainerPlanner extends ConstructionPlanner {
+    constructor( name, spawn, dry_run ) {
+        super( name, constants.STRUCTURE_ROAD, true );
+        this.name = name;
+        this.spawn = target;
     }
 
     _getNewPositions( room, pending=[] ) {
@@ -41,4 +41,4 @@ class SourceRoadPlanner extends ConstructionPlanner {
     }
 }
 
-module.exports = SourceRoadPlanner;
+module.exports = ContainerPlanner;

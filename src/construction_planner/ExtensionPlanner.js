@@ -12,11 +12,11 @@ const DIRECTIONS = [
 ];
 
 class ExtensionPlanner extends ConstructionPlanner {
-    constructor( spawn ) {
-        super( constants.STRUCTURE_EXTENSION );
+    constructor( name, spawn ) {
+        super( name, constants.STRUCTURE_EXTENSION );
         this.spawn = spawn;
     }
-    
+
     _shouldCreateNewStructure( room ) {
         return this.getNewAllowedStructureCount( room ) > 0;
     }
