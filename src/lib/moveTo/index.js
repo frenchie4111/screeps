@@ -10,18 +10,14 @@ const _drawPath = ( creep, path ) => {
 
 const moveTo = ( creep, move_memory, target ) => {
     if( target.id !== move_memory.path_target ) {
-        console.log( JSON.stringify( move_memory.path_target ) );
-        console.log( 'New Target' );
         move_memory.path = null;
     }
 
     if( !move_memory.path ) {
-        console.log( 'Finding new path' );
         move_memory.path = creep.pos.findPathTo( target );
     } else {
         // Make sure we aren't stuck
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
-            console.log( 'Was Stuck' );
             move_memory.path = creep.pos.findPathTo( target );
         }
     }

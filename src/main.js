@@ -25,6 +25,7 @@ const loopItem = ( name, func ) => {
         Memory.error_log.push( {
             name: name,
             error: {
+                time: new Date(),
                 name: error.name,
                 message: error.message,
                 stack: error.stack
@@ -76,7 +77,8 @@ const room_states = [
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
-            [ workers.types.BUILDER ]: 3
+            [ workers.types.BUILDER ]: 3,
+            [ workers.types.REPAIRER ]: 1
         },
         construction_planners: [
             new SourceRoadPlanner( 'spawn', Game.spawns[ 'Spawn1' ] ),
@@ -89,7 +91,8 @@ const room_states = [
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
-            [ workers.types.UPGRADER ]: 3
+            [ workers.types.UPGRADER ]: 3,
+            [ workers.types.REPAIRER ]: 1
         },
         construction_planners: []
     }
