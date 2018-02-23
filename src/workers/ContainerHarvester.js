@@ -5,13 +5,16 @@ const constants = require( '~/constants' );
 const HarvestWorker = require( './HarvestWorker' );
 
 class ContainerHarvester extends HarvestWorker {
-    getTarget( creep ) {
-        return creep.room.controller;
+    constructor( assigner, can_harvest=true ) {
+        super( assigner );
+        this.can_harvest = can_harvest;
     }
 
     shouldStopHarvesting( creep, container ) {
-        console.log( container );
-        return container.store[ constants.RESOURCE_ENERGY ] === 0;
+        if( container.structureType === constants.STRUCTURE_CONTAINER ) {
+            return container.store[ constants.RESOURCE_ENERGY ] <= 50;
+        }
+        return super.shouldStopHarvesting( creep, container );
     }
 
     getSource( creep ) {
@@ -21,16 +24,23 @@ class ContainerHarvester extends HarvestWorker {
                 filter: ( structure ) => {
                     return (
                         structure.structureType === constants.STRUCTURE_CONTAINER &&
-                        structure.store[ constants.RESOURCE_ENERGY ] > 0
+                        structure.store[ constants.RESOURCE_ENERGY ] > 50
                     );
                 }
             } );
+
+        if( !container && this.can_harvest ) {
+            return super.getSource( creep );
+        }
 
         return container;
     }
     
     doHarvest( creep, container ) {
-        return creep.withdraw( container, constants.RESOURCE_ENERGY );
+        if( container.structureType === constants.STRUCTURE_CONTAINER ) {
+            return creep.withdraw( container, constants.RESOURCE_ENERGY );
+        }
+        return creep.harvest( container );
     }
 }
 

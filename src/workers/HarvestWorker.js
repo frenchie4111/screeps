@@ -77,7 +77,9 @@ class HarvestWorker extends RenewWorker {
         return {
             [ STATES.MOVE_TO_HARVEST ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.source_id ) {
-                    worker_memory.source_id = this.getSource( creep ).id;
+                    let source = this.getSource( creep );
+                    if( !source ) return; // Idle, no available sources
+                    worker_memory.source_id = source.id;
                 }
                 worker_memory.target_id = null;
 
@@ -102,6 +104,7 @@ class HarvestWorker extends RenewWorker {
 
                 switch( harvest_response ) {
                     case constants.OK:
+                        if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
                         return;
                         break;
                     default:
@@ -111,7 +114,9 @@ class HarvestWorker extends RenewWorker {
             },
             [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) {
-                    worker_memory.target_id = this.getTarget( creep ).id;
+                    let target = this.getTarget( creep );
+                    if( !target ) return; // Idle, no available targets
+                    worker_memory.target_id = target.id;
                 }
 
                 const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
@@ -122,9 +127,10 @@ class HarvestWorker extends RenewWorker {
                     case constants.OK:
                         return STATES.TRANSFERRING;
                         break;
-                    case constants.ERR_FULL: // HACK: To make sure we don't get stuck doing nothing
-                        creep.drop( constants.RESOURCE_ENERGY );
-                        return STATES.MOVE_TO_HARVEST;
+                    case constants.ERR_FULL:
+                        // Current target is full, get new target
+                        worker_memory.target_id = null;
+                        return STATES.MOVE_TO_TRANSFER;
                         break;
                     case constants.ERR_NOT_IN_RANGE:
                         this.moveTo( Game.getObjectById( worker_memory.target_id ) );
@@ -142,6 +148,7 @@ class HarvestWorker extends RenewWorker {
                 if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
 
                 let target = Game.getObjectById( worker_memory.target_id )
+
                 if( this.shouldStopTargetting( creep, target ) ) {
                     worker_memory.target_id = null;
                     return STATES.MOVE_TO_TRANSFER;
@@ -149,7 +156,25 @@ class HarvestWorker extends RenewWorker {
 
                 const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
 
-                if( transfer_results !== 0 ) return STATES.MOVE_TO_HARVEST;
+                switch( transfer_results ) {
+                    case constants.OK:
+                        break;
+                    case constants.ERR_FULL:
+                        // Current target is full, get new target
+                        worker_memory.target_id = null;
+                        return STATES.MOVE_TO_TRANSFER;
+                        break;
+                    case constants.ERR_NOT_IN_RANGE:
+                        this.moveTo( Game.getObjectById( worker_memory.target_id ) );
+                        break;
+                    case constants.ERR_INVALID_TARGET:
+                        console.log( 'Tried to transfer to invalid target' );
+                        worker_memory.target_id = null;
+                        break;
+                    default:
+                        console.log( 'Unknown case', transfer_results, constants.lookup( transfer_results ) );
+                        return STATES.MOVE_TO_HARVEST;
+                }
             }
         }
     }

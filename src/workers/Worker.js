@@ -34,13 +34,15 @@ class Worker {
     }
 
     getBody( available_energy ) {
-        return [
-            constants.WORK, 
-            constants.CARRY, 
-            constants.MOVE, 
-            constants.MOVE, 
-            constants.CARRY
-        ];
+        let per_parts = constants.BODYPART_COST[ constants.MOVE ] + constants.BODYPART_COST[ constants.CARRY ] + constants.BODYPART_COST[ constants.WORK ];
+        let parts = [];
+
+        while( available_energy > per_parts ) {
+            parts = parts.concat( [ constants.MOVE, constants.CARRY, constants.WORK ] );
+            available_energy -= per_parts;
+        }
+
+        return parts;
     }
 
     _doWork( creep ) {

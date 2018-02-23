@@ -96,11 +96,11 @@ const room_states = [
             return extensions.length === 10;
         },
         worker_counts: {
-            [ workers.types.HARVESTER ]: 1,
-            [ workers.types.CONTAINER_HARVESTER ]: 1,
-            [ workers.types.BUILDER ]: 3,
-            [ workers.types.REPAIRER ]: 1,
-            [ workers.types.CONTAINER_MINER ]: 2
+            [ workers.types.HARVESTER ]: 1, // Always keep a harvester around just in case
+            [ workers.types.CONTAINER_EXTENSION ]: 1,
+            [ workers.types.CONTAINER_BUILDER ]: 3,
+            [ workers.types.CONTAINER_MINER ]: 2,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
         },
         construction_planners: [
             new ExtensionPlanner( 'extension-2', Game.spawns[ 'Spawn1' ] )
@@ -112,8 +112,10 @@ const room_states = [
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
-            [ workers.types.UPGRADER ]: 3,
-            [ workers.types.REPAIRER ]: 1
+            [ workers.types.CONTAINER_EXTENSION ]: 1,
+            [ workers.types.CONTAINER_HARVESTER ]: 3,
+            [ workers.types.CONTAINER_MINER ]: 2,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
         },
         construction_planners: []
     }
@@ -134,6 +136,20 @@ const _getCurrentState = ( room ) => {
     return room_states[ room_state_memory.current_state ];
 };
 
+const getTotalEnergyCapacity = ( spawn ) => {
+    let extensions = spawn
+        .room
+        .find( FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: constants.STRUCTURE_EXTENSION
+            }
+        } );
+
+    let extension_total = _.sumBy( extensions, ( extension ) => extension.energyCapacity );
+
+    return extension_total + spawn.energyCapacity;
+}
+
 const getTotalEnergy = ( spawn ) => {
     let extensions = spawn
         .room
@@ -151,10 +167,11 @@ const getTotalEnergy = ( spawn ) => {
 const spawnCreep = ( spawn, worker_type ) => {
     let WorkerClass = workers.getClass( worker_type );
     let worker = new WorkerClass();
+    let parts = worker.getBody( getTotalEnergy( spawn ) );
 
-    spawn
+    let spawn_response = spawn
         .spawnCreep( 
-            worker.getBody( getTotalEnergy( spawn ) ), 
+            parts,
             worker_type + '-' + Game.time.toString(), 
             {
                 memory: {
@@ -162,10 +179,12 @@ const spawnCreep = ( spawn, worker_type ) => {
                 }
             }
         );
+
+    console.log( 'spawnCreep', spawn_response, constants.lookup( spawn_response ) );
 };
 
 const canSpawn = ( spawn ) => {
-    return getTotalEnergy( spawn ) >= 300;
+    return getTotalEnergy( spawn ) === getTotalEnergyCapacity( spawn );
 };
 
 const getNeededSpawns = ( room, worker_counts ) => {
@@ -201,6 +220,17 @@ class Assigner {
         return this.room.memory._assigner[ key_name ];
     }
 
+    garbageCollect() {  
+        let previously_assigned = this._getPreviouslyAssigned( constants.STRUCTURE_CONTAINER );
+        for( let key in previously_assigned ) {
+            let creep_id = previously_assigned[ key ];
+            if( !Game.getObjectById( creep_id ) ) {
+                console.log( 'creep gone', creep_id, previously_assigned[ key ] );
+                delete previously_assigned[ key ];
+            }
+        }
+    }
+
     getAssigned( creep, type ) {
         switch( type ) {
             case constants.STRUCTURE_CONTAINER:
@@ -227,6 +257,7 @@ class Assigner {
 const handleRoomState = ( room ) => {
     const current_state = _getCurrentState( room );
     const assigner = new Assigner( room );
+    assigner.garbageCollect();
 
     if( current_state.isComplete( room ) ) {
         console.log( 'Room Progressed to next state' );
@@ -240,7 +271,7 @@ const handleRoomState = ( room ) => {
         const needed_spawns = getNeededSpawns( room, current_state.worker_counts );
 
         if( Object.keys( needed_spawns ).length > 0 ) {
-            console.log( 'Spawning' );
+            console.log( 'Spawning', JSON.stringify( needed_spawns ) );
             if( needed_spawns[ workers.types.HARVESTER ] ) {
                 spawnCreep( spawn, workers.types.HARVESTER );
             }
@@ -258,7 +289,13 @@ const handleRoomState = ( room ) => {
 
             if( renewing_creeps.length === 0 ) {
                 console.log( 'Telling a creep to renew' );
-                let room_creeps = room.find( FIND_MY_CREEPS );
+                let room_creeps = room
+                    .find( FIND_MY_CREEPS, {
+                        filter: ( creep ) => {
+                            return RenewWorker.needsRenewing( creep );
+                        }
+                    } );
+
                 room_creeps = _.sortBy( room_creeps, ( creep ) => creep.ticksToLive );
 
                 if( room_creeps.length > 0 ) {

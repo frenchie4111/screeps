@@ -2,9 +2,9 @@ const lodash = require( 'lodash' );
 
 const constants = require( '~/constants' );
 
-const HarvestWorker = require( './HarvestWorker' );
+const ContainerHarvester = require( './ContainerHarvester' );
 
-class RepairWorker extends HarvestWorker {
+class ContainerRepairer extends ContainerHarvester {
     _needsRepair( target ) {
         let ratio =  ( target.hits / target.hitsMax );
         
@@ -49,4 +49,4 @@ class RepairWorker extends HarvestWorker {
     }
 }
 
-module.exports = RepairWorker;
+module.exports = ContainerRepairer;
