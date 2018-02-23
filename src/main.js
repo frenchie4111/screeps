@@ -98,7 +98,8 @@ const room_states = [
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
             [ workers.types.BUILDER ]: 3,
-            [ workers.types.REPAIRER ]: 1
+            [ workers.types.REPAIRER ]: 1,
+            [ workers.types.CONTAINER_MINER ]: 2
         },
         construction_planners: [
             new ExtensionPlanner( 'extension-2', Game.spawns[ 'Spawn1' ] )
@@ -132,21 +133,6 @@ const _getCurrentState = ( room ) => {
     return room_states[ room_state_memory.current_state ];
 };
 
-const spawnCreep = ( spawn, worker_type ) => {
-    spawn
-        .spawnCreep( [ 
-            constants.WORK, 
-            constants.CARRY, 
-            constants.MOVE, 
-            constants.MOVE, 
-            constants.CARRY 
-        ], worker_type + '-' + Game.time.toString(), {
-            memory: {
-                worker_type: worker_type
-            }
-        } );
-};
-
 const getTotalEnergy = ( spawn ) => {
     let extensions = spawn
         .room
@@ -160,6 +146,22 @@ const getTotalEnergy = ( spawn ) => {
 
     return extension_total + spawn.energy;
 }
+
+const spawnCreep = ( spawn, worker_type ) => {
+    let WorkerClass = workers.getClass( worker_type );
+    let worker = new WorkerClass();
+
+    spawn
+        .spawnCreep( 
+            worker.getBody( getTotalEnergy( spawn ) ), 
+            worker_type + '-' + Game.time.toString(), 
+            {
+                memory: {
+                    worker_type: worker_type
+                }
+            }
+        );
+};
 
 const canSpawn = ( spawn ) => {
     return getTotalEnergy( spawn ) >= 300;
@@ -187,8 +189,43 @@ const getNeededSpawns = ( room, worker_counts ) => {
     return needed_counts;
 };
 
+class Assigner {
+    constructor( room ) {
+        this.room = room;
+    }
+
+    _getPreviouslyAssigned( key_name ) {
+        if( !this.room.memory.hasOwnProperty( '_assigner' ) ) this.room.memory._assigner = {};
+        if( !this.room.memory._assigner.hasOwnProperty( key_name ) ) this.room.memory._assigner[ key_name ] = {};
+        return this.room.memory._assigner[ key_name ];
+    }
+
+    getAssigned( creep, type ) {
+        switch( type ) {
+            case constants.STRUCTURE_CONTAINER:
+                let previously_assigned = this._getPreviouslyAssigned( type );
+                let unassigned_structures = creep.room
+                    .find( FIND_STRUCTURES, {
+                        filter: ( structure ) => {
+                            return (
+                                structure.structureType === type &&
+                                !previously_assigned.hasOwnProperty( structure.id )
+                            );
+                        }
+                    } );
+
+                if( unassigned_structures.length === 0 ) throw new Error( 'Out of sturctures: ', type );
+                previously_assigned[ unassigned_structures[ 0 ] ] = creep.id;
+
+                return unassigned_structures[ 0 ];
+                break;
+        }
+    }
+}
+
 const handleRoomState = ( room ) => {
     const current_state = _getCurrentState( room );
+    const assigner = new Assigner( room );
 
     if( current_state.isComplete( room ) ) {
         console.log( 'Room Progressed to next state' );
@@ -197,7 +234,7 @@ const handleRoomState = ( room ) => {
     }
 
     const spawn = room.find( FIND_MY_SPAWNS )[ 0 ];
-    
+
     if( canSpawn( spawn ) ) {
         const needed_spawns = getNeededSpawns( room, current_state.worker_counts );
 
@@ -236,7 +273,7 @@ const handleRoomState = ( room ) => {
         .forEach( ( creep ) => {
             loopItem( 'creep-work-' + creep.name, () => {
                 const WorkerClass = workers.getClass( creep.memory.worker_type );
-                const worker = new WorkerClass();
+                const worker = new WorkerClass( assigner );
                 worker.setCreep( creep );
                 worker.doWork();
             } );

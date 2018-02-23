@@ -3,6 +3,7 @@ const worker_type_conversion = {
     BUILDER: require( './BuildWorker' ),
     UPGRADER: require( './UpgradeWorker' ),
     REPAIRER: require( './RepairWorker' ),
+    CONTAINER_MINER: require( './ContainerMinerWorker' ),
 };
 
 const types = {
@@ -10,6 +11,8 @@ const types = {
     BUILDER: 'BUILDER',
     UPGRADER: 'UPGRADER',
     REPAIRER: 'REPAIRER',
+    REPAIRER: 'REPAIRER',
+    CONTAINER_MINER: 'CONTAINER_MINER',
 };
 
 module.exports = {

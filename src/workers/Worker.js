@@ -29,6 +29,20 @@ class Worker {
         return moveTo( this.creep, this.getMemory( '_moveTo' ), target );
     }
 
+    isNear( creep, id ) {
+        return creep.pos.isNearTo( Game.getObjectById( id ) );
+    }
+
+    getBody( available_energy ) {
+        return [
+            constants.WORK, 
+            constants.CARRY, 
+            constants.MOVE, 
+            constants.MOVE, 
+            constants.CARRY
+        ];
+    }
+
     _doWork( creep ) {
         throw new Erorr( 'Abstract Method' );
     }

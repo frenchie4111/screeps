@@ -12,10 +12,6 @@ class StateWorker extends Worker {
         throw new Error( 'Abstract Method' );
     }
 
-    isNear( creep, id ) {
-        return creep.pos.isNearTo( Game.getObjectById( id ) );
-    }
-
     setState( new_state_name ) {
         console.log( 'New State', new_state_name );
         this.creep.say( new_state_name );
