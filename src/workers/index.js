@@ -4,6 +4,7 @@ const worker_type_conversion = {
     UPGRADER: require( './UpgradeWorker' ),
     REPAIRER: require( './RepairWorker' ),
     CONTAINER_MINER: require( './ContainerMinerWorker' ),
+    CONTAINER_HARVESTER: require( './ContainerHarvester' )
 };
 
 const types = {
@@ -13,6 +14,7 @@ const types = {
     REPAIRER: 'REPAIRER',
     REPAIRER: 'REPAIRER',
     CONTAINER_MINER: 'CONTAINER_MINER',
+    CONTAINER_HARVESTER: 'CONTAINER_HARVESTER',
 };
 
 module.exports = {

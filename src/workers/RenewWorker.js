@@ -51,5 +51,6 @@ class RenewWorker extends StateWorker {
 module.exports = RenewWorker;
 
 module.exports.isRenewing = ( creep ) => {
+    if( !creep.memory.hasOwnProperty( 'worker_memory' ) ) creep.memory.worker_memory = {};
     return !!creep.memory.worker_memory.renewing;
 };

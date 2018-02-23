@@ -97,6 +97,7 @@ const room_states = [
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_HARVESTER ]: 1,
             [ workers.types.BUILDER ]: 3,
             [ workers.types.REPAIRER ]: 1,
             [ workers.types.CONTAINER_MINER ]: 2
@@ -215,7 +216,7 @@ class Assigner {
                     } );
 
                 if( unassigned_structures.length === 0 ) throw new Error( 'Out of sturctures: ', type );
-                previously_assigned[ unassigned_structures[ 0 ] ] = creep.id;
+                previously_assigned[ unassigned_structures[ 0 ].id ] = creep.id;
 
                 return unassigned_structures[ 0 ];
                 break;
@@ -251,6 +252,7 @@ const handleRoomState = ( room ) => {
                         if( creep ) {
                             return RenewWorker.isRenewing( creep );
                         }
+                        return false;
                     }
                 } );
 

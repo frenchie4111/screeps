@@ -56,9 +56,17 @@ class HarvestWorker extends RenewWorker {
     isFull() {
         return this.getCurrentCarry() == this.creep.carryCapacity;
     }
+    
+    doHarvest( creep, source ) {
+        return creep.harvest( source );
+    }
 
     doTransfer( creep, target ) {
         return creep.transfer( target, RESOURCE_ENERGY );
+    }
+    
+    shouldStopHarvesting( creep, source ) {
+        return false;
     }
     
     shouldStopTargetting( creep, target ) {
@@ -83,7 +91,23 @@ class HarvestWorker extends RenewWorker {
                 if( !this.isNear( creep, worker_memory.source_id ) ) return STATES.MOVE_TO_HARVEST;
                 if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
 
-                creep.harvest( Game.getObjectById( worker_memory.source_id ) );
+                let source = Game.getObjectById( worker_memory.source_id );
+
+                if( this.shouldStopHarvesting( creep, source ) ) {
+                    worker_memory.source_id = null;
+                    return STATES.MOVE_TO_HARVEST;
+                }
+
+                let harvest_response = this.doHarvest( creep, source );
+
+                switch( harvest_response ) {
+                    case constants.OK:
+                        return;
+                        break;
+                    default:
+                        console.log( 'Unknown case', harvest_response, constants.lookup( harvest_response ) );
+                        break;
+                }
             },
             [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) {
