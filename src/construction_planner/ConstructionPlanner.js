@@ -57,7 +57,7 @@ class ConstructionPlanner {
 
     _getNewPositions( room ) {
         const pending = [];
-        while( this._shouldCreateNewStructure( room ) ) {
+        while( this._shouldCreateNewStructure( room, pending ) ) {
             let position = this._getNewPosition( room, pending );
             pending.push( position );
         }
@@ -67,22 +67,30 @@ class ConstructionPlanner {
     createConstructionSites( room ) {
         if( !this._shouldCreateNewStructure( room ) ) return;
 
+        let suceeded = true;
+
         this
             ._getNewPositions( room )
             .forEach( ( position ) => {
                 console.log( position, this.dry_run );
                 if( this.dry_run ) {
-                    room.visual.circle( position );
+                    room.visual.circle( position, {
+                        fill: 'red',
+                        radius: 0.3
+                    } );
                 } else {
                     console.log( position, this.structure_type );
                     let return_status = room.createConstructionSite( position, this.structure_type );
                     if( return_status !== constants.OK ) {
                         console.log( 'createConstructionSite non OK status', return_status );
+                        suceeded = false;
                     }
                 }
             } );
 
-        this.setHasRun( room, true );
+        if( suceeded ) {
+            this.setHasRun( room, true );
+        }
     }
 }
 

@@ -4,11 +4,13 @@ const Deque = require( '~/lib/deque' ),
     Logger = require( '~/lib/logger' );
 
 const workers = require( '~/workers' ),
-    ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
-    SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
     constants = require( '~/constants' ),
     RoomState = require( '~/room_state/RoomState' ),
     RenewWorker = require( '~/workers/RenewWorker' );
+
+const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
+    SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
+    ContainerPlanner = require( '~/construction_planner/ContainerPlanner' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
@@ -83,6 +85,51 @@ const room_states = [
         construction_planners: [
             new SourceRoadPlanner( 'spawn', Game.spawns[ 'Spawn1' ] ),
             new SourceRoadPlanner( 'controller', Game.spawns[ 'Spawn1' ].room.controller )
+        ]
+    },
+    // Make containers for container farming
+    {
+        isComplete: ( room ) => {
+            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+            return construction_sites.length === 0;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.BUILDER ]: 3,
+            [ workers.types.REPAIRER ]: 1
+        },
+        construction_planners: [
+            new ContainerPlanner( 'container', Game.spawns[ 'Spawn1' ] )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
+            return room.controller.level === 3;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.UPGRADER ]: 3,
+            [ workers.types.REPAIRER ]: 1
+        },
+        construction_planners: []
+    },
+    {
+        isComplete: ( room ) => {
+            let extensions = room
+                .find( FIND_MY_STRUCTURES, {
+                    filter: {
+                        structureType: constants.STRUCTURE_EXTENSION
+                    }
+                } );
+            return extensions.length === 10;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.BUILDER ]: 3,
+            [ workers.types.REPAIRER ]: 1
+        },
+        construction_planners: [
+            new ExtensionPlanner( 'extension-2', Game.spawns[ 'Spawn1' ] )
         ]
     },
     {

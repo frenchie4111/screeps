@@ -17,8 +17,9 @@ class ExtensionPlanner extends ConstructionPlanner {
         this.spawn = spawn;
     }
 
-    _shouldCreateNewStructure( room ) {
-        return this.getNewAllowedStructureCount( room ) > 0;
+    _shouldCreateNewStructure( room, pending=[] ) {
+        return ( this.hasRunBefore( room ) ) &&
+            ( this.getNewAllowedStructureCount( room ) - pending.length ) > 0;
     }
 
     _getNewPosition( room, pending=[] ) {

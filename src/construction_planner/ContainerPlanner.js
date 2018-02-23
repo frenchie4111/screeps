@@ -3,10 +3,11 @@ const constants = require( '~/constants' );
 const ConstructionPlanner = require( './ConstructionPlanner' );
 
 class ContainerPlanner extends ConstructionPlanner {
-    constructor( name, spawn, dry_run ) {
-        super( name, constants.STRUCTURE_ROAD, true );
+    constructor( name, spawn, dry_run, max_sources=2 ) {
+        super( name, constants.STRUCTURE_CONTAINER, dry_run );
         this.name = name;
-        this.spawn = target;
+        this.spawn = spawn;
+        this.max_sources = max_sources;
     }
 
     _getNewPositions( room, pending=[] ) {
@@ -14,7 +15,7 @@ class ContainerPlanner extends ConstructionPlanner {
 
         sources = sources
             .map( ( source ) => {
-                let path = this.target.pos
+                let path = this.spawn.pos
                     .findPathTo( source, {
                         ignoreCreeps: true
                     } );
@@ -29,7 +30,7 @@ class ContainerPlanner extends ConstructionPlanner {
 
         let positions = [];
         for( let i = 0; i < sources.length && i < this.max_sources; i++ ) {
-            positions = positions.concat( sources[ i ].path );
+            positions.push( sources[ i ].path[ sources[ i ].path.length - 2 ] );
         }
 
         positions = positions
