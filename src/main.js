@@ -287,18 +287,19 @@ const handleRoomState = ( room ) => {
                     }
                 } );
 
-            if( renewing_creeps.length === 0 ) {
-                console.log( 'Telling a creep to renew' );
+            if( renewing_creeps.length <= 5 ) {
                 let room_creeps = room
                     .find( FIND_MY_CREEPS, {
                         filter: ( creep ) => {
-                            return RenewWorker.needsRenewing( creep );
+                            return !RenewWorker.isRenewing( creep ) && RenewWorker.needsRenewing( creep );
                         }
                     } );
 
                 room_creeps = _.sortBy( room_creeps, ( creep ) => creep.ticksToLive );
 
                 if( room_creeps.length > 0 ) {
+                    console.log( 'Telling a creep to renew', room_creeps[ 0 ] );
+
                     let temp_worker = new RenewWorker();
                     temp_worker.setCreep( room_creeps[ 0 ] );
                     temp_worker.setRenew( spawn.id );
