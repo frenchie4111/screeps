@@ -1,7 +1,6 @@
 const _ = require( 'lodash' );
 
-const Deque = require( '~/lib/deque' ),
-    Logger = require( '~/lib/logger' );
+const loopItem = require( '~/lib/loopItem' );
 
 const workers = require( '~/workers' ),
     constants = require( '~/constants' ),
@@ -15,33 +14,6 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
 const STATES_VERSION = 2; // Increment this and the code will automatically reset current state on next deploy
-
-const loopItem = ( name, func ) => {
-    logger = new Logger( name );
-    logger.patch();
-
-    try {
-        return func();
-    } catch ( error ) {
-        Memory.error_log = new Deque( Memory.error_log );
-        Memory.error_log.push( {
-            name: name,
-            error: {
-                time: new Date(),
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            }
-        } );
-
-        console.log( 'Error in ' + name );
-        console.log( error );
-        console.log( error.stack );
-    }
-    finally {
-        logger.unpatch();
-    }
-};
 
 const room_states = [
     {
@@ -175,8 +147,22 @@ const spawnCreep = ( spawn, worker_type ) => {
         } );
 };
 
+const getTotalEnergy = ( spawn ) => {
+    let extensions = spawn
+        .room
+        .find( FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: constants.STRUCTURE_EXTENSION
+            }
+        } );
+
+    let extension_total = _.sumBy( extensions, ( extension ) => extension.energy );
+
+    return extension_total + spawn.energy;
+}
+
 const canSpawn = ( spawn ) => {
-    return spawn.energy >= 300;
+    return getTotalEnergy( spawn ) >= 300;
 };
 
 const getNeededSpawns = ( room, worker_counts ) => {
