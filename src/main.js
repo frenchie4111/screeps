@@ -113,11 +113,27 @@ const room_states = [
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
             [ workers.types.CONTAINER_EXTENSION ]: 1,
+            [ workers.types.CONTAINER_BUILDER ]: 3,
+            [ workers.types.CONTAINER_MINER ]: 2,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
+        },
+        construction_planners: [
+            new ExtensionPlanner( 'extension-3', Game.spawns[ 'Spawn1' ] )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
+            return false;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_EXTENSION ]: 1,
             [ workers.types.CONTAINER_HARVESTER ]: 3,
             [ workers.types.CONTAINER_MINER ]: 2,
             [ workers.types.CONTAINER_REPAIRER ]: 1
         },
-        construction_planners: []
+        construction_planners: [
+        ]
     }
 ];
 

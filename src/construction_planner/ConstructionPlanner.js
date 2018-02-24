@@ -88,7 +88,7 @@ class ConstructionPlanner {
                 }
             } );
 
-        if( suceeded ) {
+        if( suceeded && !this.dry_run ) {
             this.setHasRun( room, true );
         }
     }
