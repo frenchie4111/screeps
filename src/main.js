@@ -9,7 +9,8 @@ const workers = require( '~/workers' ),
 
 const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
-    ContainerPlanner = require( '~/construction_planner/ContainerPlanner' );
+    ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
+    ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
@@ -118,7 +119,8 @@ const room_states = [
             [ workers.types.CONTAINER_REPAIRER ]: 1
         },
         construction_planners: [
-            new ExtensionPlanner( 'extension-3', Game.spawns[ 'Spawn1' ] )
+            new ExtensionPlanner( 'extension-3', Game.spawns[ 'Spawn1' ] ),
+            new ExtensionRoadPlanner( 'extension-road-1' )
         ]
     },
     {
@@ -338,7 +340,9 @@ const handleRoomState = ( room ) => {
     current_state
         .construction_planners
         .forEach( ( planner ) => {
-            planner.createConstructionSites( room );
+            loopItem( 'planner-' + planner.name, () => {
+                return planner.createConstructionSites( room );
+            } )
         } );
 }
 
