@@ -10,6 +10,7 @@ const workers = require( '~/workers' ),
 const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
     ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
+    StoragePlanner = require( '~/construction_planner/StoragePlanner' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
@@ -120,7 +121,8 @@ const room_states = [
         },
         construction_planners: [
             new ExtensionPlanner( 'extension-3', Game.spawns[ 'Spawn1' ] ),
-            new ExtensionRoadPlanner( 'extension-road-1' )
+            new ExtensionRoadPlanner( 'extension-road-1' ),
+            new StoragePlanner( 'storage-1', Game.spawns[ 'Spawn1' ] )
         ]
     },
     {
