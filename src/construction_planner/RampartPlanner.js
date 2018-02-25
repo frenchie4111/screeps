@@ -5,13 +5,12 @@ const ConstructionPlanner = require( './ConstructionPlanner' );
 const DISTANCE = 9;
 
 class RampartPlanner extends ConstructionPlanner {
-    constructor( name, spawn, dry_run ) {
+    constructor( name, dry_run ) {
         super( name, constants.STRUCTURE_RAMPART, dry_run );
-        this.spawn = spawn;
         this.color = 'green';
     }
 
-    _getNewPositions( room ) {
+    _getNewPositions( room, spawn ) {
         let direction = [ DISTANCE, DISTANCE ];
         let pending = [];
 
@@ -23,7 +22,7 @@ class RampartPlanner extends ConstructionPlanner {
                 for( let z = 0 - DISTANCE; z <= DISTANCE; z++ ) {
                     wall_direction[ vert_or_horiz ] = z;
 
-                    let position = this._directionToPosition( room, this.spawn.pos, wall_direction );
+                    let position = this._directionToPosition( room, spawn.pos, wall_direction );
                     if( this.isValidConstruction( room, position, pending, [ 'road' ] ) ) {
                         pending.push( position );
                     }

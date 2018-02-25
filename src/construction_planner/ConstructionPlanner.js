@@ -69,29 +69,29 @@ class ConstructionPlanner {
         return room.getPositionAt( start_pos.x + direction[ 0 ], start_pos.y + direction[ 1 ] );
     }
 
-    _shouldCreateNewStructure( room ) {
+    _shouldCreateNewStructure( room, spawn, pending ) {
         return !this.hasRunBefore( room );
     }
 
-    _getNewPosition( room ) {
+    _getNewPosition( room, spawn, pending ) {
         throw new Error( 'Abstract Method' );
     }
 
-    _getNewPositions( room ) {
+    _getNewPositions( room, spawn ) {
         const pending = [];
-        while( this._shouldCreateNewStructure( room, pending ) ) {
-            let position = this._getNewPosition( room, pending );
+        while( this._shouldCreateNewStructure( room, spawn, pending ) ) {
+            let position = this._getNewPosition( room, spawn, pending );
             pending.push( position );
         }
         return pending;
     }
 
-    createConstructionSites( room ) {
+    createConstructionSites( room, spawn ) {
         if( !this._shouldCreateNewStructure( room ) ) return;
 
         let suceeded = true;
 
-        let new_positions = this._getNewPositions( room );
+        let new_positions = this._getNewPositions( room, spawn );
     
         console.log( 'New Position Count', new_positions.length );
     

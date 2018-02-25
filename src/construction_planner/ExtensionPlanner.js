@@ -19,13 +19,12 @@ const IGNORE_DIRECTIONS = [
 ];
 
 class ExtensionPlanner extends ConstructionPlanner {
-    constructor( name, spawn, dry_run=false ) {
+    constructor( name, dry_run=false ) {
         super( name, constants.STRUCTURE_EXTENSION, dry_run );
-        this.spawn = spawn;
         this._direction_lists = {};
     }
 
-    _shouldCreateNewStructure( room, pending=[] ) {
+    _shouldCreateNewStructure( room, spawn, pending=[] ) {
         return (
             ( !this.hasRunBefore( room ) ) &&
             ( this.getNewAllowedStructureCount( room ) - pending.length ) > 0
@@ -126,8 +125,8 @@ class ExtensionPlanner extends ConstructionPlanner {
         return direction_list;
     }
 
-    _getNewPosition( room, pending=[] ) {
-        let start_pos = this.spawn.pos;
+    _getNewPosition( room, spawn, pending=[] ) {
+        let start_pos = spawn.pos;
 
         for( let curr_dist = 1; curr_dist <= MAX_FAR_DIST; curr_dist++ ) {  
             let direction_list;

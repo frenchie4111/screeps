@@ -5,9 +5,8 @@ const ConstructionPlanner = require( './ConstructionPlanner' );
 const DISTANCE = 9;
 
 class WallPlanner extends ConstructionPlanner {
-    constructor( name, spawn, dry_run ) {
+    constructor( name, dry_run ) {
         super( name, constants.STRUCTURE_WALL, dry_run );
-        this.spawn = spawn;
     }
 
     _nearThing( room, position ) {
@@ -22,7 +21,7 @@ class WallPlanner extends ConstructionPlanner {
         return things.length > 0;
     }
 
-    _getNewPositions( room ) {
+    _getNewPositions( room, spawn ) {
         let direction = [ DISTANCE, DISTANCE ];
         let pending = [];
         let debug = [];
@@ -35,7 +34,7 @@ class WallPlanner extends ConstructionPlanner {
                 for( let z = 0 - DISTANCE; z <= DISTANCE; z++ ) {
                     wall_direction[ vert_or_horiz ] = z;
 
-                    let position = this._directionToPosition( room, this.spawn.pos, wall_direction );
+                    let position = this._directionToPosition( room, spawn.pos, wall_direction );
                     if( this.isValidConstruction( room, position, pending ) && !this._nearThing( room, position ) ) {
                         pending.push( position );
                     }

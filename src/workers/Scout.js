@@ -4,7 +4,7 @@ const constants = require( '~/constants' );
 
 const Worker = require( './Worker' );
 
-const MAP_VERSION = 3;
+const MAP_VERSION = 4;
 
 const directions = [
     constants.RIGHT,
@@ -39,7 +39,7 @@ class Scout extends Worker {
         room_map[ room.name ]._version = MAP_VERSION;
         room_map[ room.name ].source_ids = room.find( FIND_SOURCES ).map( ( source ) => source.id );
         room_map[ room.name ].mineral_ids = room.find( FIND_MINERALS ).map( ( mineral ) => mineral.id );
-        room_map[ room.name ].controller_id = room.controller.id;
+        room_map[ room.name ].controller_id = room.controller ? room.controller.id : null;
         room_map[ room.name ].exits = Game.map.describeExits( room.name );
         room_map[ room.name ].saw_enemies = ( room.find( FIND_HOSTILE_CREEPS ).length > 0 || room.find( FIND_HOSTILE_STRUCTURES ).length > 0 );
     }

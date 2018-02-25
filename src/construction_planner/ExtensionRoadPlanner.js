@@ -14,7 +14,7 @@ class ExtensionRoadPlanner extends ConstructionPlanner {
         super( name, constants.STRUCTURE_ROAD, dry_run );
     }
 
-    _getNewPositions( room ) {
+    _getNewPositions( room, spawn ) {
         let extensions = room
             .find( constants.FIND_MY_STRUCTURES, {
                 filter: {
