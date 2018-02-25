@@ -32,14 +32,36 @@ class RoomManager {
         return types[ type ][ room_state_memory.current_state ];
     };
 
+    garbageCollectRoomCreeps( room ) {
+        if( !room.memory.creeps ) return;
+
+        let remove = [];
+        for( let i in room.memory.creeps ) {
+            let creep_name = room.memory.creeps[ i ]
+
+            if( !Game.creeps[ creep_name ] ) {
+                remove.push( i );
+            }
+        }
+        remove.forEach( ( i ) => room.memory.creeps.splice( i ) );
+    }
+
+    getRoomCreeps( room ) {
+        return _
+            .map( room.memory.creeps, ( creep_name ) => {
+                return Game.creeps[ creep_name ];
+            } );
+    }
+
     handleSpawns( room, spawn, current_state ) {
         let manager = new SpawnManager();
-        manager.doManage( room, spawn, current_state );
+        manager.doManage( room, spawn, current_state, this.getRoomCreeps( room ) );
     }
 
     handleCreeps( room, spawn, current_state, assigner ) {
-        room
-            .find( FIND_MY_CREEPS )
+        const creeps = this.getRoomCreeps( room );
+
+        creeps
             .forEach( ( creep ) => {
                 loopItem( 'creep-work-' + creep.name, () => {
                     const WorkerClass = workers.getClass( creep.memory.worker_type );
@@ -103,6 +125,8 @@ class RoomManager {
 
         const assigner = new Assigner( room );
         assigner.garbageCollect();
+
+        this.garbageCollectRoomCreeps( room );
 
         while( current_state.isComplete( room ) ) {
             console.log( 'Room Progressed to next state' );

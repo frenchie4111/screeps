@@ -33,21 +33,25 @@ class SpawnManager {
         return extension_total + spawn.energy;
     }
 
-    spawnCreep( spawn, worker_type ) {
+    spawnCreep( room, spawn, worker_type ) {
         let WorkerClass = workers.getClass( worker_type );
         let worker = new WorkerClass();
         let parts = worker.getBody( this.getTotalEnergy( spawn ) );
+        let name = worker_type + '-' + Game.time.toString();
 
         let spawn_response = spawn
             .spawnCreep( 
                 parts,
-                worker_type + '-' + Game.time.toString(), 
+                name, 
                 {
                     memory: {
                         worker_type: worker_type
                     }
                 }
             );
+
+        if( !room.memory.hasOwnProperty( 'creeps' ) )  room.memory.creeps = [];
+        room.memory.creeps.push( name );
 
         console.log( 'spawnCreep', spawn_response, constants.lookup( spawn_response ) );
     };
@@ -56,12 +60,9 @@ class SpawnManager {
         return this.getTotalEnergy( spawn ) === this.getTotalEnergyCapacity( spawn );
     };
     
-    getNeededSpawns( room, worker_counts ) {
-        // const all_creeps = room.find( FIND_MY_CREEPS );
-        const all_creeps = _.filter( Game.creeps, ( creep ) => creep.my );
-
+    getNeededSpawns( room, current_creeps, worker_counts ) {
         let current_counts = _
-            .reduce( all_creeps, ( counts, creep ) => {
+            .reduce( current_creeps, ( counts, creep ) => {
                 if( !counts.hasOwnProperty( creep.memory.worker_type ) ) counts[ creep.memory.worker_type ] = 0;
                 counts[ creep.memory.worker_type ]++;
                 return counts;
@@ -79,18 +80,18 @@ class SpawnManager {
         return needed_counts;
     }
 
-    doManage( room, spawn, current_state ) {
+    doManage( room, spawn, current_state, current_creeps ) {
         if( canSpawn( spawn ) ) {
-            const needed_spawns = this.getNeededSpawns( room, current_state.worker_counts );
+            const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
 
             if( Object.keys( needed_spawns ).length > 0 ) {
                 console.log( 'Spawning', JSON.stringify( needed_spawns ) );
 
                 if( needed_spawns[ workers.types.HARVESTER ] ) {
-                    this.spawnCreep( spawn, workers.types.HARVESTER );
+                    this.spawnCreep( room, spawn, workers.types.HARVESTER );
                 }
 
-                this.spawnCreep( spawn, Object.keys( needed_spawns )[ 0 ] )
+                this.spawnCreep( room, spawn, Object.keys( needed_spawns )[ 0 ] )
             } else {
                 let renewing_creeps = room
                     .find( FIND_MY_CREEPS, {
