@@ -1,6 +1,7 @@
 const constants = require( '~/constants' );
 
-const RenewWorker = require( '~/workers/RenewWorker' );
+const workers = require( '~/workers' ),
+    RenewWorker = require( '~/workers/RenewWorker' );
 
 const MAX_RENEWING = 2;
 
@@ -77,11 +78,15 @@ class SpawnManager {
                 return needed;
             }, {} );
 
+        console.log( 'needed_counts', needed_counts );
+
         return needed_counts;
     }
 
     doManage( room, spawn, current_state, current_creeps ) {
-        if( canSpawn( spawn ) ) {
+        if( this.canSpawn( spawn ) ) {
+            console.log( 'can spawn' );
+
             const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
 
             if( Object.keys( needed_spawns ).length > 0 ) {
@@ -89,6 +94,9 @@ class SpawnManager {
 
                 if( needed_spawns[ workers.types.HARVESTER ] ) {
                     this.spawnCreep( room, spawn, workers.types.HARVESTER );
+                }
+                if( needed_spawns[ workers.types.CONTAINER_MINER ] ) {
+                    this.spawnCreep( room, spawn, workers.types.CONTAINER_MINER );
                 }
 
                 this.spawnCreep( room, spawn, Object.keys( needed_spawns )[ 0 ] )

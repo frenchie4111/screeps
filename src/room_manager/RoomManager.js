@@ -40,13 +40,19 @@ class RoomManager {
             let creep_name = room.memory.creeps[ i ]
 
             if( !Game.creeps[ creep_name ] ) {
+                console.log( 'Oops, lost creep' + creep_name );
                 remove.push( i );
             }
         }
-        remove.forEach( ( i ) => room.memory.creeps.splice( i ) );
+        remove.forEach( ( i ) => room.memory.creeps.splice( i, 1 ) );
     }
 
     getRoomCreeps( room ) {
+        if( !room.memory.creeps ) {
+            console.log( 'init creeps' );
+            room.memory.creeps = room.find( FIND_MY_CREEPS ).map( ( creep ) => creep.name );
+        }
+
         return _
             .map( room.memory.creeps, ( creep_name ) => {
                 return Game.creeps[ creep_name ];
@@ -120,7 +126,7 @@ class RoomManager {
     doManage( room ) {
         const current_state = this._getCurrentState( room );
         const spawns = room.find( FIND_MY_SPAWNS );
-        let has_spawn = spawns.length > 0;
+        const has_spawn = spawns.length > 0;
         const spawn = spawns[ 0 ]; // TODO figure out how to do this when multi-spawns
 
         const assigner = new Assigner( room );
@@ -135,13 +141,23 @@ class RoomManager {
             return;
         }
 
-        if( this.has_spawn ) {
-            this.handleSpawns( room, spawn, current_state );
+        if( has_spawn ) {
+            loopItem( 'spawn', () => {
+                this.handleSpawns( room, spawn, current_state );
+            } );
         }
 
-        this.handleCreeps( room, spawn, current_state, assigner );
-        this.handleConstruction( room, spawn, current_state );
-        this.handleTowers( room, spawn, current_state );
+        loopItem( 'creeps', () => {
+            this.handleCreeps( room, spawn, current_state, assigner );
+        } );
+        
+        loopItem( 'construction', () => {
+            this.handleConstruction( room, spawn, current_state );
+        } );
+        
+        loopItem( 'towers', () => {
+            this.handleTowers( room, spawn, current_state );
+        } );
     }
 };
 
