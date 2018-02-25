@@ -12,6 +12,8 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
     StoragePlanner = require( '~/construction_planner/StoragePlanner' ),
     FirstTowerPlanner = require( '~/construction_planner/FirstTowerPlanner' ),
+    WallPlanner = require( '~/construction_planner/WallPlanner' ),
+    RampartPlanner = require( '~/construction_planner/RampartPlanner' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
@@ -175,7 +177,9 @@ const room_states = [
         },
         construction_planners: [
             new ExtensionPlanner( 'extension-4', Game.spawns[ 'Spawn1' ] ),
-            new ExtensionRoadPlanner( 'extension-road-2' )
+            new ExtensionRoadPlanner( 'extension-road-2' ),
+            new WallPlanner( 'wall-planner-1', Game.spawns[ 'Spawn1' ] ),
+            new RampartPlanner( 'rampart-planner-1', Game.spawns[ 'Spawn1' ] )
         ]
     },
     {

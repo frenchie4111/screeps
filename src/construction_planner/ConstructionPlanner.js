@@ -5,6 +5,7 @@ class ConstructionPlanner {
         this.structure_type = structure_type;
         this.dry_run = dry_run;
         this.name = name;
+        this.color = 'red';
     }
 
     hasRunBefore( room ) {
@@ -39,13 +40,34 @@ class ConstructionPlanner {
         return max_count - current_count - current_construction_site_count;
     };
 
-    isValidConstruction( room, position, pending=[] ) {
+    filterForConstructionBlockers( thing ) {
+        return (
+            [ 'creep' ].indexOf( thing.type ) === -1 &&
+            [ 'plain', 'swamp' ].indexOf( thing.terrain ) === -1
+        );
+    }
+
+    isValidConstruction( room, position, pending=[], ignore_structures=[] ) {
+        let things = room.lookAt( position );
+        things = _.filter( things, this.filterForConstructionBlockers )
+        things = _
+            .filter( things, ( thing ) => {
+                if( thing.type === 'structure' ) {
+                    return ignore_structures.indexOf( thing.structure.structureType ) === -1;
+                }
+                return true;
+            } );
+
         return ( 
             position && 
-            _.filter( room.lookAt( position ), ( thing ) => thing.type !== 'creep' ).length === 1 && 
+            things.length === 0 && 
             !_.some( pending, ( pending_location ) => position.isEqualTo( pending_location ) )
         );
     };
+
+    _directionToPosition( room, start_pos, direction ) {
+        return room.getPositionAt( start_pos.x + direction[ 0 ], start_pos.y + direction[ 1 ] );
+    }
 
     _shouldCreateNewStructure( room ) {
         return !this.hasRunBefore( room );
@@ -69,15 +91,18 @@ class ConstructionPlanner {
 
         let suceeded = true;
 
-        this
-            ._getNewPositions( room )
+        let new_positions = this._getNewPositions( room );
+    
+        console.log( 'New Position Count', new_positions.length );
+    
+        new_positions
             .forEach( ( position ) => {
-                console.log( position, this.dry_run );
                 if( this.dry_run ) {
-                    room.visual.circle( position, {
-                        fill: 'red',
-                        radius: 0.3
-                    } );
+                    room.visual
+                        .circle( position, {
+                            fill: this.color,
+                            radius: 0.3
+                        } );
                 } else {
                     console.log( position, this.structure_type );
                     let return_status = room.createConstructionSite( position, this.structure_type );
