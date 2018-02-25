@@ -10,7 +10,22 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getTarget( creep ) {
+        // Tower first
         let capacity_structure = creep.pos
+            .findClosestByPath( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return (
+                        structure.structureType === constants.STRUCTURE_TOWER &&
+                        structure.energy < structure.energyCapacity
+                    );
+                }
+            } );
+
+        if( capacity_structure ) {
+            return capacity_structure;
+        }
+
+        capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return ( 'energyCapacity' in structure ) &&

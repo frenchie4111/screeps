@@ -18,6 +18,8 @@ const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
 const STATES_VERSION = 3; // Increment this and the code will automatically reset current state on next deploy
 
+const MAX_RENEWING = 2;
+
 const room_states = [
     {
         isComplete: ( room ) => {
@@ -139,6 +141,41 @@ const room_states = [
             new ExtensionPlanner( 'extension-3', Game.spawns[ 'Spawn1' ] ),
             new ExtensionRoadPlanner( 'extension-road-1' ),
             new StoragePlanner( 'storage-1', Game.spawns[ 'Spawn1' ] )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
+            return room.controller.level >= 5;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_EXTENSION ]: 1,
+            [ workers.types.CONTAINER_BUILDER ]: 3,
+            [ workers.types.CONTAINER_MINER ]: 2,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
+        },
+        construction_planners: []
+    },
+    {
+        isComplete: ( room ) => {
+            let extensions = room
+                .find( FIND_MY_STRUCTURES, {
+                    filter: {
+                        structureType: constants.STRUCTURE_EXTENSION
+                    }
+                } );
+            return extensions.length >= 30;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_EXTENSION ]: 1,
+            [ workers.types.CONTAINER_BUILDER ]: 3,
+            [ workers.types.CONTAINER_MINER ]: 2,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
+        },
+        construction_planners: [
+            new ExtensionPlanner( 'extension-4', Game.spawns[ 'Spawn1' ] ),
+            new ExtensionRoadPlanner( 'extension-road-2' )
         ]
     },
     {
@@ -292,6 +329,27 @@ class Assigner {
     }
 }
 
+const handleTower = ( tower ) => {
+    let hostile_creeps = tower.room.find( FIND_HOSTILE_CREEPS );
+
+    if( hostile_creeps.length > 0 ) {
+        console.log( 'Attacking Hostile Creep' );
+        return tower.attack( hostile_creeps[ 0 ] );
+    }
+
+    let damaged_creeps = tower.room
+        .find( FIND_MY_CREEPS, {
+            filter: ( creep ) => {
+                return creep.hits < creep.hitsMax
+            }
+        } );
+
+    if( damaged_creeps.length > 0 ) {
+        console.log( 'Healing Creep' );
+        return tower.heal( damaged_creeps[ 0 ] );
+    }
+};
+
 const handleRoomState = ( room ) => {
     const current_state = _getCurrentState( room );
     const assigner = new Assigner( room );
@@ -299,6 +357,7 @@ const handleRoomState = ( room ) => {
 
     if( current_state.isComplete( room ) ) {
         console.log( 'Room Progressed to next state' );
+        Game.notify( 'Room progressed to next state' );
         room.memory._state.current_state++;
         return;
     }
@@ -325,7 +384,7 @@ const handleRoomState = ( room ) => {
                     }
                 } );
 
-            if( renewing_creeps.length <= 5 ) {
+            if( renewing_creeps.length <= MAX_RENEWING ) {
                 let room_creeps = room
                     .find( FIND_MY_CREEPS, {
                         filter: ( creep ) => {
@@ -362,6 +421,18 @@ const handleRoomState = ( room ) => {
         .forEach( ( planner ) => {
             loopItem( 'planner-' + planner.name, () => {
                 return planner.createConstructionSites( room );
+            } )
+        } );
+
+    room
+        .find( FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: STRUCTURE_TOWER
+            }
+        } )
+        .forEach( ( tower ) => {
+            loopItem( 'tower-' + tower.room.name + '-' + tower.id, () => {
+                return handleTower( tower );
             } )
         } );
 }
