@@ -35,7 +35,9 @@ module.exports.loop = function() {
     loopItem( 'handleRoomState', () => {
         let room_manager = new RoomManager();
         for( let i in Game.rooms ) {
-            room_manager.doManage( Game.rooms[ i ] );
+            loopItem( 'doManage-' + i, () => {
+                room_manager.doManage( Game.rooms[ i ] );
+            } );
         }
     } );
 
