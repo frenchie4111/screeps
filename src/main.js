@@ -154,7 +154,8 @@ const room_states = [
             [ workers.types.CONTAINER_EXTENSION ]: 1,
             [ workers.types.CONTAINER_BUILDER ]: 3,
             [ workers.types.CONTAINER_MINER ]: 2,
-            [ workers.types.CONTAINER_REPAIRER ]: 1
+            [ workers.types.CONTAINER_REPAIRER ]: 1,
+            [ workers.types.SCOUT ]: 1
         },
         construction_planners: []
     },
@@ -265,7 +266,8 @@ const canSpawn = ( spawn ) => {
 };
 
 const getNeededSpawns = ( room, worker_counts ) => {
-    const all_creeps = room.find( FIND_MY_CREEPS );
+    // const all_creeps = room.find( FIND_MY_CREEPS );
+    const all_creeps = _.filter( Game.creeps, ( creep ) => creep.my );
 
     let current_counts = _
         .reduce( all_creeps, ( counts, creep ) => {
@@ -409,16 +411,16 @@ const handleRoomState = ( room ) => {
         }
     }
 
-    room
-        .find( FIND_MY_CREEPS )
-        .forEach( ( creep ) => {
-            loopItem( 'creep-work-' + creep.name, () => {
-                const WorkerClass = workers.getClass( creep.memory.worker_type );
-                const worker = new WorkerClass( assigner );
-                worker.setCreep( creep );
-                worker.doWork();
-            } );
-        } );
+    // room
+    //     .find( FIND_MY_CREEPS )
+    //     .forEach( ( creep ) => {
+    //         loopItem( 'creep-work-' + creep.name, () => {
+    //             const WorkerClass = workers.getClass( creep.memory.worker_type );
+    //             const worker = new WorkerClass( assigner );
+    //             worker.setCreep( creep );
+    //             worker.doWork();
+    //         } );
+    //     } );
 
     current_state
         .construction_planners
@@ -468,6 +470,19 @@ module.exports.loop = function() {
 
     loopItem( 'handleRoomState', () => {
         handleRoomState( room );
+    } );
+
+    loopItem( 'creep-work', () => {
+        _
+            .filter( Game.creeps, ( creep ) => creep.my )
+            .forEach( ( creep ) => {
+                loopItem( 'creep-work-' + creep.name, () => {
+                    const WorkerClass = workers.getClass( creep.memory.worker_type );
+                    const worker = new WorkerClass( new Assigner( creep.room ) );
+                    worker.setCreep( creep );
+                    worker.doWork();
+                } );
+            } );
     } );
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );

@@ -8,6 +8,7 @@ const worker_type_conversion = {
     CONTAINER_EXTENSION: require( './ContainerExtension' ),
     CONTAINER_BUILDER: require( './ContainerBuilder' ),
     CONTAINER_REPAIRER: require( './ContainerRepairer' ),
+    SCOUT: require( './Scout' ),
 };
 
 const types = {
@@ -21,6 +22,7 @@ const types = {
     CONTAINER_EXTENSION: 'CONTAINER_EXTENSION',
     CONTAINER_BUILDER: 'CONTAINER_BUILDER',
     CONTAINER_REPAIRER: 'CONTAINER_REPAIRER',
+    SCOUT: 'SCOUT',
 };
 
 module.exports = {

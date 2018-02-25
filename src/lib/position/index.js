@@ -10,3 +10,7 @@ module.exports.equal = ( a, b ) => {
 module.exports.clone = ( p ) => {
     return JSON.parse( JSON.stringify( p ) );
 };
+
+module.exports.fromJSON = ( p ) => {
+    return new RoomPosition( p.x, p.y, p.roomName );
+}
