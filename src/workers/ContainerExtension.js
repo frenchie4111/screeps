@@ -6,7 +6,7 @@ const ContainerHarvester = require( './ContainerHarvester' );
 
 class ContainerExtension extends ContainerHarvester {
     constructor( assigner ) {
-        super( assigner, false );
+        super( assigner );
     }
 
     getTarget( creep ) {

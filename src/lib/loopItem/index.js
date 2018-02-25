@@ -2,7 +2,7 @@ const Logger = require( '~/lib/logger' ),
     Deque = require( '~/lib/Deque' );
 
 const loopItem = ( name, func ) => {
-    logger = new Logger( name );
+    let logger = new Logger( name );
     logger.patch();
 
     try {

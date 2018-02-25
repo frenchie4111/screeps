@@ -11,16 +11,17 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
     ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
     StoragePlanner = require( '~/construction_planner/StoragePlanner' ),
+    FirstTowerPlanner = require( '~/construction_planner/FirstTowerPlanner' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
-const STATES_VERSION = 2; // Increment this and the code will automatically reset current state on next deploy
+const STATES_VERSION = 3; // Increment this and the code will automatically reset current state on next deploy
 
 const room_states = [
     {
         isComplete: ( room ) => {
-            return room.controller.level === 2
+            return room.controller.level >= 2
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
@@ -30,42 +31,13 @@ const room_states = [
     },
     {
         isComplete: ( room ) => {
-            let extensions = room
+            let containers = room
                 .find( FIND_MY_STRUCTURES, {
                     filter: {
-                        structureType: constants.STRUCTURE_EXTENSION
+                        structureType: STRUCTURE_CONTAINER
                     }
                 } );
-            return extensions.length === 5;
-        },
-        worker_counts: {
-            [ workers.types.BUILDER ]: 2,
-            [ workers.types.HARVESTER ]: 2
-        },
-        construction_planners: [
-            new ExtensionPlanner( Game.spawns[ 'Spawn1' ] )
-        ]
-    },
-    {
-        isComplete: ( room ) => {
-            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
-            return construction_sites.length === 0;
-        },
-        worker_counts: {
-            [ workers.types.HARVESTER ]: 1,
-            [ workers.types.BUILDER ]: 3,
-            [ workers.types.REPAIRER ]: 1
-        },
-        construction_planners: [
-            new SourceRoadPlanner( 'spawn', Game.spawns[ 'Spawn1' ] ),
-            new SourceRoadPlanner( 'controller', Game.spawns[ 'Spawn1' ].room.controller )
-        ]
-    },
-    // Make containers for container farming
-    {
-        isComplete: ( room ) => {
-            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
-            return construction_sites.length === 0;
+            return containers.length >= 2;
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
@@ -78,12 +50,46 @@ const room_states = [
     },
     {
         isComplete: ( room ) => {
-            return room.controller.level === 3;
+            let extensions = room
+                .find( FIND_MY_STRUCTURES, {
+                    filter: {
+                        structureType: constants.STRUCTURE_EXTENSION
+                    }
+                } );
+            return extensions.length >= 5;
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
-            [ workers.types.UPGRADER ]: 3,
-            [ workers.types.REPAIRER ]: 1
+            [ workers.types.CONTAINER_BUILDER ]: 2,
+            [ workers.types.CONTAINER_MINER ]: 2
+        },
+        construction_planners: [
+            new ExtensionPlanner( Game.spawns[ 'Spawn1' ] )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
+            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+            return construction_sites.length >= 0;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_BUILDER ]: 3,
+            [ workers.types.CONTAINER_REPAIRER ]: 1
+        },
+        construction_planners: [
+            new SourceRoadPlanner( 'spawn', Game.spawns[ 'Spawn1' ] ),
+            new SourceRoadPlanner( 'controller', Game.spawns[ 'Spawn1' ].room.controller )
+        ]
+    },
+    {
+        isComplete: ( room ) => {
+            return room.controller.level >= 3;
+        },
+        worker_counts: {
+            [ workers.types.HARVESTER ]: 1,
+            [ workers.types.CONTAINER_HARVESTER ]: 3,
+            [ workers.types.CONATINER_REPAIRER ]: 1
         },
         construction_planners: []
     },
@@ -105,12 +111,22 @@ const room_states = [
             [ workers.types.CONTAINER_REPAIRER ]: 1
         },
         construction_planners: [
-            new ExtensionPlanner( 'extension-2', Game.spawns[ 'Spawn1' ] )
+            new ExtensionPlanner( 'extension-2', Game.spawns[ 'Spawn1' ] ),
+            new FirstTowerPlanner( 'tower-1', Game.spawns[ 'Spawn1' ] )
         ]
     },
     {
         isComplete: ( room ) => {
-            return false;
+            let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+
+            let storages = room
+                .find( FIND_MY_STRUCTURES, {
+                    filter: {
+                        structureType: STRUCTURE_STORAGE
+                    }
+                } );
+
+            return construction_sites.length === 0 && storages.length > 0;
         },
         worker_counts: {
             [ workers.types.HARVESTER ]: 1,
@@ -255,9 +271,11 @@ class Assigner {
         switch( type ) {
             case constants.STRUCTURE_CONTAINER:
                 let previously_assigned = this._getPreviouslyAssigned( type );
+
                 let unassigned_structures = creep.room
                     .find( FIND_STRUCTURES, {
                         filter: ( structure ) => {
+                            console.log( 'Considering structure', structure, previously_assigned.hasOwnProperty( structure.id ) )
                             return (
                                 structure.structureType === type &&
                                 !previously_assigned.hasOwnProperty( structure.id )

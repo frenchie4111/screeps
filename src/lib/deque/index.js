@@ -8,7 +8,7 @@ class Deque {
         this.queue.push( item );
 
         if( this.queue.length > this.maxlen ) {
-            this.queue.pop();
+            this.queue.pop(0);
         }
     }
 

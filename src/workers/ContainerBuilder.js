@@ -8,10 +8,22 @@ class ContainerBuilder extends ContainerHarvester {
     getTarget( creep ) {
         console.log( 'getTarget' );
 
-        const construction_sites = creep.room.find( FIND_MY_CONSTRUCTION_SITES );
-        if( construction_sites.length > 0 ) {
-            return construction_sites[ 0 ];
+        let construction_site = creep.pos
+            .findClosestByPath( FIND_MY_CONSTRUCTION_SITES, {
+                filter: {
+                    structureType: constants.STRUCTURE_ROAD
+                }
+            } );
+        if( construction_site ) {
+            return construction_site;
         }
+
+        construction_site = creep.pos
+            .findClosestByPath( FIND_MY_CONSTRUCTION_SITES );
+        if( construction_site ) {
+            return construction_site;
+        }
+        
         // No more sites, revert to HarvestWorker
         let super_target = super.getTarget( creep );
         console.log( 'super_target', super_target );

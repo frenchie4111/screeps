@@ -42,7 +42,7 @@ class ConstructionPlanner {
     isValidConstruction( room, position, pending=[] ) {
         return ( 
             position && 
-            room.lookAt( position ).length === 1 && 
+            _.filter( room.lookAt( position ), ( thing ) => thing.type !== 'creep' ).length === 1 && 
             !_.some( pending, ( pending_location ) => position.isEqualTo( pending_location ) )
         );
     };

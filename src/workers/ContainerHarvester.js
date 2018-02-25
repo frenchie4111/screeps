@@ -5,9 +5,8 @@ const constants = require( '~/constants' );
 const HarvestWorker = require( './HarvestWorker' );
 
 class ContainerHarvester extends HarvestWorker {
-    constructor( assigner, can_harvest=true ) {
+    constructor( assigner ) {
         super( assigner );
-        this.can_harvest = can_harvest;
     }
 
     shouldStopHarvesting( creep, container ) {
@@ -28,10 +27,6 @@ class ContainerHarvester extends HarvestWorker {
                     );
                 }
             } );
-
-        if( !container && this.can_harvest ) {
-            return super.getSource( creep );
-        }
 
         return container;
     }

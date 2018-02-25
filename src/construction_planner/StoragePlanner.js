@@ -2,7 +2,7 @@ const constants = require( '~/constants' );
 
 const ConstructionPlanner = require( './ConstructionPlanner' );
 
-class SourceRoadPlanner extends ConstructionPlanner {
+class StoragePlanner extends ConstructionPlanner {
     constructor( name, spawn, dry_run ) {
         super( name, constants.STRUCTURE_STORAGE, dry_run );
         this.spawn = spawn;
@@ -13,4 +13,4 @@ class SourceRoadPlanner extends ConstructionPlanner {
     }
 }
 
-module.exports = SourceRoadPlanner;
+module.exports = StoragePlanner;

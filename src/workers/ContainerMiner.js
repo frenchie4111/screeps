@@ -11,7 +11,10 @@ let STATES = {
     HARVESTING: 'HARVESTING'
 };
 
-class ContainerMinerWorker extends RenewWorker {
+const MAX_WORK_PARTS = 6;
+const MAX_MOVE_PARTS = 3;
+
+class ContainerMiner extends RenewWorker {
     constructor( assigner ) {
         super( STATES.MOVE_TO_CONTAINER );
         this.assigner = assigner;
@@ -21,9 +24,18 @@ class ContainerMinerWorker extends RenewWorker {
         let body = [ constants.MOVE ];
         let remaining_energy = ( available_energy - constants.BODYPART_COST[ constants.MOVE ] );
 
-        while( remaining_energy > constants.BODYPART_COST[ constants.WORK ] ) {
+        let work_parts = 0;
+        while( remaining_energy > constants.BODYPART_COST[ constants.WORK ] && work_parts < MAX_WORK_PARTS ) {
             remaining_energy -= constants.BODYPART_COST[ constants.WORK ];
             body.push( constants.WORK );
+            work_parts++;
+        }
+
+        let move_parts = 1;
+        while( remaining_energy > constants.BODYPART_COST[ constants.MOVE ] && move_parts < MAX_MOVE_PARTS ) {
+            remaining_energy -= constants.BODYPART_COST[ constants.MOVE ];
+            body.push( constants.MOVE );
+            move_parts++;
         }
 
         return body;
@@ -38,7 +50,10 @@ class ContainerMinerWorker extends RenewWorker {
 
                 let target = Game.getObjectById( worker_memory.assigned_contianer_id );
 
-                if( position.equal( creep.pos, target.pos ) ) return STATES.HARVESTING;
+                if( position.equal( creep.pos, target.pos ) ) return STATES.HARVESTING
+                else {
+                    console.log( creep.pos, target.pos );
+                };
 
                 this.moveTo( target );
             },
@@ -47,10 +62,11 @@ class ContainerMinerWorker extends RenewWorker {
                     let source = creep.pos.findClosestByPath( FIND_SOURCES );
                     worker_memory.source_id = source.id;
                 }
+
                 creep.harvest( Game.getObjectById( worker_memory.source_id ) );
             }
         }
     }
 }
 
-module.exports = ContainerMinerWorker;
+module.exports = ContainerMiner;

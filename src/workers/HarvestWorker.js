@@ -18,7 +18,11 @@ class HarvestWorker extends RenewWorker {
 
     getSource( creep ) {
         let sources = creep.room.find( FIND_SOURCES );
-        let source = creep.pos.findClosestByPath( sources );
+        let source = creep.pos.findClosestByPath( sources, {
+            filter: ( source ) => {
+                return ( source.energy > 50 );
+            }
+        } );
 
         if( !source ) {
             console.log( creep.id, ' couldnt find available source' );
@@ -104,9 +108,15 @@ class HarvestWorker extends RenewWorker {
 
                 switch( harvest_response ) {
                     case constants.OK:
-                        if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
+                        if( this.isFull() ) {
+                            worker_memory.source_id = null;
+                            return STATES.MOVE_TO_TRANSFER;
+                        }
                         return;
                         break;
+                    case constants.ERR_NOT_ENOUGH_ENERGY:
+                        worker_memory.source_id = null;
+                        break;    
                     default:
                         console.log( 'Unknown case', harvest_response, constants.lookup( harvest_response ) );
                         break;

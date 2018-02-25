@@ -3,7 +3,7 @@ const worker_type_conversion = {
     BUILDER: require( './BuildWorker' ),
     UPGRADER: require( './UpgradeWorker' ),
     REPAIRER: require( './RepairWorker' ),
-    CONTAINER_MINER: require( './ContainerMinerWorker' ),
+    CONTAINER_MINER: require( './ContainerMiner' ),
     CONTAINER_HARVESTER: require( './ContainerHarvester' ),
     CONTAINER_EXTENSION: require( './ContainerExtension' ),
     CONTAINER_BUILDER: require( './ContainerBuilder' ),
