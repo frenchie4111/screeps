@@ -55,6 +55,10 @@ class SpawnManager {
         room.memory.creeps.push( name );
 
         console.log( 'spawnCreep', spawn_response, constants.lookup( spawn_response ) );
+
+        if( spawn_response !== OK ) {
+            throw new Error( 'non 0 response from spawn' );
+        }
     };
 
     canSpawn( spawn ) {
@@ -78,55 +82,55 @@ class SpawnManager {
                 return needed;
             }, {} );
 
-        console.log( 'needed_counts', needed_counts );
-
         return needed_counts;
+    }
+    
+    findCurrentlyRenewingCreeps( creeps ) {
+        return _.filter( creeps, ( creep ) => RenewWorker.isRenewing( creep ) );
+    }
+
+    findCreepsToRenew( creeps ) {
+        let renewing_creeps = _.filter( creeps, ( creep ) => !RenewWorker.isRenewing( creep ) && RenewWorker.needsRenewing( creep ) );
+        renewing_creeps = _.sortBy( renewing_creeps, ( creep ) => creep.ticksToLive );
+        return renewing_creeps;
     }
 
     doManage( room, spawn, current_state, current_creeps ) {
-        if( this.canSpawn( spawn ) ) {
-            console.log( 'can spawn' );
+        let creeps_to_renew = this.findCreepsToRenew( current_creeps );
+        let currently_renewing_creeps = this.findCurrentlyRenewingCreeps( current_creeps );
 
-            const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
+        if( currently_renewing_creeps.length < MAX_RENEWING ) {
+            if( creeps_to_renew.length > 0 ) {
+                let temp_worker = new RenewWorker();
+                temp_worker.setCreep( creeps_to_renew[ 0 ] );
+                temp_worker.setRenew( spawn.id );
+            } else { // Spawn
+                const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
+                const needed_spawns_keys = Object.keys( needed_spawns );
 
-            if( Object.keys( needed_spawns ).length > 0 ) {
-                console.log( 'Spawning', JSON.stringify( needed_spawns ) );
+                if( needed_spawns_keys.length > 0 ) {
+                    let spawn_type = needed_spawns_keys[ 0 ];
 
-                if( needed_spawns[ workers.types.HARVESTER ] ) {
-                    this.spawnCreep( room, spawn, workers.types.HARVESTER );
-                }
-                if( needed_spawns[ workers.types.CONTAINER_MINER ] ) {
-                    this.spawnCreep( room, spawn, workers.types.CONTAINER_MINER );
-                }
+                    if( needed_spawns[ workers.types.CONTAINER_MINER ] ) {
+                        spawn_type = workers.types.CONTAINER_MINER;
+                    }
+                    if( needed_spawns[ workers.types.HARVESTER ] ) {
+                        spawn_type = workers.types.HARVESTER;
+                    }
 
-                this.spawnCreep( room, spawn, Object.keys( needed_spawns )[ 0 ] )
-            } else {
-                let renewing_creeps = room
-                    .find( FIND_MY_CREEPS, {
-                        filter: ( creep ) => {
-                            if( creep ) {
-                                return RenewWorker.isRenewing( creep );
-                            }
-                            return false;
-                        }
-                    } );
+                    let current_energy = this.getTotalEnergy( spawn );
+                    let energy_capacity = this.getTotalEnergyCapacity( spawn );
 
-                if( renewing_creeps.length <= MAX_RENEWING ) {
-                    let room_creeps = room
-                        .find( FIND_MY_CREEPS, {
-                            filter: ( creep ) => {
-                                return !RenewWorker.isRenewing( creep ) && RenewWorker.needsRenewing( creep );
-                            }
-                        } );
+                    const WorkerClass = workers.getClass( spawn_type );
+                    let worker = new WorkerClass();
 
-                    room_creeps = _.sortBy( room_creeps, ( creep ) => creep.ticksToLive );
+                    let current_body = worker.getBody( current_energy ).sort();
+                    let max_body = worker.getBody( energy_capacity ).sort();
 
-                    if( room_creeps.length > 0 ) {
-                        console.log( 'Telling a creep to renew', room_creeps[ 0 ] );
-
-                        let temp_worker = new RenewWorker();
-                        temp_worker.setCreep( room_creeps[ 0 ] );
-                        temp_worker.setRenew( spawn.id );
+                    if( _.isEqual( current_body, max_body ) ) {
+                        this.spawnCreep( room, spawn, spawn_type );
+                    } else {
+                        console.log( 'Cant spawn', spawn_type );
                     }
                 }
             }

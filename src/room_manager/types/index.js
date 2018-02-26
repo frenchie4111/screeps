@@ -1,10 +1,11 @@
-const workers = require( '~/workers' );
+const workers = require( '~/workers' ),
+    constants = require( '~/constants' );
 
 const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
     ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
     StoragePlanner = require( '~/construction_planner/StoragePlanner' ),
-    FirstTowerPlanner = require( '~/construction_planner/FirstTowerPlanner' ),
+    TowerPlanner = require( '~/construction_planner/TowerPlanner' ),
     WallPlanner = require( '~/construction_planner/WallPlanner' ),
     RampartPlanner = require( '~/construction_planner/RampartPlanner' ),
     ControllerSourceRoad = require( '~/construction_planner/ControllerSourceRoad' ),
@@ -106,7 +107,7 @@ module.exports = {
             },
             construction_planners: [
                 new ExtensionPlanner( 'extension-2' ),
-                new FirstTowerPlanner( 'tower-1' )
+                new TowerPlanner( 'tower-1' )
             ]
         },
         {
@@ -157,7 +158,10 @@ module.exports = {
                             structureType: constants.STRUCTURE_EXTENSION
                         }
                     } );
-                return extensions.length >= 30;
+
+                let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+
+                return extensions.length >= 30 && construction_sites.length <= 0;
             },
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1,
@@ -180,7 +184,7 @@ module.exports = {
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_EXTENSION ]: 1,
-                [ workers.types.CONTAINER_HARVESTER ]: 3,
+                [ workers.types.CONTAINER_BUILDER ]: 3,
                 [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },

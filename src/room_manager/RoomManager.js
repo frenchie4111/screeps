@@ -55,7 +55,11 @@ class RoomManager {
 
         return _
             .map( room.memory.creeps, ( creep_name ) => {
-                return Game.creeps[ creep_name ];
+                let creep = Game.creeps[ creep_name ];
+                if( !creep ) {
+                    console.log( 'NO CREEP WITH NAME', creep_name );
+                }
+                return creep;
             } );
     }
 
