@@ -24,15 +24,14 @@ class Assigner {
 
     getAssigned( creep, type ) {
         switch( type ) {
-            case constants.STRUCTURE_CONTAINER:
+            case Assigner.types.CONTAINER_MINER:
                 let previously_assigned = this._getPreviouslyAssigned( type );
 
-                let unassigned_structures = creep.room
-                    .find( FIND_STRUCTURES, {
+                let unassigned_structures = creep
+                    .room
+                    .find( FIND_SOURCES, {
                         filter: ( structure ) => {
-                            console.log( 'Considering structure', structure, previously_assigned.hasOwnProperty( structure.id ) )
                             return (
-                                structure.structureType === type &&
                                 !previously_assigned.hasOwnProperty( structure.id )
                             );
                         }
@@ -45,6 +44,10 @@ class Assigner {
                 break;
         }
     }
+};
+
+Assigner.types = {
+    CONTAINER_MINER: 'CONTAINER_MINER'
 };
 
 module.exports = Assigner;

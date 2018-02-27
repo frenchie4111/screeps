@@ -33,6 +33,10 @@ class Worker {
         return creep.pos.isNearTo( Game.getObjectById( id ) );
     }
 
+    getEnergyOf( body ) {
+        return _.sumBy( body, ( part ) => constants.BODYPART_COST[ part ] );
+    }
+
     getBody( available_energy ) {
         let per_parts = constants.BODYPART_COST[ constants.MOVE ] + constants.BODYPART_COST[ constants.CARRY ] + constants.BODYPART_COST[ constants.WORK ];
         let parts = [];

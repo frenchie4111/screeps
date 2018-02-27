@@ -27,9 +27,9 @@ class ContainerRepairer extends ContainerHarvester {
                     if( 'ticksToDecay' in structure ) {
                         return this._needsRepair( structure );
                     }
-                    if( structure.structureType === STRUCTURE_WALL ) {
-                        return structure.hits < structure.hitsMax;
-                    }
+                    // if( structure.structureType === STRUCTURE_WALL ) {
+                    //     return structure.hits < structure.hitsMax;
+                    // }
                 }
             } );
 

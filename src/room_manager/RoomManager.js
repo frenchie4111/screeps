@@ -111,6 +111,24 @@ class RoomManager {
             console.log( 'Healing Creep' );
             return tower.heal( damaged_creeps[ 0 ] );
         }
+
+        const types_to_repair = [ constants.STRUCTURE_ROAD ];
+        let structures_to_repair = tower
+            .room
+            .find( FIND_STRUCTURES, {
+                filter: ( structure ) => {
+                    if( types_to_repair.indexOf( structure.structureType ) !== -1 ) {
+                        if( ( structure.hits / structure.hitsMax ) < 0.9 ) {
+                            return true;
+                        }
+                    }
+                }
+            } );
+
+        if( structures_to_repair.length > 0 ) {
+            structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => structure.hits / structure.hitsMax );
+            return tower.repair( structures_to_repair[ 0 ] );
+        }
     };
 
     handleTowers( room, spawn, current_state ) {
