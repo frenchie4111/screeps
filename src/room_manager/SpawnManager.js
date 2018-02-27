@@ -130,7 +130,7 @@ class SpawnManager {
                     if( _.isEqual( current_body, max_body ) ) {
                         this.spawnCreep( room, spawn, spawn_type );
                     } else {
-                        console.log( 'Cant spawn', spawn_type );
+                        console.log( 'Cant spawn', spawn_type, 'need', worker.getEnergyOf( max_body ), 'have', current_energy );
                     }
                 }
             }
