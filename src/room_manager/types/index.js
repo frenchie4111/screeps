@@ -188,8 +188,7 @@ module.exports = {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_EXTENSION ]: 1,
                 [ workers.types.CONTAINER_BUILDER ]: 3,
-                [ workers.types.CONTAINER_MINER ]: 2,
-                [ workers.types.CONTAINER_REPAIRER ]: 1
+                [ workers.types.CONTAINER_MINER ]: 2
             },
             construction_planners: []
         }

@@ -41,6 +41,7 @@ class RoomManager {
 
             if( !Game.creeps[ creep_name ] ) {
                 console.log( 'Oops, lost creep' + creep_name );
+                Game.notify( 'Oops, lost creep' + creep_name );
                 remove.push( i );
             }
         }
