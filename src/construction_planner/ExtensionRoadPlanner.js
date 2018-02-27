@@ -22,6 +22,15 @@ class ExtensionRoadPlanner extends ConstructionPlanner {
                 }
             } );
 
+        let extension_construction_sites = room
+            .find( constants.FIND_MY_CONSTRUCTION_SITES, {
+                filter: {
+                    structureType: constants.STRUCTURE_EXTENSION
+                }
+            } );
+
+        extensions = extensions.concat( extension_construction_sites );
+
         let positions = [];
 
         extensions

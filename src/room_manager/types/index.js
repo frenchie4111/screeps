@@ -9,6 +9,7 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     WallPlanner = require( '~/construction_planner/WallPlanner' ),
     RampartPlanner = require( '~/construction_planner/RampartPlanner' ),
     ControllerSourceRoad = require( '~/construction_planner/ControllerSourceRoad' ),
+    OuterBaseRoads = require( '~/construction_planner/OuterBaseRoads' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 module.exports = { 
@@ -174,7 +175,8 @@ module.exports = {
                 new ExtensionPlanner( 'extension-4' ),
                 new ExtensionRoadPlanner( 'extension-road-2' ),
                 new WallPlanner( 'wall-planner-1' ),
-                new RampartPlanner( 'rampart-planner-1' )
+                new RampartPlanner( 'rampart-planner-1' ),
+                new OuterBaseRoads( 'outer-base-roads-1' ),
             ]
         },
         {

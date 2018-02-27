@@ -20,7 +20,16 @@ class ContainerRepairer extends ContainerHarvester {
         let decaying_structures = creep.room
             .find( FIND_STRUCTURES, {
                 filter: ( structure ) => {
-                    return ( 'ticksToDecay' in structure ) && this._needsRepair( structure );
+                    // HARDCODE OUT THESE FOR NOW
+                    if( structure.structureType === STRUCTURE_RAMPART ) {
+                        return false;
+                    }
+                    if( 'ticksToDecay' in structure ) {
+                        return this._needsRepair( structure );
+                    }
+                    if( structure.structureType === STRUCTURE_WALL ) {
+                        return structure.hits < structure.hitsMax;
+                    }
                 }
             } );
 
