@@ -81,6 +81,10 @@ class ConstructionPlanner {
         const pending = [];
         while( this._shouldCreateNewStructure( room, spawn, pending ) ) {
             let position = this._getNewPosition( room, spawn, pending );
+            if( !position ) {
+                console.log( 'Ran out of places' );
+                break;
+            }
             pending.push( position );
         }
         return pending;

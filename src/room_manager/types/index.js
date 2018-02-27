@@ -177,6 +177,7 @@ module.exports = {
                 new WallPlanner( 'wall-planner-1' ),
                 new RampartPlanner( 'rampart-planner-1' ),
                 new OuterBaseRoads( 'outer-base-roads-1' ),
+                new TowerPlanner( 'tower-2' )
             ]
         },
         {
@@ -190,8 +191,7 @@ module.exports = {
                 [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
-            construction_planners: [
-            ]
+            construction_planners: []
         }
     ]
 };

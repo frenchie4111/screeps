@@ -194,6 +194,7 @@ class ContainerMiner extends RenewWorker {
                 }
             },
             [ STATES.REPAIR ]: ( creep, state_memory, worker_memory ) => {
+                let source = Game.getObjectById( worker_memory.assigned_source_id );
                 let container = this._getContainerNearSource( source );
 
                 worker_memory.repairing = true;
@@ -227,8 +228,15 @@ class ContainerMiner extends RenewWorker {
                 if( worker_memory.construction_site_id && this.isFull( creep ) ) {
                     return STATES.BUILD_CONTAINER;
                 }
+
                 if( worker_memory.repairing && this.isFull( creep ) ) {
                     return STATES.REPAIR;
+                }
+                
+                let current_contents = _.sum( _.values( container.store ) );
+
+                if( current_contents >= ( container.storeCapacity * 0.99 ) ) {
+                    return;
                 }
 
                 creep.harvest( source );

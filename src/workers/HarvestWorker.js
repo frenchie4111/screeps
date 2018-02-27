@@ -42,7 +42,8 @@ class HarvestWorker extends RenewWorker {
             .find( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return ( 'energyCapacity' in structure ) &&
-                        structure.energy < structure.energyCapacity;
+                        structure.energy < structure.energyCapacity &&
+                        structure.structureType !== constants.STRUCTURE_TOWER;
                 }
             } );
     

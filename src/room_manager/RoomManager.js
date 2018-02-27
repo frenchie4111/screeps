@@ -118,7 +118,7 @@ class RoomManager {
             .find( FIND_STRUCTURES, {
                 filter: ( structure ) => {
                     if( types_to_repair.indexOf( structure.structureType ) !== -1 ) {
-                        if( ( structure.hits / structure.hitsMax ) < 0.9 ) {
+                        if( ( structure.hits / structure.hitsMax ) < 0.5 ) {
                             return true;
                         }
                     }
