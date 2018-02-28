@@ -54,20 +54,20 @@ module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
 
 const moveToRoom = ( creep, move_memory, target_room_name ) => {
     if( creep.room.name === target_room_name ) {
+        let move_response = creep.move( move_memory.direction );
         return module.exports.ERR_IN_ROOM;
     }
 
     if( !move_memory.exit || move_memory.current_room_name !== creep.room.name ) {
         let route = Game.map.findRoute( creep.room, target_room_name );
-        if( !route ) {
-            console.log( 'no route' );
-        }
+
         if( route.length === 0 ) {
             console.log( 'Already there, moving in' );
             let move_response = creep.move( move_memory.direction );
             console.log( move_memory.direction, move_response );
             return;
         }
+
         let exit_direction = route[ 0 ].exit;
         move_memory.current_room_name = creep.room.name;
         let closest_exit = creep.pos.findClosestByRange( exit_direction );

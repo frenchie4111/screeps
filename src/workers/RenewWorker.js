@@ -1,4 +1,5 @@
-const constants = require( '~/constants' );
+const constants = require( '~/constants' ),
+    move = require( '~/lib/move' );
 
 const StateWorker = require( './StateWorker' );
 
@@ -9,8 +10,8 @@ let STATES = {
 };
 
 class RenewWorker extends StateWorker {
-    constructor( default_state ) {
-        super( default_state );
+    constructor( assigner, default_state ) {
+        super( assigner, default_state );
 
         this.states = Object.assign(
             {},
@@ -30,11 +31,9 @@ class RenewWorker extends StateWorker {
             [ STATES.MOVE_TO_SPAWN_ROOM ]: ( creep, state_memory, worker_memory ) => {
                 const spawn = Game.getObjectById( worker_memory.spawn_id );
 
-                if( creep.room.name === spawn.room.name ) {
+                if( this.moveToRoom( spawn.room.name ) === move.ERR_IN_ROOM ) {
                     return STATES.MOVE_TO_SPAWN;
                 }
-
-                this.moveToRoom( worker_memory.long_distance_source.room_name );
             },
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
                 if( creep.ticksToLive > 1000 ) return this.default_state;

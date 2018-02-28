@@ -1,8 +1,8 @@
 const Worker = require( './Worker' );
 
 class StateWorker extends Worker {
-    constructor( default_state_name ) {
-        super();
+    constructor( assigner, default_state_name ) {
+        super( assigner );
         this.default_state = default_state_name;
         this.reset_to_default_on_error = true;
         this.states = this._getStates();

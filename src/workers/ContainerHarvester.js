@@ -8,7 +8,7 @@ class ContainerHarvester extends HarvestWorker {
     }
 
     shouldStopHarvesting( creep, container ) {
-        if( container.structureType === constants.STRUCTURE_CONTAINER ) {
+        if( container.structureType === constants.STRUCTURE_CONTAINER || container.structureType === constants.STRUCTURE_STORAGE ) {
             return container.store[ constants.RESOURCE_ENERGY ] <= 50;
         }
         return super.shouldStopHarvesting( creep, container );
@@ -20,6 +20,7 @@ class ContainerHarvester extends HarvestWorker {
             .findClosestByPath( constants.FIND_STRUCTURES, {
                 filter: ( structure ) => {
                     return (
+                        structure.room.name === creep.room.name &&
                         structure.structureType === constants.STRUCTURE_CONTAINER &&
                         structure.store[ constants.RESOURCE_ENERGY ] > 50
                     );
@@ -30,7 +31,7 @@ class ContainerHarvester extends HarvestWorker {
     }
 
     doHarvest( creep, container ) {
-        if( container.structureType === constants.STRUCTURE_CONTAINER ) {
+        if( container.structureType === constants.STRUCTURE_CONTAINER || container.structureType === constants.STRUCTURE_STORAGE ) {
             return creep.withdraw( container, constants.RESOURCE_ENERGY );
         }
         return creep.harvest( container );

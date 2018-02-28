@@ -12,10 +12,12 @@ class Assigner {
     }
 
     _isPreviouslyAssignedTo( key_name, id, creep_id ) {
+        if( !this._getPreviouslyAssigned( key_name ).hasOwnProperty( id ) ) return false;
         return this._getPreviouslyAssigned( key_name )[ id ] === creep_id;
     }
 
     _isPreviouslyAssigned( key_name, id ) {
+        console.log( '_isPreviouslyAssigned', key_name, id, this._getPreviouslyAssigned( key_name ).hasOwnProperty( id ) );
         return this._getPreviouslyAssigned( key_name ).hasOwnProperty( id );
     }
 
@@ -51,8 +53,10 @@ class Assigner {
                 return unassigned_structures[ 0 ];
                 break;
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
-                let source_assigned_to_me = _.find( this.room.memory._long_distance, ( assigned, source_id ) => !this._isPreviouslyAssignedTo( type, source_id, creep.id ) );
+            case Assigner.types.LONG_DISTANCE_HAULER:
+                let source_assigned_to_me = _.find( this.room.memory._long_distance, ( assigned, source_id ) => this._isPreviouslyAssignedTo( type, source_id, creep.id ) );
                 if( source_assigned_to_me ) {
+                    console.log( 'was assigned to me' );
                     return source_assigned_to_me;
                 }
 
@@ -69,7 +73,8 @@ class Assigner {
 
 Assigner.types = {
     CONTAINER_MINER: 'CONTAINER_MINER',
-    LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER'
+    LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER',
+    LONG_DISTANCE_HAULER: 'LONG_DISTANCE_HAULER',
 };
 
 Assigner.prototype.types = Assigner.types;

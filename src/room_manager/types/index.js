@@ -10,6 +10,8 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     RampartPlanner = require( '~/construction_planner/RampartPlanner' ),
     ControllerSourceRoad = require( '~/construction_planner/ControllerSourceRoad' ),
     OuterBaseRoads = require( '~/construction_planner/OuterBaseRoads' ),
+    BaseExitRoadPlanner = require( '~/construction_planner/BaseExitRoadPlanner' ),
+    ExitRoadPlanner = require( '~/construction_planner/ExitRoadPlanner' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 module.exports = { 
@@ -177,7 +179,8 @@ module.exports = {
                 new WallPlanner( 'wall-planner-1' ),
                 new RampartPlanner( 'rampart-planner-1' ),
                 new OuterBaseRoads( 'outer-base-roads-1' ),
-                new TowerPlanner( 'tower-2' )
+                new TowerPlanner( 'tower-2' ),
+                new BaseExitRoadPlanner( 'base-exit-road-1' )
             ]
         },
         {
@@ -190,16 +193,26 @@ module.exports = {
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
                     [ workers.types.CONTAINER_BUILDER ]: 3,
                     [ workers.types.CONTAINER_MINER ]: 2,
-                    [ workers.types.SCOUT ]: 1
+                    // [ workers.types.SCOUT ]: 1
                 };
 
                 let long_distance_operations = Object.keys( room.memory._long_distance ).length;
 
                 worker_counts[ workers.types.LONG_DISTANCE_CONTAINER_MINER ] = long_distance_operations;
+                worker_counts[ workers.types.LONG_DISTANCE_HAULER ] = long_distance_operations;
 
                 return worker_counts;
             },
-            construction_planners: []
+            construction_planners: ( room ) => {
+                let long_distance_operations = room.memory._long_distance;
+
+                let exit_road_planners = _
+                    .map( long_distance_operations, ( long_distance ) => {
+                        // return new ExitRoadPlanner( 'exit-road-' + long_distance.direction, long_distance.direction );
+                    } );
+
+                return [];
+            }
         }
     ],
     long_distance: null

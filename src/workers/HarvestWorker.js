@@ -1,20 +1,23 @@
-const constants = require( '~/constants' );
+const constants = require( '~/constants' ),
+    move = require( '~/lib/move' );
 
 const RenewWorker = require( './RenewWorker' );
 
 let STATES = {
     MOVE_TO_HARVEST: 'MOVE_TO_HARVEST',
+    MOVE_TO_HARVEST_ROOM: 'MOVE_TO_HARVEST_ROOM',
     HARVESTING: 'HARVESTING',
     MOVE_TO_TRANSFER: 'MOVE_TO_TRANSFER',
+    MOVE_TO_TRANSFER_ROOM: 'MOVE_TO_TRANSFER_ROOM',
     TRANSFERRING: 'TRANSFERRING'
 };
 
 class HarvestWorker extends RenewWorker {
-    constructor() {
-        super( STATES.MOVE_TO_HARVEST );
+    constructor( assigner ) {
+        super( assigner, STATES.MOVE_TO_HARVEST );
     }
 
-    getSource( creep ) {
+    getSource( creep, worker_memory ) {
         let sources = creep.room.find( FIND_SOURCES );
         let source = creep.pos.findClosestByPath( sources, {
             filter: ( source ) => {
@@ -30,7 +33,13 @@ class HarvestWorker extends RenewWorker {
         return source;
     }
 
-    getTarget( creep ) {
+    getSourceRoomName( creep, worker_memory ) {
+        let source = this.getSource( creep );
+        if( !source ) return null;
+        return source.room.name;
+    }
+
+    getTarget( creep, worker_memory ) {
         // HACK allows us to have 0 upgraders
         if( creep.room.controller.ticksToDowngrade < 1000 ) {
             return creep.room.controller;
@@ -50,6 +59,12 @@ class HarvestWorker extends RenewWorker {
         }
     
         return capacity_structures[ 0 ];
+    }
+    
+    getTargetRoomName( creep, worker_memory ) {
+        let target = this.getTarget( creep );
+        if( !target ) return null;
+        return target.room.name;
     }
 
     getCurrentCarry() {
@@ -78,9 +93,26 @@ class HarvestWorker extends RenewWorker {
 
     _getStates() {
         return {
+            [ STATES.MOVE_TO_HARVEST_ROOM ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.source_room_name ) {
+                    worker_memory.source_room_name = this.getSourceRoomName( creep, worker_memory );
+                }
+
+                if( this.moveToRoom( worker_memory.source_room_name ) === move.ERR_IN_ROOM ) {
+                    return STATES.MOVE_TO_HARVEST;
+                }
+            },
             [ STATES.MOVE_TO_HARVEST ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.source_room_name ) {
+                    worker_memory.source_room_name = this.getSourceRoomName( creep, worker_memory );
+                }
+
+                if( creep.room.name !== worker_memory.source_room_name ) {
+                    return STATES.MOVE_TO_HARVEST_ROOM;
+                }
+
                 if( !worker_memory.source_id ) {
-                    let source = this.getSource( creep );
+                    let source = this.getSource( creep, worker_memory );
                     if( !source ) return; // Idle, no available sources
                     worker_memory.source_id = source.id;
                 }
@@ -121,14 +153,33 @@ class HarvestWorker extends RenewWorker {
                         break;
                 }
             },
+            [ STATES.MOVE_TO_TRANSFER_ROOM ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.target_room_name ) {
+                    worker_memory.target_room_name = this.getTargetRoomName( creep, worker_memory );
+                }
+
+                if( this.moveToRoom( worker_memory.target_room_name ) === move.ERR_IN_ROOM ) {
+                    return STATES.MOVE_TO_TRANSFER;
+                }
+            },
             [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.target_room_name ) {
+                    worker_memory.target_room_name = this.getTargetRoomName( creep, worker_memory );
+                    if( !worker_memory.target_room_name ) return; // Idle, no available targets
+                }
+
+                if( creep.room.name !== worker_memory.target_room_name ) {
+                    return STATES.MOVE_TO_TRANSFER_ROOM;
+                }
+
                 if( !worker_memory.target_id ) {
                     let target = this.getTarget( creep );
                     if( !target ) return; // Idle, no available targets
                     worker_memory.target_id = target.id;
                 }
 
-                const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
+                let target = Game.getObjectById( worker_memory.target_id );
+                const transfer_results = this.doTransfer( creep, target );
 
                 if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
 

@@ -1,4 +1,5 @@
-const constants = require( '~/constants' );
+const constants = require( '~/constants' ),
+    move = require( '~/lib/move' );
 
 const ContainerMiner = require( './ContainerMiner' );
 
@@ -10,8 +11,8 @@ class LongDistanceContainerMiner extends ContainerMiner {
     constructor( assigner ) {
         super( assigner );
         this.default_state = STATES.GO_TO_SOURCE_ROOM;
-        this.MAX_WORK_PARTS = 3;
-        this.MAX_MOVE_PARTS = 2;
+        this.MAX_WORK_PARTS = 5;
+        this.MAX_MOVE_PARTS = 4;
     }
 
     getSource( creep, worker_memory ) {
@@ -26,11 +27,9 @@ class LongDistanceContainerMiner extends ContainerMiner {
                 worker_memory.long_distance_source = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_CONTAINER_MINER );
             }
 
-            if( creep.room.name === worker_memory.long_distance_source.room_name ) {
+            if( this.moveToRoom( worker_memory.long_distance_source.room_name ) === move.ERR_IN_ROOM ) {
                 return ContainerMiner.STATES.MOVE_TO_CONTAINER;
             }
-
-            this.moveToRoom( worker_memory.long_distance_source.room_name );
         };
 
         return super_states;

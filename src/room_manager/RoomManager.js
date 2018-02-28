@@ -82,14 +82,19 @@ class RoomManager {
                     const WorkerClass = workers.getClass( creep.memory.worker_type );
                     const worker = new WorkerClass( assigner );
                     worker.setCreep( creep );
-                    worker.doWork();
+                    worker.doWork( creep, room );
                 } );
             } );
     }
 
     handleConstruction( room, spawn, current_state ) {
-        current_state
-            .construction_planners
+        let construction_planners = current_state.construction_planners;
+
+        if( _.isFunction( construction_planners ) ) {
+            construction_planners = construction_planners( room, spawn );
+        }
+
+        construction_planners
             .forEach( ( planner ) => {
                 loopItem( 'planner-' + planner.name, () => {
                     return planner.createConstructionSites( room, spawn );
@@ -128,7 +133,7 @@ class RoomManager {
             .room
             .find( FIND_STRUCTURES, {
                 filter: ( structure ) => {
-                    if( types_to_repair.indexOf( structure.structureType ) !== -1 ) {
+                    if( structure.structureType === constants.STRUCTURE_ROAD ) {
                         if( ( structure.hits / structure.hitsMax ) < 0.5 ) {
                             return true;
                         }
@@ -138,6 +143,23 @@ class RoomManager {
 
         if( structures_to_repair.length > 0 ) {
             structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => structure.hits / structure.hitsMax );
+            return tower.repair( structures_to_repair[ 0 ] );
+        }
+
+        structures_to_repair = tower
+            .room
+            .find( FIND_STRUCTURES, {
+                filter: ( structure ) => {
+                    if( types_to_repair.indexOf( structure.structureType ) !== -1 ) {
+                        if( ( structure.hits / structure.hitsMax ) < 0.5 ) {
+                            return true;
+                        }
+                    }
+                }
+            } );
+
+        if( structures_to_repair.length > 0 ) {
+            structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => ( structure.hits / structure.hitsMax ) );
             return tower.repair( structures_to_repair[ 0 ] );
         }
     };

@@ -10,6 +10,7 @@ const worker_type_conversion = {
     CONTAINER_REPAIRER: require( './ContainerRepairer' ),
     SCOUT: require( './Scout' ),
     LONG_DISTANCE_CONTAINER_MINER: require( './LongDistanceContainerMiner' ),
+    LONG_DISTANCE_HAULER: require( './LongDistanceHauler' ),
 };
 
 const types = {
@@ -25,6 +26,7 @@ const types = {
     CONTAINER_REPAIRER: 'CONTAINER_REPAIRER',
     SCOUT: 'SCOUT',
     LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER',
+    LONG_DISTANCE_HAULER: 'LONG_DISTANCE_HAULER',
 };
 
 module.exports = {

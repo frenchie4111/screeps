@@ -3,7 +3,8 @@ const Logger = require( '~/lib/logger' ),
     move = require( '~/lib/move' );
 
 class Worker {
-    constructor() {
+    constructor( assigner ) {
+        this.assigner = assigner;
         this.creep = null;
         this.memory = null;
     }
@@ -11,6 +12,10 @@ class Worker {
     setCreep( creep ) {
         this.creep = creep;
         creep.memory.worker_memory = creep.memory.worker_memory || {};
+    }
+    
+    setRoom( room ) {
+        this.room = room;
     }
 
     getMemory( private_key ) {
@@ -55,7 +60,9 @@ class Worker {
         throw new Erorr( 'Abstract Method' );
     }
 
-    doWork() {
+    doWork( creep, room ) {
+        this.setCreep( creep );
+        this.setRoom( room );
         this._doWork( this.creep );
     }
 }

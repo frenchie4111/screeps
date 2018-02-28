@@ -6,6 +6,7 @@ class ConstructionPlanner {
         this.dry_run = dry_run;
         this.name = name;
         this.color = 'red';
+        this.rerun_on_fail = true;
     }
 
     hasRunBefore( room ) {
@@ -117,7 +118,7 @@ class ConstructionPlanner {
                 }
             } );
 
-        if( suceeded && !this.dry_run ) {
+        if( ( !this.rerun_on_fail || suceeded ) && !this.dry_run ) {
             this.setHasRun( room, true );
         }
     }

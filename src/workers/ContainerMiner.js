@@ -15,9 +15,8 @@ let STATES = {
 
 class ContainerMiner extends RenewWorker {
     constructor( assigner ) {
-        super( STATES.MOVE_TO_CONTAINER );
-        this.assigner = assigner;
-        
+        super( assigner, STATES.MOVE_TO_CONTAINER );
+
         this.MAX_WORK_PARTS = 6;
         this.MAX_MOVE_PARTS = 3;
     }
@@ -65,8 +64,6 @@ class ContainerMiner extends RenewWorker {
 
     _getConstructionSite( source ) {
         let nearby_things = source.room.lookForAtArea( LOOK_CONSTRUCTION_SITES, source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true );
-
-        console.log( 'nearby_things', source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, JSON.stringify( nearby_things ) );
 
         let nearby_container = _
             .find( nearby_things, ( thing ) => {
@@ -133,9 +130,6 @@ class ContainerMiner extends RenewWorker {
                 }
 
                 if( position.equal( creep.pos, container.pos ) ) return STATES.HARVESTING;
-                else {
-                    console.log( creep.pos, container.pos );
-                };
 
                 this.moveTo( container );
             },
@@ -178,6 +172,10 @@ class ContainerMiner extends RenewWorker {
                     console.log( 'Done contructing' );
                     worker_memory.construction_site_id = null;
                     return STATES.MOVE_TO_CONTAINER;
+                }
+
+                if( !position.equal( creep.pos, construction_site.pos ) ) {
+                    return STATES.MOVE_TO_CONSTRUCTION_SITE;
                 }
 
                 let build_response = creep.build( construction_site );
@@ -223,7 +221,7 @@ class ContainerMiner extends RenewWorker {
 
                 let container = this._getContainerNearSource( source );
 
-                if( container && this._needsRepair( container ) ) {
+                if( container && this._needsRepair( container ) && this.isFull( creep ) ) {
                     return STATES.REPAIR;
                 }
 

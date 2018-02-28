@@ -1,6 +1,6 @@
 const map = require( '~/lib/map' );
 
-const MAX_LONG_DISTANCE_MINER = 1;
+const MAX_LONG_DISTANCE_MINER = 2;
 
 class LongDistanceMiningPlanner {
     getRoomLongDistanceMemory( room ) {
@@ -37,7 +37,7 @@ class LongDistanceMiningPlanner {
 
         let long_distance_memory = this.getRoomLongDistanceMemory( start_room );
 
-        _.filter( sources, ( source_map_item ) => { !long_distance_memory.hasOwnProperty( source_map_item.source_id ) } );
+        sources = _.filter( sources, ( source_map_item ) => !long_distance_memory.hasOwnProperty( source_map_item.source_id ) );
 
         if( sources.length === 0 ) {
             throw new Error( 'No More Safe Sources' );
@@ -55,8 +55,10 @@ class LongDistanceMiningPlanner {
             let closest_source = this.getClosestSource( room );
             console.log( 'closest_source', JSON.stringify( closest_source ) );
             memory[ closest_source.source_id ] = closest_source;
-            rooms[ closest_source.room_name ].memory._state = rooms[ closest_source.room_name ].memory._state || {};
-            rooms[ closest_source.room_name ].memory._state.type = 'long_distance';
+
+            Memory.rooms[ closest_source.room_name ].memory._state = Memory.rooms[ closest_source.room_name ].memory._state || {};
+            Memory.rooms[ closest_source.room_name ].memory._state.type = 'long_distance';
+            console.log( 'after' );
         }
     }
 }

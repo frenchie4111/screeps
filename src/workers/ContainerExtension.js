@@ -7,6 +7,24 @@ class ContainerExtension extends ContainerHarvester {
         super( assigner );
     }
 
+    getSource( creep ) {
+        let storage = creep.room
+            .find( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return (
+                        structure.structureType === constants.STRUCTURE_STORAGE &&
+                        structure.store[ constants.RESOURCE_ENERGY ] > 50
+                    );
+                }
+            } );
+
+        if( storage.length > 0 ) {
+            return storage[ 0 ]
+        }
+
+        return super.getSource( creep );
+    }
+
     getTarget( creep ) {
         let capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
