@@ -1,6 +1,6 @@
 const Logger = require( '~/lib/logger' ),
     constants = require( '~/constants' ),
-    moveTo = require( '~/lib/moveTo' );
+    move = require( '~/lib/move' );
 
 class Worker {
     constructor() {
@@ -24,7 +24,11 @@ class Worker {
     }
 
     moveTo( target ) {
-        return moveTo( this.creep, this.getMemory( '_moveTo' ), target );
+        return move.moveTo( this.creep, this.getMemory( '_moveTo' ), target );
+    }
+    
+    moveToRoom( target_room_name ) {
+        return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name );
     }
 
     isNear( creep, id ) {
@@ -32,7 +36,7 @@ class Worker {
     }
 
     getEnergyOf( body ) {
-        return _.sumBy( body, ( part ) => constants.BODYPART_COST[ part ] );
+        return _.sum( _.map( body, ( part ) => constants.BODYPART_COST[ part ] ) );
     }
 
     getBody( available_energy ) {

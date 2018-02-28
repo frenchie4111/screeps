@@ -11,6 +11,14 @@ class Assigner {
         return this.room.memory._assigner[ key_name ];
     }
 
+    _isPreviouslyAssignedTo( key_name, id, creep_id ) {
+        return this._getPreviouslyAssigned( key_name )[ id ] === creep_id;
+    }
+
+    _isPreviouslyAssigned( key_name, id ) {
+        return this._getPreviouslyAssigned( key_name ).hasOwnProperty( id );
+    }
+
     garbageCollect() {  
         let previously_assigned = this._getPreviouslyAssigned( constants.STRUCTURE_CONTAINER );
         for( let key in previously_assigned ) {
@@ -42,12 +50,28 @@ class Assigner {
 
                 return unassigned_structures[ 0 ];
                 break;
+            case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
+                let source_assigned_to_me = _.find( this.room.memory._long_distance, ( assigned, source_id ) => !this._isPreviouslyAssignedTo( type, source_id, creep.id ) );
+                if( source_assigned_to_me ) {
+                    return source_assigned_to_me;
+                }
+
+                let unassigned_sources = _.filter( this.room.memory._long_distance, ( assigned, source_id ) => !this._isPreviouslyAssigned( type, source_id ) );
+
+                if( unassigned_sources.length === 0 ) throw new Error( 'Out of sturctures: ', type );
+                this._getPreviouslyAssigned( type )[ unassigned_sources[ 0 ].source_id ] = creep.id;
+
+                return unassigned_sources[ 0 ];
+                break;
         }
     }
 };
 
 Assigner.types = {
-    CONTAINER_MINER: 'CONTAINER_MINER'
+    CONTAINER_MINER: 'CONTAINER_MINER',
+    LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER'
 };
+
+Assigner.prototype.types = Assigner.types;
 
 module.exports = Assigner;

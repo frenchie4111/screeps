@@ -193,11 +193,14 @@ module.exports = {
                     [ workers.types.SCOUT ]: 1
                 };
 
-                
+                let long_distance_operations = Object.keys( room.memory._long_distance ).length;
+
+                worker_counts[ workers.types.LONG_DISTANCE_CONTAINER_MINER ] = long_distance_operations;
 
                 return worker_counts;
             },
             construction_planners: []
         }
-    ]
+    ],
+    long_distance: null
 };

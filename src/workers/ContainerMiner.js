@@ -13,13 +13,13 @@ let STATES = {
     REPAIR: 'REPAIR'
 };
 
-const MAX_WORK_PARTS = 6;
-const MAX_MOVE_PARTS = 3;
-
 class ContainerMiner extends RenewWorker {
     constructor( assigner ) {
         super( STATES.MOVE_TO_CONTAINER );
         this.assigner = assigner;
+        
+        this.MAX_WORK_PARTS = 6;
+        this.MAX_MOVE_PARTS = 3;
     }
 
     getBody( available_energy ) {
@@ -27,14 +27,14 @@ class ContainerMiner extends RenewWorker {
         let remaining_energy = available_energy - this.getEnergyOf( body );
 
         let work_parts = 0;
-        while( remaining_energy > this.getEnergyOf( [ constants.WORK ] ) && work_parts < MAX_WORK_PARTS ) {
+        while( remaining_energy > this.getEnergyOf( [ constants.WORK ] ) && work_parts < this.MAX_WORK_PARTS ) {
             remaining_energy -= this.getEnergyOf( [ constants.WORK ] );
             body.push( constants.WORK );
             work_parts++;
         }
 
         let move_parts = 1;
-        while( remaining_energy > this.getEnergyOf( [ constants.MOVE ] ) && move_parts < MAX_MOVE_PARTS ) {
+        while( remaining_energy > this.getEnergyOf( [ constants.MOVE ] ) && move_parts < this.MAX_MOVE_PARTS ) {
             remaining_energy -= this.getEnergyOf( [ constants.MOVE ] );
             body.push( constants.MOVE );
             move_parts++;
@@ -115,11 +115,15 @@ class ContainerMiner extends RenewWorker {
         return ( container.hits / container.hitsMax ) < 0.9;
     }
 
+    getSource( creep, worker_memory ) {
+        this.assigner.getAssigned( creep, 'CONTAINER_MINER' );
+    }
+
     _getStates() {
         return {
             [ STATES.MOVE_TO_CONTAINER ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.assigned_source_id ) {
-                    worker_memory.assigned_source_id = this.assigner.getAssigned( creep, 'CONTAINER_MINER' ).id;
+                    worker_memory.assigned_source_id = this.getSource( creep, worker_memory ).id;
                 }
                 let source = Game.getObjectById( worker_memory.assigned_source_id );
 
@@ -231,10 +235,12 @@ class ContainerMiner extends RenewWorker {
                     return STATES.REPAIR;
                 }
                 
-                let current_contents = _.sum( _.values( container.store ) );
+                if( container ) {
+                    let current_contents = _.sum( _.values( container.store ) );
 
-                if( current_contents >= ( container.storeCapacity * 0.99 ) ) {
-                    return;
+                    if( current_contents >= ( container.storeCapacity * 0.99 ) ) {
+                        return;
+                    }
                 }
 
                 creep.harvest( source );
@@ -242,5 +248,7 @@ class ContainerMiner extends RenewWorker {
         }
     }
 }
+
+ContainerMiner.STATES = STATES;
 
 module.exports = ContainerMiner;

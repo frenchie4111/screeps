@@ -4,7 +4,8 @@ const StateWorker = require( './StateWorker' );
 
 let STATES = {
     MOVE_TO_SPAWN: 'MOVE_TO_SPAWN',
-    RENEW: 'RENEW'
+    RENEW: 'RENEW',
+    MOVE_TO_SPAWN_ROOM: 'MOVE_TO_SPAWN_ROOM'
 };
 
 class RenewWorker extends StateWorker {
@@ -26,10 +27,25 @@ class RenewWorker extends StateWorker {
 
     _getRenewStates() {
         return {
+            [ STATES.MOVE_TO_SPAWN_ROOM ]: ( creep, state_memory, worker_memory ) => {
+                const spawn = Game.getObjectById( worker_memory.spawn_id );
+
+                if( creep.room.name === spawn.room.name ) {
+                    return STATES.MOVE_TO_SPAWN;
+                }
+
+                this.moveToRoom( worker_memory.long_distance_source.room_name );
+            },
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
                 if( creep.ticksToLive > 1000 ) return this.default_state;
                 if( this.isNear( creep, worker_memory.spawn_id ) ) return STATES.RENEW;
-                this.moveTo( Game.getObjectById( worker_memory.spawn_id ) );
+                const spawn = Game.getObjectById( worker_memory.spawn_id );
+
+                if( creep.room.name !== spawn.room.name ) {
+                    return STATES.MOVE_TO_SPAWN_ROOM;
+                }
+
+                this.moveTo( spawn );
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
                 if( creep.ticksToLive > 1400 ) {

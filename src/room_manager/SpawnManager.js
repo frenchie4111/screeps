@@ -15,7 +15,7 @@ class SpawnManager {
                 }
             } );
 
-        let extension_total = _.sumBy( extensions, ( extension ) => extension.energyCapacity );
+        let extension_total = _.sum( _.map( extensions, ( extension ) => extension.energyCapacity ) );
 
         return extension_total + spawn.energyCapacity;
     }
@@ -29,7 +29,7 @@ class SpawnManager {
                 }
             } );
 
-        let extension_total = _.sumBy( extensions, ( extension ) => extension.energy );
+        let extension_total = _.sum( _.map( extensions, ( extension ) => extension.energy ) );
 
         return extension_total + spawn.energy;
     }

@@ -8,13 +8,25 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getTarget( creep ) {
-        // Tower first
         let capacity_structure = creep.pos
+            .findClosestByPath( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return ( 'energyCapacity' in structure ) &&
+                        structure.energy < structure.energyCapacity;
+                }
+            } );
+        
+        if( capacity_structure ) {
+            return capacity_structure;
+        }
+
+        // Tower second
+        capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return (
                         structure.structureType === constants.STRUCTURE_TOWER &&
-                        ( structure.energy / structure.energyCapacity ) < 0.9
+                        ( structure.energy / structure.energyCapacity ) < 0.5
                     );
                 }
             } );
@@ -22,16 +34,6 @@ class ContainerExtension extends ContainerHarvester {
         if( capacity_structure ) {
             return capacity_structure;
         }
-
-        capacity_structure = creep.pos
-            .findClosestByPath( FIND_MY_STRUCTURES, {
-                filter: ( structure ) => {
-                    return ( 'energyCapacity' in structure ) &&
-                        structure.energy < structure.energyCapacity;
-                }
-            } );
-
-        return capacity_structure;
     }
 
     getBody( available_energy ) {

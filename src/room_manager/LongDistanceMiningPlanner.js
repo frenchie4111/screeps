@@ -55,6 +55,8 @@ class LongDistanceMiningPlanner {
             let closest_source = this.getClosestSource( room );
             console.log( 'closest_source', JSON.stringify( closest_source ) );
             memory[ closest_source.source_id ] = closest_source;
+            rooms[ closest_source.room_name ].memory._state = rooms[ closest_source.room_name ].memory._state || {};
+            rooms[ closest_source.room_name ].memory._state.type = 'long_distance';
         }
     }
 }

@@ -22,11 +22,15 @@ class RoomManager {
         const type = room.memory._state.type;
 
         if( !room_state_memory.hasOwnProperty( 'current_state' ) ) room_state_memory.current_state = 0;
-        if( !room_state_memory.hasOwnProperty( 'current_version' ) ) room_state_memory.current_version = STATES_VERSION;
+        if( !room_state_memory.hasOwnProperty( 'current_version' ) ) room_state_memory.current_version = types.STATES_VERSION;
 
         if( room_state_memory.current_version !== types.STATES_VERSION ) {
             room_state_memory.current_state = 0;
-            room_state_memory.current_version = STATES_VERSION;
+            room_state_memory.current_version = types.STATES_VERSION;
+        }
+
+        if( !types[ type ] ) {
+            return null;
         }
 
         return types[ type ][ room_state_memory.current_state ];
@@ -113,7 +117,13 @@ class RoomManager {
             return tower.heal( damaged_creeps[ 0 ] );
         }
 
-        const types_to_repair = [ constants.STRUCTURE_ROAD ];
+        if( ( tower.energy / tower.energyCapacity ) < 0.2 ) {
+            // Don't repair if we have less than 20% energy, so we can still defend
+            return;
+        }
+
+        const types_to_repair = [ constants.STRUCTURE_ROAD, constants.STRUCTURE_WALL, constants.STRUCTURE_RAMPART ];
+
         let structures_to_repair = tower
             .room
             .find( FIND_STRUCTURES, {
@@ -148,6 +158,11 @@ class RoomManager {
 
     doManage( room ) {
         const current_state = this._getCurrentState( room );
+
+        if( !current_state ) {
+            return;
+        }
+
         const spawns = room.find( FIND_MY_SPAWNS );
         const has_spawn = spawns.length > 0;
         const spawn = spawns[ 0 ]; // TODO figure out how to do this when multi-spawns
