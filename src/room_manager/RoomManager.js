@@ -127,31 +127,19 @@ class RoomManager {
             return;
         }
 
-        const types_to_repair = [ constants.STRUCTURE_ROAD, constants.STRUCTURE_WALL, constants.STRUCTURE_RAMPART ];
+        const types_to_repair = {
+            [ constants.STRUCTURE_ROAD ]: 0.5, 
+            [ constants.STRUCTURE_WALL ]: 0.0005, 
+            [ constants.STRUCTURE_RAMPART ]: 0.0005
+        };
 
         let structures_to_repair = tower
             .room
             .find( FIND_STRUCTURES, {
                 filter: ( structure ) => {
-                    if( structure.structureType === constants.STRUCTURE_ROAD ) {
-                        if( ( structure.hits / structure.hitsMax ) < 0.5 ) {
-                            return true;
-                        }
-                    }
-                }
-            } );
-
-        if( structures_to_repair.length > 0 ) {
-            structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => structure.hits / structure.hitsMax );
-            return tower.repair( structures_to_repair[ 0 ] );
-        }
-
-        structures_to_repair = tower
-            .room
-            .find( FIND_STRUCTURES, {
-                filter: ( structure ) => {
-                    if( types_to_repair.indexOf( structure.structureType ) !== -1 ) {
-                        if( ( structure.hits / structure.hitsMax ) < 0.5 ) {
+                    if( types_to_repair.hasOwnProperty( structure.structureType ) ) {
+                        if( ( structure.hits / structure.hitsMax ) < types_to_repair[ structure.structureType ] ) {
+                            console.log( structure, ( structure.hits / structure.hitsMax ) );
                             return true;
                         }
                     }

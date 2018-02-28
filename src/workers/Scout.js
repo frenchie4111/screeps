@@ -33,6 +33,10 @@ class Scout extends Worker {
             map.storeRoom( creep, creep.room );
         }
 
+        if( !map.needsScout( memory.start_room_name ) ) {
+            creep.suicide();
+        }
+
         if( creep.room.name === memory.start_room_name ) {
             let current_room_map = map.getRoom( memory.start_room_name );
             let target_room_name = current_room_map.exits[ current_direction ];

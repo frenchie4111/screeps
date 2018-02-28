@@ -60,7 +60,12 @@ class HarvestWorker extends RenewWorker {
     
         return capacity_structures[ 0 ];
     }
-    
+
+    setSuicide() {
+        this.getMemory().suicide = true;
+        this.setState( STATES.MOVE_TO_TRANSFER );
+    }
+
     getTargetRoomName( creep, worker_memory ) {
         let target = this.getTarget( creep );
         if( !target ) return null;
@@ -181,7 +186,14 @@ class HarvestWorker extends RenewWorker {
                 let target = Game.getObjectById( worker_memory.target_id );
                 const transfer_results = this.doTransfer( creep, target );
 
-                if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
+                if( this.getCurrentCarry() === 0 ) {
+                    if( this.isSuicide() ) {
+                        console.log( 'Done transfering, killing myself' );
+                        creep.suicide();
+                        return;
+                    }
+                    return STATES.MOVE_TO_HARVEST;
+                }
 
                 switch( transfer_results ) {
                     case constants.OK:
@@ -205,7 +217,14 @@ class HarvestWorker extends RenewWorker {
             },
             [ STATES.TRANSFERRING ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) return STATES.MOVE_TO_TRANSFER;
-                if( this.getCurrentCarry() === 0 ) return STATES.MOVE_TO_HARVEST;
+                if( this.getCurrentCarry() === 0 ) {
+                    if( this.isSuicide() ) {
+                        console.log( 'Done transfering, killing myself' );
+                        creep.suicide();
+                        return;
+                    }
+                    return STATES.MOVE_TO_HARVEST;
+                }
 
                 let target = Game.getObjectById( worker_memory.target_id )
 
@@ -239,5 +258,7 @@ class HarvestWorker extends RenewWorker {
         }
     }
 }
+
+HarvestWorker.STATES = STATES;
 
 module.exports = HarvestWorker;

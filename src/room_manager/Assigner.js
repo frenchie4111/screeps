@@ -21,15 +21,19 @@ class Assigner {
         return this._getPreviouslyAssigned( key_name ).hasOwnProperty( id );
     }
 
-    garbageCollect() {  
-        let previously_assigned = this._getPreviouslyAssigned( constants.STRUCTURE_CONTAINER );
-        for( let key in previously_assigned ) {
-            let creep_id = previously_assigned[ key ];
-            if( !Game.getObjectById( creep_id ) ) {
-                console.log( 'creep gone', creep_id, previously_assigned[ key ] );
-                delete previously_assigned[ key ];
-            }
-        }
+    garbageCollect() {
+        _
+            .forEach( Assigner.types, ( type ) => {
+                let previously_assigned = this._getPreviouslyAssigned( type );
+                for( let key in previously_assigned ) {
+                    let creep_id = previously_assigned[ key ];
+
+                    if( !Game.getObjectById( creep_id ) ) {
+                        console.log( 'creep gone', type, creep_id, previously_assigned[ key ] );
+                        delete previously_assigned[ key ];
+                    }
+                }
+            } );
     }
 
     getAssigned( creep, type ) {

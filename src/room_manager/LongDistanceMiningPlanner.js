@@ -50,7 +50,7 @@ class LongDistanceMiningPlanner {
 
     doPlan( room ) {
         let memory = this.getRoomLongDistanceMemory( room );
-        
+
         if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
             let closest_source = this.getClosestSource( room );
             console.log( 'closest_source', JSON.stringify( closest_source ) );

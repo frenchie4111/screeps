@@ -1,10 +1,13 @@
 const constants = require( '~/constants' );
 
-const ContainerHarvester = require( './ContainerHarvester' );
+const ContainerHarvester = require( './ContainerHarvester' ),
+    HarvestWorker = require( './HarvestWorker' );
 
 class LongDistanceHauler extends ContainerHarvester {
     constructor( assigner ) {
         super( assigner );
+        this.default_state = HarvestWorker.STATES.MOVE_TO_TRANSFER;
+        this.MAX_CARRY = 15;
     }
 
     shouldStopHarvesting( creep, container ) {
@@ -62,11 +65,11 @@ class LongDistanceHauler extends ContainerHarvester {
     }
 
     getBody( available_energy ) {
-        let per_parts = ( constants.BODYPART_COST[ constants.MOVE ] * 2 ) + constants.BODYPART_COST[ constants.CARRY ];
+        let per_parts = constants.BODYPART_COST[ constants.MOVE ] + constants.BODYPART_COST[ constants.CARRY ];
         let parts = [];
 
-        while( available_energy > per_parts ) {
-            parts = parts.concat( [ constants.MOVE, constants.CARRY, constants.CARRY ] );
+        for( let i = 0; i < this.MAX_CARRY && available_energy > per_parts; i++ ) {
+            parts = parts.concat( [ constants.MOVE, constants.CARRY ] );
             available_energy -= per_parts;
         }
 

@@ -20,6 +20,14 @@ class RenewWorker extends StateWorker {
         );
     }
 
+    setSuicide( spawn_id ) {
+        this.creep.suicide();
+    }
+
+    isSuicide() {
+        return this.getMemory().suicide;
+    }
+
     setRenew( spawn_id ) {
         this.setState( STATES.MOVE_TO_SPAWN );
         this.getMemory().spawn_id = spawn_id;
@@ -66,6 +74,11 @@ module.exports = RenewWorker;
 module.exports.isRenewing = ( creep ) => {
     if( !creep.memory.hasOwnProperty( 'worker_memory' ) ) creep.memory.worker_memory = {};
     return !!creep.memory.worker_memory.renewing;
+};
+
+module.exports.isSuicide = ( creep ) => {
+    if( !creep.memory.hasOwnProperty( 'worker_memory' ) ) creep.memory.worker_memory = {};
+    return !!creep.memory.worker_memory.suicide;
 };
 
 module.exports.needsRenewing = ( creep ) => {

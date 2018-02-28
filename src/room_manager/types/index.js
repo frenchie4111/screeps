@@ -1,5 +1,6 @@
 const workers = require( '~/workers' ),
-    constants = require( '~/constants' );
+    constants = require( '~/constants' ),
+    map = require( '~/lib/map' );
 
 const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
@@ -11,7 +12,7 @@ const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
     ControllerSourceRoad = require( '~/construction_planner/ControllerSourceRoad' ),
     OuterBaseRoads = require( '~/construction_planner/OuterBaseRoads' ),
     BaseExitRoadPlanner = require( '~/construction_planner/BaseExitRoadPlanner' ),
-    ExitRoadPlanner = require( '~/construction_planner/ExitRoadPlanner' ),
+    LongDistanceMiningRoadPlanner = require( '~/construction_planner/LongDistanceMiningRoadPlanner' ),
     ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
 
 module.exports = { 
@@ -191,10 +192,14 @@ module.exports = {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_BUILDER ]: 3,
+                    [ workers.types.CONTAINER_BUILDER ]: 2,
                     [ workers.types.CONTAINER_MINER ]: 2,
                     // [ workers.types.SCOUT ]: 1
                 };
+
+                if( map.needsScout( room.name ) ) {
+                    worker_counts[ workers.types.SCOUT ] = 1;
+                }
 
                 let long_distance_operations = Object.keys( room.memory._long_distance ).length;
 
@@ -207,8 +212,8 @@ module.exports = {
                 let long_distance_operations = room.memory._long_distance;
 
                 let exit_road_planners = _
-                    .map( long_distance_operations, ( long_distance ) => {
-                        // return new ExitRoadPlanner( 'exit-road-' + long_distance.direction, long_distance.direction );
+                    .map( long_distance_operations, ( long_distance_operation ) => {
+                        return new LongDistanceMiningRoadPlanner( 'ldm-road-' + long_distance_operation.direction, long_distance_operation, true );
                     } );
 
                 return [];
