@@ -66,6 +66,10 @@ class SpawnManager {
     };
     
     getNeededSpawns( room, current_creeps, worker_counts ) {
+        if( _.isFunction( worker_counts ) ) {
+            worker_counts = worker_counts( room );
+        }
+
         let current_counts = _
             .reduce( current_creeps, ( counts, creep ) => {
                 if( !counts.hasOwnProperty( creep.memory.worker_type ) ) counts[ creep.memory.worker_type ] = 0;

@@ -1,5 +1,3 @@
-const lodash = require( 'lodash' );
-
 const constants = require( '~/constants' );
 
 const RenewWorker = require( './RenewWorker' );
@@ -55,7 +53,7 @@ class HarvestWorker extends RenewWorker {
     }
 
     getCurrentCarry() {
-        return lodash.sum( lodash.values( this.creep.carry ) );
+        return _.sum( _.values( this.creep.carry ) );
     }
 
     isFull() {

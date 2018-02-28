@@ -1,3 +1,5 @@
+const MAP_VERSION = 5;
+
 module.exports = {
     getRoomMap: () => {
         let memory = Memory._room_map = Memory._room_map || {};
@@ -16,13 +18,23 @@ module.exports = {
         return null;
     },
 
-    storeRoom: ( room ) => {
+    storeRoom: ( creep, room ) => {
         let room_map = module.exports.getRoomMap();
 
         if( !room_map.hasOwnProperty( room.name ) ) room_map[ room.name ] = {};
 
         room_map[ room.name ]._version = MAP_VERSION;
-        room_map[ room.name ].source_ids = room.find( FIND_SOURCES ).map( ( source ) => source.id );
+
+        room_map[ room.name ].sources = room
+            .find( FIND_SOURCES )
+            .map( ( source ) => {
+                let path = creep.pos.findPathTo( source );
+                return {
+                    source_id: source.id,
+                    path_length: path.length
+                }
+            } );
+
         room_map[ room.name ].mineral_ids = room.find( FIND_MINERALS ).map( ( mineral ) => mineral.id );
         room_map[ room.name ].controller_id = room.controller ? room.controller.id : null;
         room_map[ room.name ].exits = Game.map.describeExits( room.name );

@@ -1,5 +1,3 @@
-const lodash = require( 'lodash' );
-
 const position = require( '~/lib/position' );
 
 const constants = require( '~/constants' );
@@ -46,7 +44,7 @@ class ContainerMiner extends RenewWorker {
     }
 
     getCurrentCarry( creep ) {
-        return lodash.sum( lodash.values( creep.carry ) );
+        return _.sum( _.values( creep.carry ) );
     }
 
     isFull( creep ) {

@@ -1,5 +1,3 @@
-const _ = require( 'lodash' );
-
 const Logger = require( '~/lib/logger' ),
     constants = require( '~/constants' ),
     moveTo = require( '~/lib/moveTo' );

@@ -184,11 +184,18 @@ module.exports = {
             isComplete: ( room ) => {
                 return false;
             },
-            worker_counts: {
-                [ workers.types.HARVESTER ]: 1,
-                [ workers.types.CONTAINER_EXTENSION ]: 1,
-                [ workers.types.CONTAINER_BUILDER ]: 3,
-                [ workers.types.CONTAINER_MINER ]: 2
+            worker_counts: ( room ) => {
+                let worker_counts = {
+                    [ workers.types.HARVESTER ]: 1,
+                    [ workers.types.CONTAINER_EXTENSION ]: 1,
+                    [ workers.types.CONTAINER_BUILDER ]: 3,
+                    [ workers.types.CONTAINER_MINER ]: 2,
+                    [ workers.types.SCOUT ]: 1
+                };
+
+                
+
+                return worker_counts;
             },
             construction_planners: []
         }

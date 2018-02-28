@@ -1,5 +1,3 @@
-const lodash = require( 'lodash' );
-
 const constants = require( '~/constants' );
 
 const StateWorker = require( './StateWorker' );

@@ -1,11 +1,10 @@
-const _ = require( 'lodash' );
-
 const loopItem = require( '~/lib/loopItem' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );
 
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
+const LongDistanceMiningPlanner = require( '~/room_manager/LongDistanceMiningPlanner' );
 
 module.exports.loop = function() {
     const spawn = Game.spawns[ 'Spawn1' ];
@@ -39,6 +38,11 @@ module.exports.loop = function() {
                 room_manager.doManage( Game.rooms[ i ] );
             } );
         }
+    } );
+
+    loopItem( 'test-long-distance-mining-planner', () => {
+        let planner = new LongDistanceMiningPlanner();
+        planner.doPlan( Game.spawns[ 'Spawn1' ].room );
     } );
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );

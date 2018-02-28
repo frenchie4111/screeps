@@ -30,11 +30,11 @@ class Scout extends Worker {
         let current_direction = directions[ current_direction_i ];
 
         if( !map.hasRoom( creep.room.name ) ) {
-            map.storeRoom( creep.room );
+            map.storeRoom( creep, creep.room );
         }
 
         if( creep.room.name === memory.start_room_name ) {
-            let current_room_map = this.getRoom( memory.start_room_name );
+            let current_room_map = map.getRoom( memory.start_room_name );
             let target_room_name = current_room_map.exits[ current_direction ];
 
             if( !map.hasRoom( target_room_name ) ) {
