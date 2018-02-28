@@ -128,6 +128,17 @@ class SpawnManager {
         let max_body = worker.getBody( energy_capacity ).sort();
         return max_body;
     }
+    
+    checkForExtensionConstruction( room ) {
+        let construction_sites = room
+            .find( FIND_MY_CONSTRUCTION_SITES, {
+                filter: {
+                    structureType: STRUCTURE_EXTENSION
+                }
+            } );
+
+        return construction_sites.length > 0;
+    }
 
     doManage( room, spawn, current_state, current_creeps ) {
         let creeps_to_renew = this.findCreepsToRenew( current_creeps );
@@ -159,9 +170,13 @@ class SpawnManager {
                     let current_body = _.map( creep.body, ( body_item ) => body_item.type ).sort();
 
                     if( !_.isEqual( max_body, current_body ) ) {
-                        console.log( 'Killing creep for upgrade ' + creep.name );
-                        if( !temp_worker.isSuicide() ) {
-                            temp_worker.setSuicide();
+                        if( !this.checkForExtensionConstruction( room ) ) {
+                            console.log( 'Killing creep for upgrade ' + creep.name );
+                            if( !temp_worker.isSuicide() ) {
+                                temp_worker.setSuicide();
+                            }
+                        } else {
+                            console.log( 'Not upgrading creep because we are building extensions' );
                         }
                     } else {
                         console.log( 'Telling ' + creep.name + ' to renew' );
