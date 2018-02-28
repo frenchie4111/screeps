@@ -17,7 +17,6 @@
     "grunt-jsbeautifier": "0.2.13",
     "grunt-screeps": "1.2.1",
     "grunt-webpack": "2.0.1",
-    "lodash": "^4.17.5",
     "random-string": "0.1.2",
     "webpack": "2.3.2"
   }
