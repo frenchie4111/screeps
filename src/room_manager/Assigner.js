@@ -5,32 +5,59 @@ class Assigner {
         this.room = room;
     }
 
-    _getPreviouslyAssigned( key_name ) {
+    _getAssignedForType( type ) {
         if( !this.room.memory.hasOwnProperty( '_assigner' ) ) this.room.memory._assigner = {};
-        if( !this.room.memory._assigner.hasOwnProperty( key_name ) ) this.room.memory._assigner[ key_name ] = {};
-        return this.room.memory._assigner[ key_name ];
+        if( !this.room.memory._assigner.hasOwnProperty( type ) ) this.room.memory._assigner[ type ] = {};
+        return this.room.memory._assigner[ type ];
     }
 
-    _isPreviouslyAssignedTo( key_name, id, creep_id ) {
-        if( !this._getPreviouslyAssigned( key_name ).hasOwnProperty( id ) ) return false;
-        return this._getPreviouslyAssigned( key_name )[ id ] === creep_id;
+    _isPreviouslyAssignedTo( key_name, thing_id, creep_id ) {
+        if( !this._getAssignedForType( key_name ).hasOwnProperty( thing_id ) ) return false;
+        return this._getAssignedForType( key_name )[ thing_id ].indexOf( creep_id ) !== -1;
     }
 
-    _isPreviouslyAssigned( key_name, id ) {
-        console.log( '_isPreviouslyAssigned', key_name, id, this._getPreviouslyAssigned( key_name ).hasOwnProperty( id ) );
-        return this._getPreviouslyAssigned( key_name ).hasOwnProperty( id );
+    _getAssignedToForCreep( type, creep_id ) {
+        let all = this._getAssignedForType( type );
+        for( let thing_id in all ) {
+            if( this._isPreviouslyAssignedTo( type, thing_id, creep_id ) ) {
+                return thing_id;
+            }
+        }
+        return null;
+    }
+
+    _canBeAssigned( key_name, thing_id, allowed_count=1 ) {
+        if( !this._getAssignedForType( key_name ).hasOwnProperty( thing_id ) ) {
+            console.log( 'nokey' );
+            return true;
+        }
+        return this._getAssignedForType( key_name )[ thing_id ].length < allowed_count;
+    }
+
+    _setAssigned( type, thing_id, creep_id ) {
+        let assignations = this._getAssignedForType( type );
+        if( !assignations.hasOwnProperty( thing_id ) ) assignations[ thing_id ] = [];
+        assignations[ thing_id ].push( creep_id );
     }
 
     garbageCollect() {
         _
             .forEach( Assigner.types, ( type ) => {
-                let previously_assigned = this._getPreviouslyAssigned( type );
-                for( let key in previously_assigned ) {
-                    let creep_id = previously_assigned[ key ];
+                let previously_assigned = this._getAssignedForType( type );
+                for( let thing_id in previously_assigned ) {
+                    let assigned_for_thing_id = previously_assigned[ thing_id ];
 
-                    if( !Game.getObjectById( creep_id ) ) {
-                        console.log( 'creep gone', type, creep_id, previously_assigned[ key ] );
-                        delete previously_assigned[ key ];
+                    let gone_indexes = [];
+                    for( let assigned_i in assigned_for_thing_id ) {
+                        let creep_id = assigned_for_thing_id[ assigned_i ];
+                        if( !Game.getObjectById( creep_id ) ) {
+                            gone_indexes.push( assigned_i );
+                        }
+                    }
+
+                    if( gone_indexes.length > 0 ) {
+                        console.log( 'LOST CREEPS IN ASSIGNER' );
+                        gone_indexes.forEach( ( i ) => assigned_for_thing_id.splice( i, 1 ) );
                     }
                 }
             } );
@@ -39,36 +66,43 @@ class Assigner {
     getAssigned( creep, type ) {
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
-                let previously_assigned = this._getPreviouslyAssigned( type );
+                let previously_assigned = this._getAssignedForType( type );
 
                 let unassigned_structures = creep
                     .room
                     .find( FIND_SOURCES, {
                         filter: ( structure ) => {
                             return (
-                                !previously_assigned.hasOwnProperty( structure.id )
+                                this._canBeAssigned( type, structure.id )
                             );
                         }
                     } );
 
                 if( unassigned_structures.length === 0 ) throw new Error( 'Out of sturctures: ', type );
-                previously_assigned[ unassigned_structures[ 0 ].id ] = creep.id;
+                this._setAssigned( type, unassigned_structures[ 0 ].id, creep.id );
 
                 return unassigned_structures[ 0 ];
                 break;
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
             case Assigner.types.LONG_DISTANCE_HAULER:
-                let source_assigned_to_me = _.find( this.room.memory._long_distance, ( assigned, source_id ) => this._isPreviouslyAssignedTo( type, source_id, creep.id ) );
+                let source_assigned_to_me = this._getAssignedToForCreep( type, creep.id );
                 if( source_assigned_to_me ) {
-                    console.log( 'was assigned to me' );
-                    return source_assigned_to_me;
+                    console.log( 'was previously_assigned', source_assigned_to_me, JSON.stringify( this.room.memory._long_distance[ source_assigned_to_me ] ) );
+                    return this.room.memory._long_distance[ source_assigned_to_me ];
                 }
 
-                let unassigned_sources = _.filter( this.room.memory._long_distance, ( assigned, source_id ) => !this._isPreviouslyAssigned( type, source_id ) );
+                let unassigned_sources = _
+                    .filter( this.room.memory._long_distance, ( long_distance, source_id ) => {
+                        let allowed_count = ( type === Assigner.types.LONG_DISTANCE_HAULER ) ? long_distance.haulers : 1;
+                        return this._canBeAssigned( type, source_id, allowed_count );
+                    } );
 
                 if( unassigned_sources.length === 0 ) throw new Error( 'Out of sturctures: ', type );
-                this._getPreviouslyAssigned( type )[ unassigned_sources[ 0 ].source_id ] = creep.id;
+                this._setAssigned( type, unassigned_sources[ 0 ].source_id, creep.id );
 
+                console.log( JSON.stringify( unassigned_sources[ 0 ] ) );
+
+                console.log( 'Assigning', creep.id, 'to', unassigned_sources[ 0 ].source_id );
                 return unassigned_sources[ 0 ];
                 break;
         }

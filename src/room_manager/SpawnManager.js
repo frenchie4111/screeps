@@ -156,6 +156,10 @@ class SpawnManager {
                 temp_worker.setSuicide();
             } );
 
+        if( spawn.spawning ) {
+            return;
+        }
+
         if( currently_renewing_creeps.length < MAX_RENEWING ) {
             if( creeps_to_renew.length > 0 ) {
                 let creep = creeps_to_renew[ 0 ];

@@ -205,7 +205,7 @@ module.exports = {
                 let long_distance_operations = Object.keys( room.memory._long_distance ).length;
 
                 worker_counts[ workers.types.LONG_DISTANCE_CONTAINER_MINER ] = long_distance_operations;
-                worker_counts[ workers.types.LONG_DISTANCE_HAULER ] = long_distance_operations;
+                worker_counts[ workers.types.LONG_DISTANCE_HAULER ] = _.sum( _.map( room.memory._long_distance, ( operation, key ) => operation.haulers ) );
 
                 return worker_counts;
             },

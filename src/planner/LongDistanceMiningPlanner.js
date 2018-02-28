@@ -4,10 +4,26 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 2;
 
-const VERSION = 1;
+const VERSION = 5;
+
+const ONE_HAULER_PER = 125;
 
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
+        let memory = this.getRoomLongDistanceMemory( room );
+
+        if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
+            return true;
+        }
+
+        for( let source_id in memory ) {
+            if( !memory[ source_id ]._version || memory[ source_id ]._version !== VERSION ) {
+                console.log( 'Re-run because of version' );
+                delete memory[ source_id ];
+                return true;
+            }
+        }
+
         return super.shouldRun( room, spawn );
     }
 
@@ -16,7 +32,7 @@ class LongDistanceMiningPlanner extends Planner {
         return room.memory._long_distance;
     }
 
-    getClosestSource( start_room ) {
+    getClosestSource( start_room, spawn ) {
         let room_map = map.getRoom( start_room.name );
 
         let sources = [];
@@ -28,15 +44,24 @@ class LongDistanceMiningPlanner extends Planner {
                         let exit_room = map.getRoom( exit_room_name );
                         if( exit_room.saw_enemies ) return;
 
+                        let exit_point = spawn.pos.findClosestByPath( +direction );
+                        let exit_path = spawn.pos.findPathTo( exit_point );
+                        let exit_path_length = exit_path.length;
+
                         exit_room
                             .sources
                             .forEach( ( source ) => {
+                                let haulers = Math.ceil( ( ( source.path_length + exit_path_length ) * 2 ) / ONE_HAULER_PER );
+
                                 sources
                                     .push( {
                                         source_id: source.source_id,
                                         path_length: source.path_length,
+                                        exit_path_length: exit_path_length,
                                         room_name: exit_room_name,
-                                        direction: direction
+                                        haulers: haulers,
+                                        direction: direction,
+                                        _version: VERSION
                                     } );
                             } );
                     }
@@ -60,12 +85,12 @@ class LongDistanceMiningPlanner extends Planner {
         let memory = this.getRoomLongDistanceMemory( room );
 
         if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
-            let closest_source = this.getClosestSource( room );
+            let closest_source = this.getClosestSource( room, spawn );
             console.log( 'closest_source', JSON.stringify( closest_source ) );
             memory[ closest_source.source_id ] = closest_source;
 
-            Memory.rooms[ closest_source.room_name ].memory._state = Memory.rooms[ closest_source.room_name ].memory._state || {};
-            Memory.rooms[ closest_source.room_name ].memory._state.type = 'long_distance';
+            Memory.rooms[ closest_source.room_name ]._state = Memory.rooms[ closest_source.room_name ]._state || {};
+            Memory.rooms[ closest_source.room_name ]._state.type = 'long_distance';
             console.log( 'after' );
         }
 
