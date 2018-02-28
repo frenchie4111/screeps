@@ -2,11 +2,11 @@ const map = require( '~/lib/map' );
 
 const Planner = require( './Planner' );
 
-const MAX_LONG_DISTANCE_MINER = 2;
+const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 5;
+const VERSION = 6;
 
-const ONE_HAULER_PER = 125;
+const ONE_HAULER_PER = 200;
 
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
