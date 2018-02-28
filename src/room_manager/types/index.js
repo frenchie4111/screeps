@@ -2,18 +2,19 @@ const workers = require( '~/workers' ),
     constants = require( '~/constants' ),
     map = require( '~/lib/map' );
 
-const ExtensionPlanner = require( '~/construction_planner/ExtensionPlanner' ),
-    SourceRoadPlanner = require( '~/construction_planner/SourceRoadPlanner' ),
-    ContainerPlanner = require( '~/construction_planner/ContainerPlanner' ),
-    StoragePlanner = require( '~/construction_planner/StoragePlanner' ),
-    TowerPlanner = require( '~/construction_planner/TowerPlanner' ),
-    WallPlanner = require( '~/construction_planner/WallPlanner' ),
-    RampartPlanner = require( '~/construction_planner/RampartPlanner' ),
-    ControllerSourceRoad = require( '~/construction_planner/ControllerSourceRoad' ),
-    OuterBaseRoads = require( '~/construction_planner/OuterBaseRoads' ),
-    BaseExitRoadPlanner = require( '~/construction_planner/BaseExitRoadPlanner' ),
-    LongDistanceMiningRoadPlanner = require( '~/construction_planner/LongDistanceMiningRoadPlanner' ),
-    ExtensionRoadPlanner = require( '~/construction_planner/ExtensionRoadPlanner' );
+const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
+    SourceRoadPlanner = require( '~/planner/SourceRoadPlanner' ),
+    ContainerPlanner = require( '~/planner/ContainerPlanner' ),
+    StoragePlanner = require( '~/planner/StoragePlanner' ),
+    TowerPlanner = require( '~/planner/TowerPlanner' ),
+    WallPlanner = require( '~/planner/WallPlanner' ),
+    RampartPlanner = require( '~/planner/RampartPlanner' ),
+    ControllerSourceRoad = require( '~/planner/ControllerSourceRoad' ),
+    OuterBaseRoads = require( '~/planner/OuterBaseRoads' ),
+    BaseExitRoadPlanner = require( '~/planner/BaseExitRoadPlanner' ),
+    LongDistanceMiningRoadPlanner = require( '~/planner/LongDistanceMiningRoadPlanner' ),
+    LongDistanceMiningPlanner = require( '~/planner/LongDistanceMiningPlanner' ),
+    ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' );
 
 module.exports = { 
     STATES_VERSION: 3, // Increment this and the code will automatically reset current state on next deploy
@@ -26,7 +27,7 @@ module.exports = {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.UPGRADER ]: 1
             },
-            construction_planners: []
+            planners: []
         },
         {
             isComplete: ( room ) => {
@@ -43,7 +44,7 @@ module.exports = {
                 [ workers.types.BUILDER ]: 3,
                 [ workers.types.REPAIRER ]: 1
             },
-            construction_planners: [
+            planners: [
                 new ContainerPlanner( 'container' )
             ]
         },
@@ -62,7 +63,7 @@ module.exports = {
                 [ workers.types.CONTAINER_BUILDER ]: 2,
                 [ workers.types.CONTAINER_MINER ]: 2
             },
-            construction_planners: [
+            planners: [
                 new ExtensionPlanner( 'extension-1' )
             ]
         },
@@ -76,7 +77,7 @@ module.exports = {
                 [ workers.types.CONTAINER_BUILDER ]: 3,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
-            construction_planners: [
+            planners: [
                 new SourceRoadPlanner( 'spawn' ),
                 new ControllerSourceRoad( 'controller' )
             ]
@@ -90,7 +91,7 @@ module.exports = {
                 [ workers.types.CONTAINER_HARVESTER ]: 3,
                 [ workers.types.CONATINER_REPAIRER ]: 1
             },
-            construction_planners: []
+            planners: []
         },
         {
             isComplete: ( room ) => {
@@ -109,7 +110,7 @@ module.exports = {
                 [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
-            construction_planners: [
+            planners: [
                 new ExtensionPlanner( 'extension-2' ),
                 new TowerPlanner( 'tower-1' )
             ]
@@ -134,7 +135,7 @@ module.exports = {
                 [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
-            construction_planners: [
+            planners: [
                 new ExtensionPlanner( 'extension-3' ),
                 new ExtensionRoadPlanner( 'extension-road-1' ),
                 new StoragePlanner( 'storage-1' )
@@ -152,7 +153,7 @@ module.exports = {
                 [ workers.types.CONTAINER_REPAIRER ]: 1,
                 [ workers.types.SCOUT ]: 1
             },
-            construction_planners: []
+            planners: []
         },
         {
             isComplete: ( room ) => {
@@ -174,7 +175,7 @@ module.exports = {
                 [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
-            construction_planners: [
+            planners: [
                 new ExtensionPlanner( 'extension-4' ),
                 new ExtensionRoadPlanner( 'extension-road-2' ),
                 new WallPlanner( 'wall-planner-1' ),
@@ -208,15 +209,20 @@ module.exports = {
 
                 return worker_counts;
             },
-            construction_planners: ( room ) => {
+            planners: ( room ) => {
+                let planners = [
+                    new LongDistanceMiningPlanner( 'ldm-1' )
+                ];
+
                 let long_distance_operations = room.memory._long_distance;
 
                 let exit_road_planners = _
                     .map( long_distance_operations, ( long_distance_operation ) => {
                         return new LongDistanceMiningRoadPlanner( 'ldm-road-' + long_distance_operation.direction, long_distance_operation, true );
                     } );
+                exit_road_planners = [];
 
-                return [];
+                return planners.concat( exit_road_planners );
             }
         }
     ],

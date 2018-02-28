@@ -1,22 +1,14 @@
 const constants = require( '~/constants' );
 
-class ConstructionPlanner {
+const Planner = require( './Planner' );
+
+class ConstructionPlanner extends Planner {
     constructor( name, structure_type, dry_run=false ) {
+        super( name, dry_run );
+
         this.structure_type = structure_type;
-        this.dry_run = dry_run;
         this.name = name;
         this.color = 'red';
-        this.rerun_on_fail = true;
-    }
-
-    hasRunBefore( room ) {
-        if( !room.memory.hasOwnProperty( '_construction_planners' ) ) room.memory._construction_planners = {};
-        return room.memory._construction_planners[ this.name ];
-    }
-
-    setHasRun( room, value ) {
-        if( !room.memory.hasOwnProperty( '_construction_planners' ) ) room.memory._construction_planners = {};
-        return room.memory._construction_planners[ this.name ] = value;
     }
 
     getNewAllowedStructureCount( room ) {
@@ -74,6 +66,10 @@ class ConstructionPlanner {
         return !this.hasRunBefore( room );
     }
 
+    shouldRun( room, spawn ) {
+        return _shouldCreateNewStructure( room, spawn );
+    }
+
     _getNewPosition( room, spawn, pending ) {
         throw new Error( 'Abstract Method' );
     }
@@ -91,7 +87,7 @@ class ConstructionPlanner {
         return pending;
     }
 
-    createConstructionSites( room, spawn ) {
+    _doPlan( room, spawn ) {
         if( !this._shouldCreateNewStructure( room ) ) return;
 
         let suceeded = true;
@@ -118,9 +114,7 @@ class ConstructionPlanner {
                 }
             } );
 
-        if( ( !this.rerun_on_fail || suceeded ) && !this.dry_run ) {
-            this.setHasRun( room, true );
-        }
+        return succeeded;
     }
 }
 

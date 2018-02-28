@@ -1,8 +1,16 @@
 const map = require( '~/lib/map' );
 
+const Planner = require( './Planner' );
+
 const MAX_LONG_DISTANCE_MINER = 2;
 
-class LongDistanceMiningPlanner {
+const VERSION = 1;
+
+class LongDistanceMiningPlanner extends Planner {
+    shouldRun( room, spawn ) {
+        return super.shouldRun( room, spawn );
+    }
+
     getRoomLongDistanceMemory( room ) {
         room.memory._long_distance = room.memory._long_distance || {};
         return room.memory._long_distance;
@@ -48,7 +56,7 @@ class LongDistanceMiningPlanner {
         return sources[ 0 ];
     }
 
-    doPlan( room ) {
+    _doPlan( room, spawn ) {
         let memory = this.getRoomLongDistanceMemory( room );
 
         if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
@@ -60,6 +68,8 @@ class LongDistanceMiningPlanner {
             Memory.rooms[ closest_source.room_name ].memory._state.type = 'long_distance';
             console.log( 'after' );
         }
+
+        return true;
     }
 }
 

@@ -88,16 +88,16 @@ class RoomManager {
     }
 
     handleConstruction( room, spawn, current_state ) {
-        let construction_planners = current_state.construction_planners;
+        let planners = current_state.planners;
 
-        if( _.isFunction( construction_planners ) ) {
-            construction_planners = construction_planners( room, spawn );
+        if( _.isFunction( planners ) ) {
+            planners = planners( room, spawn );
         }
 
-        construction_planners
+        planners
             .forEach( ( planner ) => {
                 loopItem( 'planner-' + planner.name, () => {
-                    return planner.createConstructionSites( room, spawn );
+                    return planner.doPlan( room, spawn );
                 } );
             } );
     }
