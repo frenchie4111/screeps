@@ -66,6 +66,11 @@ class Assigner {
     getAssigned( creep, type ) {
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
+                let cm_source_assigned_to_me = this._getAssignedToForCreep( type, creep.id );
+                if( cm_source_assigned_to_me ) {
+                    console.log( 'was previously_assigned', cm_source_assigned_to_me, Game.getObjectById( cm_source_assigned_to_me ) );
+                    return Game.getObjectById( cm_source_assigned_to_me );
+                }
                 let previously_assigned = this._getAssignedForType( type );
 
                 let unassigned_structures = creep

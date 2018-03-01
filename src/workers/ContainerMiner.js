@@ -113,7 +113,7 @@ class ContainerMiner extends RenewWorker {
     }
 
     getSource( creep, worker_memory ) {
-        this.assigner.getAssigned( creep, 'CONTAINER_MINER' );
+        return this.assigner.getAssigned( creep, 'CONTAINER_MINER' );
     }
 
     _getStates() {
