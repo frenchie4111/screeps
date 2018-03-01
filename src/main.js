@@ -2,9 +2,13 @@ const loopItem = require( '~/lib/loopItem' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );
 
+const stats = require( './stats' );
+
 const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
 
 module.exports.loop = function() {
+    loopItem.resetProfile();
+
     const spawn = Game.spawns[ 'Spawn1' ];
     const room = spawn.room;
 
@@ -20,7 +24,7 @@ module.exports.loop = function() {
 
         // collectors[ 0 ].drawHotSpots( room );
     } );
-    
+
     loopItem( 'garbage-collector', () => {
         for( let i in Memory.creeps ) {
             if( !Game.creeps[ i ] ) {
@@ -37,6 +41,8 @@ module.exports.loop = function() {
             } );
         }
     } );
+
+    stats();
 
     console.log( ' -- Tick End ' + Game.cpu.getUsed() + ' -- ' );
 }

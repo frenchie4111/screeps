@@ -1,7 +1,12 @@
 const Logger = require( '~/lib/logger' ),
     Deque = require( '~/lib/Deque' );
 
+let profile = {};
+
 const loopItem = ( name, func ) => {
+    profile[ name ] = {};
+    profile[ name ].start = Game.cpu.getUsed();
+
     let logger = new Logger( name );
     logger.patch();
 
@@ -24,7 +29,11 @@ const loopItem = ( name, func ) => {
         console.log( error.stack );
     } finally {
         logger.unpatch();
+        profile[ name ].end = Game.cpu.getUsed();
+        profile[ name ].time = profile[ name ].end - profile[ name ].start;
     }
 };
 
 module.exports = loopItem;
+module.exports.getProfile = () => profile;
+module.exports.resetProfile = () => profile = {};
