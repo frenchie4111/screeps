@@ -80,6 +80,9 @@ class RoomManager {
             .forEach( ( creep ) => {
                 loopItem( 'creep-work-' + creep.name, () => {
                     const WorkerClass = workers.getClass( creep.memory.worker_type );
+                    if( !WorkerClass ) {
+                        throw new Error( 'No workerclass for ', creep.memory.worker_type );
+                    }
                     const worker = new WorkerClass( assigner );
                     worker.setCreep( creep );
                     worker.doWork( creep, room );
