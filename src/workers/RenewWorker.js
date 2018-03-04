@@ -6,7 +6,8 @@ const StateWorker = require( './StateWorker' );
 let STATES = {
     MOVE_TO_SPAWN: 'MOVE_TO_SPAWN',
     RENEW: 'RENEW',
-    MOVE_TO_SPAWN_ROOM: 'MOVE_TO_SPAWN_ROOM'
+    MOVE_TO_SPAWN_ROOM: 'MOVE_TO_SPAWN_ROOM',
+    WAIT_FOR_ENEMY: 'WAIT_FOR_ENEMY'
 };
 
 class RenewWorker extends StateWorker {
@@ -51,11 +52,12 @@ class RenewWorker extends StateWorker {
             },
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
                 if( this.isNear( creep, worker_memory.spawn_id ) ) {
+                    if( worker_memory.renewing ) {
+                        return STATES.RENEW;
+                    }
                     if( worker_memory.running_until ) {
                         return STATES.WAIT_FOR_ENEMY;
                     }
-
-                    return STATES.RENEW;
                 }
                 const spawn = Game.getObjectById( worker_memory.spawn_id );
 
@@ -77,9 +79,17 @@ class RenewWorker extends StateWorker {
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
                 if( creep.ticksToLive > 1400 ) {
                     worker_memory.renewing = false;
+
+                    if( worker_memory.running_until ) {
+                        return STATES.WAIT_FOR_ENEMY;
+                    }
+
                     return this.default_state;
                 }
-                Game.getObjectById( worker_memory.spawn_id ).renewCreep( creep );
+                let renew_response = Game.getObjectById( worker_memory.spawn_id ).renewCreep( creep );
+                if( renew_response !== OK ) {
+                    console.log( 'NOT OK RENEW RESPONSE', renew_response, constants.lookup( renew_response ) );
+                }
             }
         }
     }

@@ -85,6 +85,12 @@ class SpawnManager {
         let needed_counts = _
             .reduce( worker_counts, ( needed, val, type ) => {
                 let current_val = current_counts.hasOwnProperty( type ) ? current_counts[ type ] : 0;
+                
+                // Ignore types of creeps that can't be suicided
+                if( !workers.workerClassHasProperty( type, 'setSuicide' ) ) {
+                    return needed;
+                }
+
                 if( val - current_val < 0 ) {
                     needed[ type ] = val - current_val;
                 }
@@ -118,7 +124,15 @@ class SpawnManager {
     }
 
     findCreepsToRenew( creeps ) {
-        let renewing_creeps = _.filter( creeps, ( creep ) => !RenewWorker.isRenewing( creep ) && !RenewWorker.isSuicide( creep ) && RenewWorker.needsRenewing( creep ) );
+        let renewing_creeps = _.filter( creeps, ( creep ) => {
+            const WorkerClass = workers.getClass( creep.memory.worker_type );
+            return (
+                WorkerClass && 'setRenew' in WorkerClass.prototype &&
+                !RenewWorker.isRenewing( creep ) &&
+                !RenewWorker.isSuicide( creep ) &&
+                RenewWorker.needsRenewing( creep )
+            );
+        } );
         renewing_creeps = _.sortBy( renewing_creeps, ( creep ) => creep.ticksToLive );
         return renewing_creeps;
     }
@@ -173,14 +187,10 @@ class SpawnManager {
                     let max_body = this.getMaxBodyForWorker( spawn, temp_worker );
                     let current_body = _.map( creep.body, ( body_item ) => body_item.type ).sort();
 
-                    if( !_.isEqual( max_body, current_body ) ) {
-                        if( !this.checkForExtensionConstruction( room ) ) {
-                            console.log( 'Killing creep for upgrade ' + creep.name );
-                            if( !temp_worker.isSuicide() ) {
-                                temp_worker.setSuicide();
-                            }
-                        } else {
-                            console.log( 'Not upgrading creep because we are building extensions' );
+                    if( !_.isEqual( max_body, current_body ) && !this.checkForExtensionConstruction( room ) ) {
+                        console.log( 'Upgrading', creep.name );
+                        if( !temp_worker.isSuicide() ) {
+                            temp_worker.setSuicide();
                         }
                     } else {
                         console.log( 'Telling ' + creep.name + ' to renew' );
@@ -189,6 +199,8 @@ class SpawnManager {
                 }
             } else { // Spawn
                 const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
+                
+                console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );
                 
                 const needed_spawns_keys = Object.keys( needed_spawns );
 
@@ -217,6 +229,8 @@ class SpawnManager {
                     }
                 }
             }
+        } else {
+            // Max things are renewing
         }
     }
 }

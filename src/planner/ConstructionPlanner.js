@@ -6,8 +6,8 @@ class ConstructionPlanner extends Planner {
     constructor( name, structure_type, dry_run=false ) {
         super( name, dry_run );
 
-        this.structure_type = structure_type;
         this.name = name;
+        this.structure_type = structure_type;
         this.color = 'red';
     }
 
@@ -67,7 +67,7 @@ class ConstructionPlanner extends Planner {
     }
 
     shouldRun( room, spawn ) {
-        return _shouldCreateNewStructure( room, spawn );
+        return this._shouldCreateNewStructure( room, spawn );
     }
 
     _getNewPosition( room, spawn, pending ) {
@@ -90,7 +90,7 @@ class ConstructionPlanner extends Planner {
     _doPlan( room, spawn ) {
         if( !this._shouldCreateNewStructure( room ) ) return;
 
-        let suceeded = true;
+        let succeeded = true;
 
         let new_positions = this._getNewPositions( room, spawn );
     
@@ -109,7 +109,7 @@ class ConstructionPlanner extends Planner {
                     let return_status = room.createConstructionSite( position, this.structure_type );
                     if( return_status !== constants.OK ) {
                         console.log( 'createConstructionSite non OK status', return_status );
-                        suceeded = false;
+                        succeeded = false;
                     }
                 }
             } );

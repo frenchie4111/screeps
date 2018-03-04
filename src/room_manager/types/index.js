@@ -16,6 +16,32 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     LongDistanceMiningPlanner = require( '~/planner/LongDistanceMiningPlanner' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' );
 
+const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
+
+const addWorkerCountsForLongDistanceMining = ( worker_counts, room ) => {
+    let long_distance_operations = Object.keys( room.memory._long_distance ).length;
+    worker_counts[ workers.types.LONG_DISTANCE_CONTAINER_MINER ] = long_distance_operations;
+    worker_counts[ workers.types.LONG_DISTANCE_HAULER ] = _.sum( _.map( room.memory._long_distance, ( operation, key ) => operation.haulers ) );
+
+    let rooms_to_reserve = _.uniq( _.map( room.memory._long_distance, ( long_distance ) => long_distance.room_name ) );
+    rooms_to_reserve = _
+        .filter( rooms_to_reserve, ( room ) => {
+            if( !Memory.rooms[ room ].hasOwnProperty( 'resevered_until' ) ) return true;
+            let ticks_til_unreserved = Memory.rooms[ room ].resevered_until - Game.time;
+            return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;
+        } )
+
+    console.log( rooms_to_reserve, JSON.stringify( rooms_to_reserve ) );
+
+    worker_counts[ workers.types.LONG_DISTANCE_RESERVER ] = rooms_to_reserve.length;
+};
+
+const addWorkerCountsForScout = ( worker_counts, room ) => {
+    if( map.needsScout( room.name ) ) {
+        worker_counts[ workers.types.SCOUT ] = 1;
+    }
+}
+
 module.exports = { 
     STATES_VERSION: 3, // Increment this and the code will automatically reset current state on next deploy
     standard: [
@@ -187,6 +213,27 @@ module.exports = {
         },
         {
             isComplete: ( room ) => {
+                return room.controller.level >= 6;
+            },
+            worker_counts: ( room ) => {
+                let worker_counts = {
+                    [ workers.types.HARVESTER ]: 1,
+                    [ workers.types.CONTAINER_EXTENSION ]: 1,
+                    [ workers.types.CONTAINER_BUILDER ]: 2,
+                    [ workers.types.CONTAINER_MINER ]: 2,
+                };
+
+                addWorkerCountsForLongDistanceMining( worker_counts, room );
+                addWorkerCountsForScout( worker_counts, room );
+
+                return worker_counts;
+            },
+            planners: [
+                new LongDistanceMiningPlanner( 'ldm-1' )
+            ]
+        },
+        {
+            isComplete: ( room ) => {
                 return false;
             },
             worker_counts: ( room ) => {
@@ -195,35 +242,16 @@ module.exports = {
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
                     [ workers.types.CONTAINER_BUILDER ]: 2,
                     [ workers.types.CONTAINER_MINER ]: 2,
-                    // [ workers.types.SCOUT ]: 1
                 };
 
-                if( map.needsScout( room.name ) ) {
-                    worker_counts[ workers.types.SCOUT ] = 1;
-                }
-
-                let long_distance_operations = Object.keys( room.memory._long_distance ).length;
-
-                worker_counts[ workers.types.LONG_DISTANCE_CONTAINER_MINER ] = long_distance_operations;
-                worker_counts[ workers.types.LONG_DISTANCE_HAULER ] = _.sum( _.map( room.memory._long_distance, ( operation, key ) => operation.haulers ) );
+                addWorkerCountsForLongDistanceMining( worker_counts, room );
+                addWorkerCountsForScout( worker_counts, room );
 
                 return worker_counts;
             },
-            planners: ( room ) => {
-                let planners = [
-                    new LongDistanceMiningPlanner( 'ldm-1' )
-                ];
-
-                let long_distance_operations = room.memory._long_distance;
-
-                let exit_road_planners = _
-                    .map( long_distance_operations, ( long_distance_operation ) => {
-                        return new LongDistanceMiningRoadPlanner( 'ldm-road-' + long_distance_operation.direction, long_distance_operation, true );
-                    } );
-                exit_road_planners = [];
-
-                return planners.concat( exit_road_planners );
-            }
+            planners: [
+                new ExtensionPlanner( 'extension-5' )
+            ]
         }
     ],
     long_distance: null

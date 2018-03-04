@@ -20,7 +20,7 @@ const IGNORE_DIRECTIONS = [
 
 class ExtensionPlanner extends ConstructionPlanner {
     constructor( name, dry_run=false ) {
-        super( name, constants.STRUCTURE_EXTENSION, true );
+        super( name, constants.STRUCTURE_EXTENSION, dry_run );
         this._direction_lists = {};
     }
 
@@ -29,10 +29,6 @@ class ExtensionPlanner extends ConstructionPlanner {
             ( !this.hasRunBefore( room ) ) &&
             ( this.getNewAllowedStructureCount( room ) - pending.length ) > 0
         );
-    }
-    
-    getNewAllowedStructureCount() {
-        return 60;
     }
 
     shouldIgnoreDirection( direction ) {

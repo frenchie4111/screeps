@@ -192,22 +192,22 @@ class RoomManager {
             return;
         }
 
+        loopItem( 'creeps', () => {
+            this.handleCreeps( room, spawn, current_state, assigner );
+        } );
+
+        loopItem( 'towers', () => {
+            this.handleTowers( room, spawn, current_state );
+        } );
+
         if( has_spawn ) {
             loopItem( 'spawn', () => {
                 this.handleSpawns( room, spawn, current_state );
             } );
         }
-
-        loopItem( 'creeps', () => {
-            this.handleCreeps( room, spawn, current_state, assigner );
-        } );
         
         loopItem( 'construction', () => {
             this.handleConstruction( room, spawn, current_state );
-        } );
-        
-        loopItem( 'towers', () => {
-            this.handleTowers( room, spawn, current_state );
         } );
     }
 };

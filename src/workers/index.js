@@ -11,6 +11,7 @@ const worker_type_conversion = {
     SCOUT: require( './Scout' ),
     LONG_DISTANCE_CONTAINER_MINER: require( './LongDistanceContainerMiner' ),
     LONG_DISTANCE_HAULER: require( './LongDistanceHauler' ),
+    LONG_DISTANCE_RESERVER: require( './LongDistanceReserver' ),
 };
 
 const types = {
@@ -27,11 +28,20 @@ const types = {
     SCOUT: 'SCOUT',
     LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER',
     LONG_DISTANCE_HAULER: 'LONG_DISTANCE_HAULER',
+    LONG_DISTANCE_RESERVER: 'LONG_DISTANCE_RESERVER',
 };
 
 module.exports = {
     getClass: ( type ) => {
-        return worker_type_conversion[ type ];
+        let WorkerClass = worker_type_conversion[ type ];
+        if( !WorkerClass ) {
+            console.log( 'No worker class for type', type );
+        }
+        return WorkerClass;
+    },
+    workerClassHasProperty: ( type, property ) => {
+        const WorkerClass = module.exports.getClass( type );
+        return property in WorkerClass.prototype;
     },
     types: types
 };

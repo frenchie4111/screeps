@@ -11,8 +11,8 @@ class LongDistanceContainerMiner extends ContainerMiner {
     constructor( assigner ) {
         super( assigner );
         this.default_state = STATES.GO_TO_SOURCE_ROOM;
-        this.MAX_WORK_PARTS = 5;
-        this.MAX_MOVE_PARTS = 5;
+        this.MAX_WORK_PARTS = 7;
+        this.MAX_MOVE_PARTS = 7;
         this.run_from_enemy = true;
     }
 
