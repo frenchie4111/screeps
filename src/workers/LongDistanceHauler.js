@@ -8,6 +8,7 @@ class LongDistanceHauler extends ContainerHarvester {
         super( assigner );
         this.default_state = HarvestWorker.STATES.MOVE_TO_TRANSFER;
         this.MAX_CARRY = 15;
+        this.run_from_enemy = true;
     }
 
     shouldStopHarvesting( creep, container ) {

@@ -2,6 +2,8 @@ const constants = require( '~/constants' );
 
 const position = require( '~/lib/position' );
 
+const profiler = require( '~/profiler' );
+
 const _drawPath = ( creep, path ) => {
     for( let i = 0; i < path.length - 1; i++ ) {
         creep.room.visual.line( path[ i ], path[ i + 1 ], { color: 'white' } );
@@ -19,10 +21,12 @@ const moveTo = ( creep, move_memory, target ) => {
     }
 
     if( !move_memory.path ) {
+        profiler.incrementCallsFor( 'move.findPathTo' );
         move_memory.path = creep.pos.findPathTo( target );
     } else {
         // Make sure we aren't stuck
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
+            profiler.incrementCallsFor( 'move.findPathTo' );
             move_memory.path = creep.pos.findPathTo( target );
         }
     }
@@ -53,8 +57,16 @@ module.exports.moveTo = moveTo;
 module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
 
 const moveToRoom = ( creep, move_memory, target_room_name ) => {
+    if( move_memory.target_room_name !== target_room_name ) {
+        console.log( 'moveToRoom', target_room_name );
+        move_memory.exit = null;
+        move_memory.target_room_name = target_room_name;
+    }
+
     if( creep.room.name === target_room_name ) {
         let move_response = creep.move( move_memory.direction );
+        console.log( 'Moving in' );
+        console.log( move_memory.direction, move_response );
         return module.exports.ERR_IN_ROOM;
     }
 
@@ -70,7 +82,7 @@ const moveToRoom = ( creep, move_memory, target_room_name ) => {
 
         let exit_direction = route[ 0 ].exit;
         move_memory.current_room_name = creep.room.name;
-        let closest_exit = creep.pos.findClosestByRange( exit_direction );
+        let closest_exit = creep.pos.findClosestByPath( exit_direction );
         move_memory.direction = exit_direction;
         move_memory.exit = position.clone( closest_exit );
     }

@@ -1,13 +1,22 @@
 const flat = require( 'flat' );
 
-let loopItem = require( '~/lib/loopItem' );
+let profiler = require( '~/profiler' );
 
 module.exports = () => {
     // Put in your main loop
 
-    if( Memory.stats == undefined ) {
-        Memory.stats = {}
+    const stats_cpu_start = Game.cpu.getUsed();
+
+    // if( Memory.stats == undefined ) {
+    //     Memory.stats = {}
+    // }
+    if( Memory.stats && Memory.stats.read ) {
+        console.log( 'WAS READ WAS READ' );
+        console.log( 'WAS READ WAS READ' );
+        console.log( 'WAS READ WAS READ' );
+        console.log( 'WAS READ WAS READ' );
     }
+    Memory.stats = {}
 
     let rooms = Game.rooms;
     let spawns = Game.spawns;
@@ -42,14 +51,12 @@ module.exports = () => {
     Memory.stats[ 'gcl.progressTotal' ] = Game.gcl.progressTotal
     Memory.stats[ 'gcl.level' ] = Game.gcl.level
 
-    // Memory.stats[ 'profile' ] = loopItem.getProfile();
+    Memory.stats[ 'profiler' ] = profiler.getProfile();
 
     for ( let spawnKey in spawns ) {
         let spawn = Game.spawns[ spawnKey ]
         Memory.stats[ 'spawn.' + spawn.name + '.defenderIndex' ] = spawn.memory[ 'defenderIndex' ]
     }
-
-    Memory.stats.cpu_used = Game.cpu.getUsed();
 
     let creeps = _
         .reduce( Game.creeps, ( full, creep ) => {
@@ -63,4 +70,7 @@ module.exports = () => {
     Memory.stats.creeps = creeps;
 
     Memory.stats = flat( Memory.stats );
+    
+    Memory.stats.stats_cpu = Game.cpu.getUsed() - stats_cpu_start;
+    Memory.stats.cpu_used = Game.cpu.getUsed();
 }

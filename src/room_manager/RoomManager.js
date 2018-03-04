@@ -85,7 +85,7 @@ class RoomManager {
                     }
                     const worker = new WorkerClass( assigner );
                     worker.setCreep( creep );
-                    worker.doWork( creep, room );
+                    worker.doWork( creep, room, spawn );
                 } );
             } );
     }

@@ -8,46 +8,38 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getSource( creep ) {
-        let storage = creep.room
-            .find( FIND_MY_STRUCTURES, {
-                filter: ( structure ) => {
-                    return (
-                        structure.structureType === constants.STRUCTURE_STORAGE &&
-                        structure.store[ constants.RESOURCE_ENERGY ] > 50
-                    );
-                }
-            } );
-
-        if( storage.length > 0 ) {
-            return storage[ 0 ]
+        if( creep.room.storage ) {
+            if( creep.room.storage.store[ constants.RESOURCE_ENERGY ] > 50 ) {
+                return creep.room.storage;
+            }
         }
 
         return super.getSource( creep );
     }
 
     getTarget( creep ) {
+        // Tower first
         let capacity_structure = creep.pos
+            .findClosestByPath( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return (
+                        structure.structureType === constants.STRUCTURE_TOWER &&
+                        ( structure.energy / structure.energyCapacity ) < 0.8
+                    );
+                }
+            } );
+
+        if( capacity_structure ) {
+            return capacity_structure;
+        }
+
+        capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return (
                         structure.structureType !== constants.STRUCTURE_TOWER &&
                         ( 'energyCapacity' in structure ) &&
                         structure.energy < structure.energyCapacity
-                    );
-                }
-            } );
-        
-        if( capacity_structure ) {
-            return capacity_structure;
-        }
-
-        // Tower second
-        capacity_structure = creep.pos
-            .findClosestByPath( FIND_MY_STRUCTURES, {
-                filter: ( structure ) => {
-                    return (
-                        structure.structureType === constants.STRUCTURE_TOWER &&
-                        ( structure.energy / structure.energyCapacity ) < 0.8
                     );
                 }
             } );

@@ -18,6 +18,8 @@ class RenewWorker extends StateWorker {
             this.states,
             this._getRenewStates()
         );
+
+        this.run_from_enemy = false;
     }
 
     setSuicide( spawn_id ) {
@@ -28,10 +30,14 @@ class RenewWorker extends StateWorker {
         return this.getMemory().suicide;
     }
 
-    setRenew( spawn_id ) {
+    setRenew() {
         this.setState( STATES.MOVE_TO_SPAWN );
-        this.getMemory().spawn_id = spawn_id;
         this.getMemory().renewing = true;
+    }
+
+    setRunAway( creep, enemy ) {
+        this.setState( STATES.MOVE_TO_SPAWN );
+        this.getMemory().running_until = Game.time + enemy.ticksToLive;
     }
 
     _getRenewStates() {
@@ -44,8 +50,13 @@ class RenewWorker extends StateWorker {
                 }
             },
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
-                if( creep.ticksToLive > 1000 ) return this.default_state;
-                if( this.isNear( creep, worker_memory.spawn_id ) ) return STATES.RENEW;
+                if( this.isNear( creep, worker_memory.spawn_id ) ) {
+                    if( worker_memory.running_until ) {
+                        return STATES.WAIT_FOR_ENEMY;
+                    }
+
+                    return STATES.RENEW;
+                }
                 const spawn = Game.getObjectById( worker_memory.spawn_id );
 
                 if( creep.room.name !== spawn.room.name ) {
@@ -53,6 +64,15 @@ class RenewWorker extends StateWorker {
                 }
 
                 this.moveTo( spawn );
+            },
+            [ STATES.WAIT_FOR_ENEMY ]: ( creep, state_memory, worker_memory ) => {
+                if( Game.time < worker_memory.running_until ) {
+                    console.log( 'Waiting for enemy to leave' );
+                    return;
+                }
+
+                this.getMemory().running_until = null;
+                this.setRenew();
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
                 if( creep.ticksToLive > 1400 ) {
@@ -66,6 +86,21 @@ class RenewWorker extends StateWorker {
     
     _getStates() {
         return this._getRenewStates();
+    }
+
+    _doWork( creep, room, spawn ) {
+        this.getMemory().spawn_id = spawn.id;
+
+        if( this.run_from_enemy && !this.getMemory().running_until ) {
+            let hostile_creeps = creep.room.find( FIND_HOSTILE_CREEPS );
+            // TODO: Check for allies, etc etc
+
+            if( hostile_creeps.length > 0 ) {
+                this.setRunAway( creep, hostile_creeps[ 0 ] );
+            }
+        }
+
+        return super._doWork( creep, room, spawn );
     }
 }
 

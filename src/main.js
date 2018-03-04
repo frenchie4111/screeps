@@ -2,28 +2,14 @@ const loopItem = require( '~/lib/loopItem' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );
 
-const stats = require( './stats' );
-
-const CreepPositionCollector = require( '~/metrics/CreepPositionCollector' );
+const stats = require( './stats' ),
+    profiler = require( './profiler' );
 
 module.exports.loop = function() {
-    loopItem.resetProfile();
+    profiler.resetProfile();
 
     const spawn = Game.spawns[ 'Spawn1' ];
     const room = spawn.room;
-
-    loopItem( 'collectors', () => {
-        const collectors = [
-            new CreepPositionCollector()
-        ];
-
-        collectors
-            .forEach( ( collector ) => {
-                collector.collect( room );
-            } );
-
-        // collectors[ 0 ].drawHotSpots( room );
-    } );
 
     loopItem( 'garbage-collector', () => {
         for( let i in Memory.creeps ) {

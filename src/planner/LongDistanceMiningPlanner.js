@@ -4,7 +4,7 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 6;
+const VERSION = 8;
 
 const ONE_HAULER_PER = 200;
 
@@ -76,7 +76,9 @@ class LongDistanceMiningPlanner extends Planner {
             throw new Error( 'No More Safe Sources' );
         }
 
-        _.sortBy( sources, ( source_map_item ) => source_map_item.path_length );
+        console.log( JSON.stringify( sources ) );
+
+        sources = _.sortBy( sources, ( source_map_item ) => source_map_item.path_length );
 
         return sources[ 0 ];
     }

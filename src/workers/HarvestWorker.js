@@ -95,6 +95,10 @@ class HarvestWorker extends RenewWorker {
     shouldStopTargetting( creep, target ) {
         return false;
     }
+    
+    afterHarvesting( creep, worker_memory ) {
+        return STATES.MOVE_TO_HARVEST;
+    }
 
     _getStates() {
         return {
@@ -217,13 +221,14 @@ class HarvestWorker extends RenewWorker {
             },
             [ STATES.TRANSFERRING ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_id ) return STATES.MOVE_TO_TRANSFER;
+
                 if( this.getCurrentCarry() === 0 ) {
                     if( this.isSuicide() ) {
                         console.log( 'Done transfering, killing myself' );
                         creep.suicide();
                         return;
                     }
-                    return STATES.MOVE_TO_HARVEST;
+                    return this.afterHarvesting( creep, worker_memory );
                 }
 
                 let target = Game.getObjectById( worker_memory.target_id )

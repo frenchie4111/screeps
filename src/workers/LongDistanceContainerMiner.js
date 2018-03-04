@@ -13,6 +13,7 @@ class LongDistanceContainerMiner extends ContainerMiner {
         this.default_state = STATES.GO_TO_SOURCE_ROOM;
         this.MAX_WORK_PARTS = 5;
         this.MAX_MOVE_PARTS = 5;
+        this.run_from_enemy = true;
     }
 
     getSource( creep, worker_memory ) {

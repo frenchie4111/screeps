@@ -56,14 +56,14 @@ class Worker {
         return parts;
     }
 
-    _doWork( creep ) {
-        throw new Erorr( 'Abstract Method' );
+    _doWork( creep, room, spawn ) {
+        throw new Error( 'Abstract Method' );
     }
 
-    doWork( creep, room ) {
+    doWork( creep, room, spawn ) {
         this.setCreep( creep );
         this.setRoom( room );
-        this._doWork( this.creep );
+        this._doWork( creep, room, spawn );
     }
 }
 
