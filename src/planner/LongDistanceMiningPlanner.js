@@ -4,9 +4,9 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 8;
+const VERSION = 9;
 
-const ONE_HAULER_PER = 200;
+const ONE_HAULER_PER = 125;
 
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {

@@ -233,7 +233,7 @@ class ContainerMiner extends RenewWorker {
                     return STATES.REPAIR;
                 }
                 
-                if( container ) {
+                if( container && this.isFull( creep ) ) {
                     let current_contents = _.sum( _.values( container.store ) );
 
                     if( current_contents >= ( container.storeCapacity * 0.99 ) ) {

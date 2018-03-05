@@ -2,6 +2,7 @@ const constants = require( '~/constants' );
 
 const ConstructionPlanner = require( './ConstructionPlanner' );
 
+const MIN_DIST = 2;
 const MAX_DIST = 4;
 const MAX_FAR_DIST = 7;
 const CONSIDER_CORNERS_AFTER = 2;
@@ -129,7 +130,7 @@ class ExtensionPlanner extends ConstructionPlanner {
     _getNewPosition( room, spawn, pending=[] ) {
         let start_pos = spawn.pos;
 
-        for( let curr_dist = 1; curr_dist <= MAX_FAR_DIST; curr_dist++ ) {  
+        for( let curr_dist = MIN_DIST; curr_dist <= MAX_FAR_DIST; curr_dist++ ) {  
             let direction_list;
             if( curr_dist <= MAX_DIST ) {
                 direction_list = this._generateDirectionList( curr_dist );

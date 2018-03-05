@@ -12,6 +12,7 @@ const worker_type_conversion = {
     LONG_DISTANCE_CONTAINER_MINER: require( './LongDistanceContainerMiner' ),
     LONG_DISTANCE_HAULER: require( './LongDistanceHauler' ),
     LONG_DISTANCE_RESERVER: require( './LongDistanceReserver' ),
+    EXTRACTOR_HARVESTER: require( './ExtractorHarvester' ),
 };
 
 const types = {
@@ -29,6 +30,7 @@ const types = {
     LONG_DISTANCE_CONTAINER_MINER: 'LONG_DISTANCE_CONTAINER_MINER',
     LONG_DISTANCE_HAULER: 'LONG_DISTANCE_HAULER',
     LONG_DISTANCE_RESERVER: 'LONG_DISTANCE_RESERVER',
+    EXTRACTOR_HARVESTER: 'EXTRACTOR_HARVESTER',
 };
 
 module.exports = {

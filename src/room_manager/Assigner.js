@@ -1,3 +1,4 @@
+
 const constants = require( '~/constants' );
 
 class Assigner {
@@ -74,9 +75,11 @@ class Assigner {
     }
 
     getAssignable( creep, type ) {
+        const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
+
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
-                return this._arrayToAllowedCounts( creep.room.find( FIND_SOURCES ) );
+                return this._arrayToAllowedCounts( _.map( creep.room.find( FIND_SOURCES ), ( source ) => source.id ) );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
             case Assigner.types.LONG_DISTANCE_HAULER:
                 return _
@@ -87,7 +90,7 @@ class Assigner {
             case Assigner.types.LONG_DISTANCE_RESERVER:
                 let reserve_rooms = _.uniq( _.map( this.room.memory._long_distance, ( long_distance ) => long_distance.room_name ) );
                 reserve_rooms = _
-                    .filter( rooms, ( room ) => {
+                    .filter( reserve_rooms, ( room ) => {
                         if( !Memory.rooms[ room ].hasOwnProperty( 'resevered_until' ) ) return true;
                         let ticks_til_unreserved = Memory.rooms[ room ].resevered_until - Game.time;
                         return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;
@@ -99,7 +102,8 @@ class Assigner {
     getObjectFromId( type, assigned_id ) {
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
-                return Game.getObjectFromId( assigned_id );
+                console.log( 'getObjectById', assigned_id );
+                return Game.getObjectById( assigned_id );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
             case Assigner.types.LONG_DISTANCE_HAULER:
                 return _.find( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id === assigned_id );

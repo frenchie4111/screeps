@@ -14,6 +14,8 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     BaseExitRoadPlanner = require( '~/planner/BaseExitRoadPlanner' ),
     LongDistanceMiningRoadPlanner = require( '~/planner/LongDistanceMiningRoadPlanner' ),
     LongDistanceMiningPlanner = require( '~/planner/LongDistanceMiningPlanner' ),
+    BaseLinkPlanner = require( '~/planner/BaseLinkPlanner' ),
+    ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -39,6 +41,19 @@ const addWorkerCountsForLongDistanceMining = ( worker_counts, room ) => {
 const addWorkerCountsForScout = ( worker_counts, room ) => {
     if( map.needsScout( room.name ) ) {
         worker_counts[ workers.types.SCOUT ] = 1;
+    }
+};
+
+const addWorkerCountsForExtractor = ( worker_counts, room ) => {
+    const extractors = room
+        .find( FIND_MY_STRUCTURES, {
+            filter: {
+                structureType: STRUCTURE_EXTRACTOR
+            }
+        } );
+
+    if( extractors.length > 0 ) {
+        worker_counts[ workers.types.EXTRACTOR_HARVESTER ] = extractors.length;
     }
 }
 
@@ -246,11 +261,15 @@ module.exports = {
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
+                addWorkerCountsForExtractor( worker_counts, room );
 
                 return worker_counts;
             },
             planners: [
-                new ExtensionPlanner( 'extension-5' )
+                new ExtensionPlanner( 'extension-5' ),
+                new LongDistanceMiningPlanner( 'ldm-1' ),
+                new BaseLinkPlanner( 'base-link-planner' ),
+                new ExtratorPlanner( 'extrator-planner-1' )
             ]
         }
     ],
