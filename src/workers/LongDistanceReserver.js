@@ -32,12 +32,18 @@ class LongDistanceReserver extends StateWorker {
                 if( !worker_memory.reserve_room_name ) {
                     worker_memory.reserve_room_name = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_RESERVER );
                 }
+                creep.memory.ignore_death = true;
 
                 if( this.moveToRoom( worker_memory.reserve_room_name ) === move.ERR_IN_ROOM ) {
                     return STATES.GO_TO_CONTROLLER;
                 }
             },
             [ STATES.GO_TO_CONTROLLER ]: ( creep, state_memory, worker_memory ) => {
+                if( creep.room.name !== worker_memory.reserve_room_name ) {
+                    console.log( 'Not in controller room', creep.room.name, worker_memory.reserve_room_name );
+                    return STATES.GO_TO_RESERVE_ROOM;
+                }
+
                 if( creep.reserveController( creep.room.controller ) === OK ) {
                     return STATES.RESERVE;
                 }

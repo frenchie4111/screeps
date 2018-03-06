@@ -54,6 +54,37 @@ const moveTo = ( creep, move_memory, target ) => {
 }
 module.exports.moveTo = moveTo;
 
+const _canMoveTo = ( room, pos ) => {
+    let things_at = room.lookAt( pos );
+    return !_.some( things_at, ( thing_at ) => OBSTACLE_OBJECT_TYPES.includes( thing_at.type ) || ( thing_at.type === LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes( thing_at.structure.structureType ) ) );
+};
+
+const moveIn = ( creep, move_memory, target_room_name ) => {
+    let direction = move_memory.direction;
+    let move_target = position.intDirectionToPosition( creep.pos, direction );
+    if( _canMoveTo( creep.room, move_target ) ) {
+        console.log( 'moveIn', direction );
+        return creep.move( direction );
+    }
+
+    console.log( 'Cant move there' );
+
+    let rot_90_direction = move_memory.direction + 1;
+    move_target = position.intDirectionToPosition( creep.pos, rot_90_direction );
+    if( _canMoveTo( creep.room, move_target ) ) {
+        console.log( 'moveIn', direction );
+        return creep.move( rot_90_direction );
+    }
+
+    console.log( 'Cant move there' );
+
+    let rot_neg_90_direction = move_memory.direction - 1;
+    move_target = position.intDirectionToPosition( creep.pos, rot_neg_90_direction );
+    if( _canMoveTo( creep.room, move_target ) ) {
+        return creep.move( rot_neg_90_direction );
+    }
+};
+
 module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
 
 const moveToRoom = ( creep, move_memory, target_room_name ) => {
@@ -64,7 +95,7 @@ const moveToRoom = ( creep, move_memory, target_room_name ) => {
     }
 
     if( creep.room.name === target_room_name ) {
-        let move_response = creep.move( move_memory.direction );
+        let move_response = moveIn( creep, move_memory );
         console.log( 'Moving in' );
         console.log( move_memory.direction, move_response );
         return module.exports.ERR_IN_ROOM;
@@ -75,7 +106,7 @@ const moveToRoom = ( creep, move_memory, target_room_name ) => {
 
         if( route.length === 0 ) {
             console.log( 'Already there, moving in' );
-            let move_response = creep.move( move_memory.direction );
+            let move_response = moveIn( creep, move_memory );
             console.log( move_memory.direction, move_response );
             return;
         }

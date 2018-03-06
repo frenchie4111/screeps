@@ -8,15 +8,19 @@ class ExtractorHarvester extends HarvestWorker {
     }
 
     getSource( creep ) {
-        let extractor = creep
+        let minerals = creep
             .room
-            .find( FIND_MY_STRUCTURES, {
-                filter: {
-                    structureType: STRUCTURE_EXTRACTOR
-                }
-            } );
+            .find( FIND_MINERALS );
 
-        return extractor;
+        if( minerals.length === 0 ) {
+            throw new Error( 'No Minerals' );
+        }
+
+        console.log( 'minerals', JSON.stringify( minerals ) );
+
+        this.getMemory().mineral_type = minerals[ 0 ].mineralType;
+
+        return minerals[ 0 ];
     }
 
     doHarvest( creep, container ) {
@@ -25,6 +29,10 @@ class ExtractorHarvester extends HarvestWorker {
 
     getTarget( creep ) {
         return creep.room.storage;
+    }
+    
+    doTransfer( creep, target ) {
+        return creep.transfer( target, this.getMemory().mineral_type )
     }
 }
 

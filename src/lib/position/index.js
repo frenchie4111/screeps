@@ -14,3 +14,35 @@ module.exports.clone = ( p ) => {
 module.exports.fromJSON = ( p ) => {
     return new RoomPosition( p.x, p.y, p.roomName );
 }
+
+module.exports.inRoom = ( p ) => {
+    return ( p.x > 0 && p.x < 49 ) && ( p.y > 0 && p.y < 49 );
+}
+
+const INT_DIRECTIONS = {
+    [ TOP ]:            [  0, -1 ],
+    [ TOP_RIGHT ]:      [ +1, -1 ],
+    [ RIGHT ]:          [ +1,  0 ],
+    [ BOTTOM_RIGHT ]:   [ +1, +1 ],
+    [ BOTTOM ]:         [  0, +1 ],
+    [ BOTTOM_LEFT ]:    [ -1, +1 ],
+    [ LEFT ]:           [ -1,  0 ],
+    [ TOP_LEFT ]:       [ -1, -1 ]
+};
+
+module.exports.directionToPosition = ( pos, dir ) => {
+    return module.exports
+        .fromJSON( {
+            x: pos.x + dir[ 0 ],
+            y: pos.y + dir[ 1 ],
+            roomName: pos.roomName
+        } );
+}
+
+module.exports.intDirectionToPosition = ( pos, int_dir ) => {
+    // Make sure it's between 1 and 8
+    int_dir -= 1; // 9 (TOP) - 1 = 8   6 (BL) - 1 = 5
+    int_dir %= 8; // 8 % 8 = 0         5 % 8 = 5
+    int_dir += 1; // 0 + 1 = 1 (TOP)   5 + 1 = 6 (BL)
+    return module.exports.directionToPosition( pos, INT_DIRECTIONS[ int_dir ] );
+}

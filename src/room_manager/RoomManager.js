@@ -44,8 +44,10 @@ class RoomManager {
             let creep_name = room.memory.creeps[ i ]
 
             if( !Game.creeps[ creep_name ] ) {
-                console.log( 'Oops, lost creep' + creep_name );
-                Game.notify( 'Oops, lost creep' + creep_name );
+                console.log( 'Oops, lost creep', creep_name );
+                if( !creep_name.includes( 'RESERVE' ) ) {
+                    Game.notify( 'Oops, lost creep ' + creep_name );
+                }
                 remove.push( i );
             }
         }

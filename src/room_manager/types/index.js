@@ -255,7 +255,7 @@ module.exports = {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_BUILDER ]: 2,
+                    [ workers.types.CONTAINER_BUILDER ]: 1,
                     [ workers.types.CONTAINER_MINER ]: 2,
                 };
 

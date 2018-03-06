@@ -8,6 +8,23 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getSource( creep ) {
+        console.log( 'GET SOURCE CONTAINER EXTENSION' );
+
+        let container = creep
+            .pos
+            .findClosestByPath( constants.FIND_STRUCTURES, {
+                filter: ( structure ) => {
+                    return (
+                        structure.structureType === constants.STRUCTURE_CONTAINER &&
+                        structure.store[ constants.RESOURCE_ENERGY ] > 1500
+                    );
+                }
+            } );
+
+        if( container ) {
+            return container;
+        }
+
         if( creep.room.storage ) {
             if( creep.room.storage.store[ constants.RESOURCE_ENERGY ] > 50 ) {
                 return creep.room.storage;
@@ -46,6 +63,10 @@ class ContainerExtension extends ContainerHarvester {
 
         if( capacity_structure ) {
             return capacity_structure;
+        }
+
+        if( creep.room.storage ) {
+            return creep.room.storage
         }
     }
 

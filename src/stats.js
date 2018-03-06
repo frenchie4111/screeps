@@ -36,6 +36,7 @@ module.exports = () => {
             if( room.storage ) {
                 stored = room.storage.store[ RESOURCE_ENERGY ]
                 storedTotal = room.storage.storeCapacity[ RESOURCE_ENERGY ]
+                Memory.stats[ 'room.' + room.name + '.storage.store' ]  = room.storage.store;
             } else {
                 stored = 0
                 storedTotal = 0
@@ -73,4 +74,5 @@ module.exports = () => {
     
     Memory.stats.stats_cpu = Game.cpu.getUsed() - stats_cpu_start;
     Memory.stats.cpu_used = Game.cpu.getUsed();
+    Memory.stats.cpu_bucket = Game.cpu.bucket;
 }

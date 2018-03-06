@@ -135,7 +135,10 @@ class HarvestWorker extends RenewWorker {
             [ STATES.HARVESTING ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.source_id ) return STATES.MOVE_TO_HARVEST;
                 if( !this.isNear( creep, worker_memory.source_id ) ) return STATES.MOVE_TO_HARVEST;
-                if( this.isFull() ) return STATES.MOVE_TO_TRANSFER;
+                if( this.isFull() ) {
+                    worker_memory.source_id = null;
+                    return STATES.MOVE_TO_TRANSFER;
+                }
 
                 let source = Game.getObjectById( worker_memory.source_id );
 

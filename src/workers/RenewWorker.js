@@ -1,5 +1,6 @@
 const constants = require( '~/constants' ),
-    move = require( '~/lib/move' );
+    move = require( '~/lib/move' ),
+    position = require( '~/lib/position' );
 
 const StateWorker = require( './StateWorker' );
 
@@ -101,7 +102,7 @@ class RenewWorker extends StateWorker {
     _doWork( creep, room, spawn ) {
         this.getMemory().spawn_id = spawn.id;
 
-        if( this.run_from_enemy && !this.getMemory().running_until ) {
+        if( this.run_from_enemy && !this.getMemory().running_until && position.inRoom( creep.pos ) ) {
             let hostile_creeps = creep.room.find( FIND_HOSTILE_CREEPS );
             // TODO: Check for allies, etc etc
 

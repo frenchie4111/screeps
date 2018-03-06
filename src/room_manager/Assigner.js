@@ -106,9 +106,11 @@ class Assigner {
                 return Game.getObjectById( assigned_id );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
             case Assigner.types.LONG_DISTANCE_HAULER:
-                return _.find( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id === assigned_id );
+                let found_long_distance = _.find( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id === assigned_id );
+                console.log( assigned_id, found_long_distance );
+                return found_long_distance;
             case Assigner.types.LONG_DISTANCE_RESERVER:
-                return assigned_id
+                return assigned_id;
         }
     }
 
