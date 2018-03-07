@@ -16,6 +16,22 @@ class LongDistanceContainerMiner extends ContainerMiner {
         this.run_from_enemy = true;
     }
 
+    shouldRunFrom( creep, enemy ) {
+        let worker_memory = this.getMemory();
+
+        if( !worker_memory.long_distance_source ) {
+            worker_memory.long_distance_source = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_CONTAINER_MINER );
+        }
+
+        let source_room_name = worker_memory.long_distance_source.room_name;
+
+        // Only run if we are in our source room
+        if( creep.room.name === source_room_name ) {
+            return true;
+        }
+        return false;
+    }
+
     getSource( creep, worker_memory ) {
         return Game.getObjectById( worker_memory.long_distance_source.source_id );
     }

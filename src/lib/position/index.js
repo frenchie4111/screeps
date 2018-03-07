@@ -30,7 +30,7 @@ module.exports.getOpositeEntrancePosition = ( p, other_room ) => {
         oposite_pos.y = 49;
     }
     oposite_pos.roomName = other_room;
-    console.log( oposite_pos );
+
     return module.exports.fromJSON( oposite_pos );
 };
 

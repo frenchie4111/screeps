@@ -56,7 +56,6 @@ module.exports.moveTo = moveTo;
 
 const _canMoveTo = ( room, pos ) => {
     let things_at = room.lookAt( pos );
-    console.log( JSON.stringify( things_at ) );
     return !_
         .some( things_at, ( thing_at ) => {
             return (
@@ -71,26 +70,18 @@ const moveIn = ( creep, move_memory, target_room_name ) => {
     let direction = +move_memory.direction;
     let move_target = position.intDirectionToPosition( creep.pos, direction );
     if( _canMoveTo( creep.room, move_target ) ) {
-        console.log( 'moveIn', direction );
         return creep.move( direction );
     }
-
-    console.log( 'Cant move there' );
 
     let rot_90_direction = position.normalizeDir( direction + 1 );
     move_target = position.intDirectionToPosition( creep.pos, rot_90_direction );
     if( _canMoveTo( creep.room, move_target ) ) {
-        console.log( 'moveIn', rot_90_direction );
         return creep.move( rot_90_direction );
     }
 
-    console.log( 'Cant move there' );
-
     let rot_neg_90_direction = position.normalizeDir( direction - 1 );
-    console.log( 'rot_neg_90_direction', rot_neg_90_direction );
     move_target = position.intDirectionToPosition( creep.pos, rot_neg_90_direction );
     if( _canMoveTo( creep.room, move_target ) ) {
-        console.log( 'moveIn', rot_neg_90_direction );
         return creep.move( rot_neg_90_direction );
     }
 };
@@ -114,13 +105,6 @@ const moveToRoom = ( creep, move_memory, target_room_name, use_exit_direction=nu
         let exit_direction = use_exit_direction;
         if( !exit_direction ) {
             let route = Game.map.findRoute( creep.room, target_room_name );
-
-            if( route.length === 0 ) {
-                console.log( 'Already there, moving in' );
-                let move_response = moveIn( creep, move_memory );
-                console.log( move_memory.direction, move_response );
-                return;
-            }
 
             exit_direction = route[ 0 ].exit;
         }

@@ -50,18 +50,6 @@ class ContainerMiner extends RenewWorker {
         return this.getCurrentCarry( creep ) == creep.carryCapacity;
     }
 
-    _getContainerNearSource( source ) {
-        let nearby_things = source.room.lookAtArea( source.y - 1, source.x - 1, source.y + 1, source.x - 1, true );
-
-        let nearby_container = _
-            .find( nearby_things, ( thing ) => {
-                return (
-                    thing.type === 'structure' &&
-                    thing.structure.structureType === STRUCTURE_CONTAINER
-                );
-            } );
-    }
-
     _getConstructionSite( source ) {
         let nearby_things = source.room.lookForAtArea( LOOK_CONSTRUCTION_SITES, source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true );
 
@@ -77,19 +65,53 @@ class ContainerMiner extends RenewWorker {
         }
     }
 
+    _getSourceContainers( room_name ) {
+        if( !Memory.rooms[ room_name ].source_containers ) {
+            Memory.rooms[ room_name ].source_containers = {};
+        }
+        return Memory.rooms[ room_name ].source_containers;
+    }
+
+    _updateSourceContainer( source, container ) {
+        const source_containers = this._getSourceContainers( source.room.name );
+
+        if( !source_containers[ source.id ] ) source_containers[ source.id ] = {};
+
+        let source_container = source_containers[ source.id ];
+
+        source_container.id = container.id;
+        source_container.hits = container.hits;
+        source_container.hitsMax = container.hitsMax;
+        source_container.store = container.store;
+    }
+
     _getContainerNearSource( source ) {
+        let nearby_container = null;
+
+        const source_containers = this._getSourceContainers( source.room.name );
+
+        if( source_containers[ source.id ] ) {
+            nearby_container = Game.getObjectById( source_containers[ source.id ].id );
+        }
+
+        if( nearby_container ) {
+            return nearby_container;
+        }
+
         let nearby_things = source.room.lookAtArea( source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true );
 
-        let nearby_container = _
+        nearby_container = _
             .find( nearby_things, ( thing ) => {
                 return (
                     thing.type === 'structure' &&
                     thing.structure.structureType === STRUCTURE_CONTAINER
                 );
             } );
+        nearby_container = nearby_container ? nearby_container.structure : null;
 
         if( nearby_container ) {
-            return nearby_container.structure;
+            this._updateSourceContainer( source, nearby_container );
+            return nearby_container;
         }
     }
     
@@ -241,6 +263,7 @@ class ContainerMiner extends RenewWorker {
                     }
                 }
 
+                this._updateSourceContainer( source, container );
                 creep.harvest( source );
             }
         }

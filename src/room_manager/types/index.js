@@ -31,9 +31,7 @@ const addWorkerCountsForLongDistanceMining = ( worker_counts, room ) => {
             if( !Memory.rooms[ room ].hasOwnProperty( 'resevered_until' ) ) return true;
             let ticks_til_unreserved = Memory.rooms[ room ].resevered_until - Game.time;
             return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;
-        } )
-
-    console.log( rooms_to_reserve, JSON.stringify( rooms_to_reserve ) );
+        } );
 
     worker_counts[ workers.types.LONG_DISTANCE_RESERVER ] = rooms_to_reserve.length;
 };

@@ -42,6 +42,14 @@ class RenewWorker extends StateWorker {
         this.setState( STATES.MOVE_TO_SPAWN );
         this.getMemory().running_until = Game.time + enemy.ticksToLive;
     }
+    
+    shouldRunFrom( creep, enemy ) {
+        return true;
+    };
+
+    shouldKeepRunning( worker_memory ) {
+        return Game.time < worker_memory.running_until;
+    }
 
     _getRenewStates() {
         return {
@@ -83,10 +91,16 @@ class RenewWorker extends StateWorker {
                 this.moveTo( position.fromJSON( worker_memory.waiting_spot ) );
             },
             [ STATES.WAIT_FOR_ENEMY ]: ( creep, state_memory, worker_memory ) => {
-                if( Game.time < worker_memory.running_until ) {
+                if( !worker_memory.waiting_spot || !position.equal( creep.pos, worker_memory.waiting_spot ) ) {
+                    return STATES.MOVE_TO_WAITING_SPOT;
+                }
+
+                if( this.shouldKeepRunning( worker_memory ) ) {
                     console.log( 'Waiting for enemy to leave' );
                     return;
                 }
+
+                console.log( 'Done Running' );
 
                 worker_memory.running_until = null;
                 this.assigner.unassign( this.assigner.types.WAITING_SPOT, creep.id, worker_memory.waiting_spot.id );
@@ -124,7 +138,10 @@ class RenewWorker extends StateWorker {
             // TODO: Check for allies, etc etc
 
             if( hostile_creeps.length > 0 ) {
-                this.setRunAway( creep, hostile_creeps[ 0 ] );
+                let should_run_away = _.some( hostile_creeps, ( hostile_creep ) => this.shouldRunFrom( creep, hostile_creep ) )
+                if( should_run_away ) {
+                    this.setRunAway( creep, hostile_creeps[ 0 ] );
+                }
             }
         }
 

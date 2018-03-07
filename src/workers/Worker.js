@@ -61,6 +61,11 @@ class Worker {
     }
 
     doWork( creep, room, spawn ) {
+        if( creep.spawning ) {
+            console.log( 'Still spawning' );
+            return;
+        }
+
         this.setCreep( creep );
         this.setRoom( room );
         this._doWork( creep, room, spawn );

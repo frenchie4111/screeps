@@ -13,6 +13,15 @@ class LongDistanceHauler extends ContainerHarvester {
         this.MAX_CARRY = 15;
         this.run_from_enemy = true;
     }
+    
+    shouldRunFrom( creep, enemy ) {
+        let source_room_name = this.getSourceRoomName( creep, this.getMemory() );
+        // Only run if we are in our source room
+        if( creep.room.name === source_room_name ) {
+            return true;
+        }
+        return false;
+    }
 
     shouldStopHarvesting( creep, container ) {
         if( container.structureType === constants.STRUCTURE_CONTAINER ) {
@@ -52,7 +61,6 @@ class LongDistanceHauler extends ContainerHarvester {
         }
 
         const source = Game.getObjectById( worker_memory.long_distance_source.source_id );
-        console.log( source );
 
         let nearby_structures = creep.room.lookForAtArea( LOOK_STRUCTURES, source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true );
         nearby_structures = _.filter( nearby_structures, ( structure ) => structure.structure.structureType === constants.STRUCTURE_CONTAINER );
@@ -81,11 +89,8 @@ class LongDistanceHauler extends ContainerHarvester {
             let exit_pos = memory.long_distance_source.source.exit_pos;
 
             if( this.creep.room.name === memory.long_distance_source.room_name ) {
-                console.log( 'need to flip direction', direction );
                 direction = position.getOpositeDirection( direction );
-                console.log( 'need to flip direction', direction );
             } else {
-                console.log( 'Need to flip exit pos' );
                 exit_pos = position.getOpositeEntrancePosition( exit_pos, this.creep.room.name );
             }
 
