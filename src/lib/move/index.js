@@ -87,6 +87,7 @@ const moveIn = ( creep, move_memory, target_room_name ) => {
     console.log( 'Cant move there' );
 
     let rot_neg_90_direction = position.normalizeDir( direction - 1 );
+    console.log( 'rot_neg_90_direction', rot_neg_90_direction );
     move_target = position.intDirectionToPosition( creep.pos, rot_neg_90_direction );
     if( _canMoveTo( creep.room, move_target ) ) {
         console.log( 'moveIn', rot_neg_90_direction );

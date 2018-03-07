@@ -49,10 +49,18 @@ const INT_DIRECTIONS = {
     [ TOP_LEFT ]:       [ -1, -1 ]
 };
 
+function mod( n, m ) {
+    return ( ( n % m ) + m ) % m;
+}
+
 module.exports.normalizeDir = ( int_dir ) => {
     int_dir = +int_dir;
+
     int_dir -= 1; // 9 (TOP) - 1 = 8   6 (BL) - 1 = 5
-    int_dir %= 8; // 8 % 8 = 0         5 % 8 = 5
+
+    // int_dir %= 8; // 8 % 8 = 0         5 % 8 = 5
+    int_dir = mod( int_dir, 8 );
+
     int_dir += 1; // 0 + 1 = 1 (TOP)   5 + 1 = 6 (BL)
     return int_dir;
 }
