@@ -8,7 +8,8 @@ let STATES = {
     MOVE_TO_SPAWN: 'MOVE_TO_SPAWN',
     RENEW: 'RENEW',
     MOVE_TO_SPAWN_ROOM: 'MOVE_TO_SPAWN_ROOM',
-    WAIT_FOR_ENEMY: 'WAIT_FOR_ENEMY'
+    WAIT_FOR_ENEMY: 'WAIT_FOR_ENEMY',
+    MOVE_TO_WAITING_SPOT: 'MOVE_TO_WAITING_SPOT',
 };
 
 class RenewWorker extends StateWorker {
@@ -68,13 +69,29 @@ class RenewWorker extends StateWorker {
 
                 this.moveTo( spawn );
             },
+            [ STATES.MOVE_TO_WAITING_SPOT ]: ( creep, state_memory, worker_memory ) => {
+                if( !worker_memory.waiting_spot ) {
+                    worker_memory.waiting_spot = this.assigner.getAssigned( creep, this.assigner.types.WAITING_SPOT );
+                }
+
+                if( position.equal( creep.pos, worker_memory.waiting_spot ) ) {
+                    return STATES.WAIT_FOR_ENEMY;
+                }
+                
+                console.log( worker_memory.waiting_spot, JSON.stringify( worker_memory.waiting_spot ) );
+
+                this.moveTo( position.fromJSON( worker_memory.waiting_spot ) );
+            },
             [ STATES.WAIT_FOR_ENEMY ]: ( creep, state_memory, worker_memory ) => {
                 if( Game.time < worker_memory.running_until ) {
                     console.log( 'Waiting for enemy to leave' );
                     return;
                 }
 
-                this.getMemory().running_until = null;
+                worker_memory.running_until = null;
+                this.assigner.unassign( this.assigner.types.WAITING_SPOT, creep.id, worker_memory.waiting_spot.id );
+                worker_memory.waiting_spot = null;
+
                 this.setRenew();
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
@@ -82,7 +99,7 @@ class RenewWorker extends StateWorker {
                     worker_memory.renewing = false;
 
                     if( worker_memory.running_until ) {
-                        return STATES.WAIT_FOR_ENEMY;
+                        return STATES.MOVE_TO_WAITING_SPOT;
                     }
 
                     return this.default_state;

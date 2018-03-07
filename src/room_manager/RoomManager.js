@@ -182,7 +182,7 @@ class RoomManager {
         const has_spawn = spawns.length > 0;
         const spawn = spawns[ 0 ]; // TODO figure out how to do this when multi-spawns
 
-        const assigner = new Assigner( room );
+        const assigner = new Assigner( room, spawn );
         assigner.garbageCollect();
 
         this.garbageCollectRoomCreeps( room );

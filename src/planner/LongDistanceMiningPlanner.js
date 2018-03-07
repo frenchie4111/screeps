@@ -4,7 +4,7 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 9;
+const VERSION = 10;
 
 const ONE_HAULER_PER = 125;
 
@@ -61,6 +61,7 @@ class LongDistanceMiningPlanner extends Planner {
                                         room_name: exit_room_name,
                                         haulers: haulers,
                                         direction: direction,
+                                        source: source,
                                         _version: VERSION
                                     } );
                             } );

@@ -265,12 +265,23 @@ module.exports = {
 
                 return worker_counts;
             },
-            planners: [
-                new ExtensionPlanner( 'extension-5' ),
-                new LongDistanceMiningPlanner( 'ldm-1' ),
-                new BaseLinkPlanner( 'base-link-planner' ),
-                new ExtratorPlanner( 'extrator-planner-1' )
-            ]
+            planners: ( room ) => {
+                let planners = [
+                    new ExtensionPlanner( 'extension-5' ),
+                    new LongDistanceMiningPlanner( 'ldm-1' ),
+                    new BaseLinkPlanner( 'base-link-planner' ),
+                    new ExtratorPlanner( 'extrator-planner-1' )
+                ];
+
+                let long_distance_road_planners = _
+                    .map( room.memory._long_distance, ( long_distance, source_id ) => {
+                        return new LongDistanceMiningRoadPlanner( 'ldmr-' + source_id, long_distance );
+                    } );
+
+                planners = planners.concat( long_distance_road_planners );
+
+                return planners;
+            }
         }
     ],
     long_distance: null

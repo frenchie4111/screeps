@@ -213,6 +213,9 @@ class SpawnManager {
                     if( needed_spawns[ workers.types.HARVESTER ] ) {
                         spawn_type = workers.types.HARVESTER;
                     }
+                    if( needed_spawns[ workers.types.CONTAINER_EXTENSION ] ) {
+                        spawn_type = workers.types.CONTAINER_EXTENSION;
+                    }
 
                     let current_energy = this.getTotalEnergy( spawn );
 
@@ -222,10 +225,10 @@ class SpawnManager {
                     let current_body = worker.getBody( current_energy ).sort();
                     let max_body = this.getMaxBodyForWorker( spawn, worker );
 
-                    if( _.isEqual( current_body, max_body ) ) {
+                    if( _.isEqual( current_body, max_body ) || current_creeps.length === 0 ) {
                         this.spawnCreep( room, spawn, spawn_type );
                     } else {
-                        console.log( 'Cant spawn' );
+                        console.log( 'Cant spawn', current_energy );
                     }
                 }
             }

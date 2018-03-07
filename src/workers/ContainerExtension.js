@@ -5,11 +5,10 @@ const ContainerHarvester = require( './ContainerHarvester' );
 class ContainerExtension extends ContainerHarvester {
     constructor( assigner ) {
         super( assigner );
+        this.MAX_MOVE = 10;
     }
 
     getSource( creep ) {
-        console.log( 'GET SOURCE CONTAINER EXTENSION' );
-
         let container = creep
             .pos
             .findClosestByPath( constants.FIND_STRUCTURES, {
@@ -35,8 +34,9 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getTarget( creep ) {
+        let capacity_structure;
         // Tower first
-        let capacity_structure = creep.pos
+        capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return (
@@ -45,7 +45,7 @@ class ContainerExtension extends ContainerHarvester {
                     );
                 }
             } );
-
+        
         if( capacity_structure ) {
             return capacity_structure;
         }
@@ -71,10 +71,11 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getBody( available_energy ) {
-        let per_parts = ( constants.BODYPART_COST[ constants.MOVE ] * 2 ) + constants.BODYPART_COST[ constants.CARRY ];
+        let per_parts = ( constants.BODYPART_COST[ constants.CARRY ] * 2 ) + constants.BODYPART_COST[ constants.MOVE ];
         let parts = [];
 
-        while( available_energy > per_parts ) {
+        let count = 0;
+        for( let i = 0; i < this.MAX_MOVE && available_energy > per_parts; i++ ) {
             parts = parts.concat( [ constants.MOVE, constants.CARRY, constants.CARRY ] );
             available_energy -= per_parts;
         }

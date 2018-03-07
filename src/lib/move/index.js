@@ -56,11 +56,19 @@ module.exports.moveTo = moveTo;
 
 const _canMoveTo = ( room, pos ) => {
     let things_at = room.lookAt( pos );
-    return !_.some( things_at, ( thing_at ) => OBSTACLE_OBJECT_TYPES.includes( thing_at.type ) || ( thing_at.type === LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes( thing_at.structure.structureType ) ) );
+    console.log( JSON.stringify( things_at ) );
+    return !_
+        .some( things_at, ( thing_at ) => {
+            return (
+                OBSTACLE_OBJECT_TYPES.includes( thing_at.type ) || 
+                ( thing_at.type === LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes( thing_at.structure.structureType ) ) ||
+                ( thing_at.type === LOOK_TERRAIN && OBSTACLE_OBJECT_TYPES.includes( thing_at.terrain ) )
+            ) 
+        } );
 };
 
 const moveIn = ( creep, move_memory, target_room_name ) => {
-    let direction = move_memory.direction;
+    let direction = +move_memory.direction;
     let move_target = position.intDirectionToPosition( creep.pos, direction );
     if( _canMoveTo( creep.room, move_target ) ) {
         console.log( 'moveIn', direction );
@@ -69,53 +77,60 @@ const moveIn = ( creep, move_memory, target_room_name ) => {
 
     console.log( 'Cant move there' );
 
-    let rot_90_direction = move_memory.direction + 1;
+    let rot_90_direction = position.normalizeDir( direction + 1 );
     move_target = position.intDirectionToPosition( creep.pos, rot_90_direction );
     if( _canMoveTo( creep.room, move_target ) ) {
-        console.log( 'moveIn', direction );
+        console.log( 'moveIn', rot_90_direction );
         return creep.move( rot_90_direction );
     }
 
     console.log( 'Cant move there' );
 
-    let rot_neg_90_direction = move_memory.direction - 1;
+    let rot_neg_90_direction = position.normalizeDir( direction - 1 );
     move_target = position.intDirectionToPosition( creep.pos, rot_neg_90_direction );
     if( _canMoveTo( creep.room, move_target ) ) {
+        console.log( 'moveIn', rot_neg_90_direction );
         return creep.move( rot_neg_90_direction );
     }
 };
 
 module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
 
-const moveToRoom = ( creep, move_memory, target_room_name ) => {
+const moveToRoom = ( creep, move_memory, target_room_name, use_exit_direction=null, use_exit=null ) => {
     if( move_memory.target_room_name !== target_room_name ) {
-        console.log( 'moveToRoom', target_room_name );
         move_memory.exit = null;
         move_memory.target_room_name = target_room_name;
     }
 
     if( creep.room.name === target_room_name ) {
         let move_response = moveIn( creep, move_memory );
-        console.log( 'Moving in' );
-        console.log( move_memory.direction, move_response );
         return module.exports.ERR_IN_ROOM;
     }
 
     if( !move_memory.exit || move_memory.current_room_name !== creep.room.name ) {
-        let route = Game.map.findRoute( creep.room, target_room_name );
+        move_memory.current_room_name = creep.room.name;
 
-        if( route.length === 0 ) {
-            console.log( 'Already there, moving in' );
-            let move_response = moveIn( creep, move_memory );
-            console.log( move_memory.direction, move_response );
-            return;
+        let exit_direction = use_exit_direction;
+        if( !exit_direction ) {
+            let route = Game.map.findRoute( creep.room, target_room_name );
+
+            if( route.length === 0 ) {
+                console.log( 'Already there, moving in' );
+                let move_response = moveIn( creep, move_memory );
+                console.log( move_memory.direction, move_response );
+                return;
+            }
+
+            exit_direction = route[ 0 ].exit;
         }
 
-        let exit_direction = route[ 0 ].exit;
-        move_memory.current_room_name = creep.room.name;
-        let closest_exit = creep.pos.findClosestByPath( exit_direction );
+        let exit = use_exit;
+        if( !exit ) {
+            exit = creep.pos.findClosestByPath( exit_direction );
+        }
+
         move_memory.direction = exit_direction;
-        move_memory.exit = position.clone( closest_exit );
+        move_memory.exit = position.clone( exit );
     }
 
     return module.exports.moveTo( creep, move_memory, position.fromJSON( move_memory.exit ) );

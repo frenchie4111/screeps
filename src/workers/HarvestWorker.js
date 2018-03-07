@@ -96,7 +96,7 @@ class HarvestWorker extends RenewWorker {
         return false;
     }
     
-    afterHarvesting( creep, worker_memory ) {
+    afterTransferring( creep, worker_memory ) {
         return STATES.MOVE_TO_HARVEST;
     }
 
@@ -209,7 +209,7 @@ class HarvestWorker extends RenewWorker {
                     case constants.ERR_FULL:
                         // Current target is full, get new target
                         worker_memory.target_id = null;
-                        return STATES.MOVE_TO_TRANSFER;
+                        return this.instantTransition( STATES.MOVE_TO_TRANSFER );
                         break;
                     case constants.ERR_NOT_IN_RANGE:
                         this.moveTo( Game.getObjectById( worker_memory.target_id ) );
@@ -231,14 +231,14 @@ class HarvestWorker extends RenewWorker {
                         creep.suicide();
                         return;
                     }
-                    return this.afterHarvesting( creep, worker_memory );
+                    return this.afterTransferring( creep, worker_memory );
                 }
 
                 let target = Game.getObjectById( worker_memory.target_id )
 
                 if( this.shouldStopTargetting( creep, target ) ) {
                     worker_memory.target_id = null;
-                    return STATES.MOVE_TO_TRANSFER;
+                    return this.instantTransition( STATES.MOVE_TO_TRANSFER );
                 }
 
                 const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
@@ -249,7 +249,7 @@ class HarvestWorker extends RenewWorker {
                     case constants.ERR_FULL:
                         // Current target is full, get new target
                         worker_memory.target_id = null;
-                        return STATES.MOVE_TO_TRANSFER;
+                        return this.instantTransition( STATES.MOVE_TO_TRANSFER );
                         break;
                     case constants.ERR_NOT_IN_RANGE:
                         this.moveTo( Game.getObjectById( worker_memory.target_id ) );
@@ -260,7 +260,7 @@ class HarvestWorker extends RenewWorker {
                         break;
                     default:
                         console.log( 'Unknown case', transfer_results, constants.lookup( transfer_results ) );
-                        return STATES.MOVE_TO_HARVEST;
+                        return this.afterTransferring( creep, worker_memory );
                 }
             }
         }

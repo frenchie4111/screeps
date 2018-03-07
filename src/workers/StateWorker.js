@@ -20,6 +20,13 @@ class StateWorker extends Worker {
         state_worker_memory.state_memory = {};
     }
 
+    instantTransition( new_state_name ) {
+        return {
+            instant: true,
+            state_name: new_state_name
+        };
+    }
+
     _doWork( creep ) {
         let state_worker_memory = this.getMemory( '_state_worker' );
         let state_memory = state_worker_memory.state_memory = state_worker_memory.state_memory || {};
@@ -27,10 +34,18 @@ class StateWorker extends Worker {
 
         let states = this.states;
         if( states.hasOwnProperty( current_state_name ) ) {
-            let response = states[ current_state_name ]( creep, state_memory, this.getMemory() );
+            while( true ) {
+                let response = states[ current_state_name ]( creep, state_memory, this.getMemory() );
 
-            if( response ) {
-                this.setState( response );
+                if( response ) {
+                    if( response.instant ) {
+                        this.setState( response.state_name );
+                        console.log( '~~~ instant transition' );
+                        continue;
+                    }
+                    this.setState( response );
+                }
+                break;
             }
         } else {
             console.log( 'Invalid State name:', current_state_name );

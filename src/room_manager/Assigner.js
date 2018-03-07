@@ -1,6 +1,8 @@
 
 const constants = require( '~/constants' );
 
+const position = require( '~/lib/position' );
+
 class Assigner {
     constructor( room, spawn ) {
         this.room = room;
@@ -43,6 +45,21 @@ class Assigner {
         assignations[ thing_id ].push( creep_id );
     }
 
+    unassign( type, creep_id, thing_id ) {
+        let assigned = this._getAssignedForType( type );
+
+        for( let thing_id in assigned ) {
+            for( let assigned_i in assigned[ thing_id ] ) {
+                let assigned_creep_id = assigned[ thing_id ][ assigned_i ];
+                if( creep_id === assigned_creep_id ) {
+                    assigned[ thing_id ].splice( assigned_i, 1 );
+                    return;
+                }
+            }
+        }
+        console.log( 'COULDNT UNASSIGN', creep_id, 'from', type, thing_id )
+    }
+
     garbageCollect() {
         _
             .forEach( Assigner.types, ( type ) => {
@@ -81,6 +98,7 @@ class Assigner {
             case Assigner.types.CONTAINER_MINER:
                 return this._arrayToAllowedCounts( _.map( creep.room.find( FIND_SOURCES ), ( source ) => source.id ) );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
+                return this._arrayToAllowedCounts( _.map( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id ) );
             case Assigner.types.LONG_DISTANCE_HAULER:
                 return _
                     .reduce( this.room.memory._long_distance, ( full, long_distance ) => {
@@ -96,6 +114,24 @@ class Assigner {
                         return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;
                     } );
                 return this._arrayToAllowedCounts( reserve_rooms );
+            case Assigner.types.WAITING_SPOT:
+                let waiting_spots = [
+                    [ -5, -1 ],
+                    [ -5, -2 ],
+                    [ -5, -3 ],
+                    [ -5, -4 ],
+                    [ -5, -5 ],
+                    [ -5, +1 ],
+                    [ -5, +2 ],
+                    [ -5, +3 ],
+                    [ -5, +4 ],
+                    [ -5, +5 ],
+                ];
+                let spot_ids = _
+                    .map( waiting_spots, ( waiting_spot ) => {
+                        return '' + waiting_spot[ 0 ] + ':' + waiting_spot[ 1 ]
+                    } );
+                return this._arrayToAllowedCounts( spot_ids );
         }
     }
 
@@ -111,6 +147,13 @@ class Assigner {
                 return found_long_distance;
             case Assigner.types.LONG_DISTANCE_RESERVER:
                 return assigned_id;
+            case Assigner.types.WAITING_SPOT:
+                let assigned_id_split = _.map( assigned_id.split( ':' ), ( item ) => +item );
+                
+                let waiting_spot_position = position.directionToPosition( this.spawn.pos, assigned_id_split );
+                console.log( waiting_spot_position );
+                waiting_spot_position.id = assigned_id;
+                return waiting_spot_position;
         }
     }
 

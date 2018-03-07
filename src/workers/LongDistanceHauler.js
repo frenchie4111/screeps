@@ -1,5 +1,8 @@
 const constants = require( '~/constants' );
 
+const move = require( '~/lib/move' ),
+    position = require( '~/lib/position' );
+
 const ContainerHarvester = require( './ContainerHarvester' ),
     HarvestWorker = require( './HarvestWorker' );
 
@@ -63,6 +66,32 @@ class LongDistanceHauler extends ContainerHarvester {
 
     doHarvest( creep, container ) {
         return creep.withdraw( container, constants.RESOURCE_ENERGY );
+    }
+
+    afterTransferring( creep, worker_memory ) {
+        worker_memory.long_distance_source = null;
+        worker_memory.source_room_name = null;
+        return super.afterTransferring( creep, worker_memory );
+    }
+
+    moveToRoom( target_room_name ) {
+        let memory = this.getMemory();
+        if( memory.long_distance_source && memory.long_distance_source.source && memory.long_distance_source.source.exit_pos ) {
+            let direction = memory.long_distance_source.direction;
+            let exit_pos = memory.long_distance_source.source.exit_pos;
+
+            if( this.creep.room.name === memory.long_distance_source.room_name ) {
+                console.log( 'need to flip direction', direction );
+                direction = position.getOpositeDirection( direction );
+                console.log( 'need to flip direction', direction );
+            } else {
+                console.log( 'Need to flip exit pos' );
+                exit_pos = position.getOpositeEntrancePosition( exit_pos, this.creep.room.name );
+            }
+
+            return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name, direction, exit_pos );
+        }
+        return super.moveToRoom( target_room_name );
     }
 
     getBody( available_energy ) {
