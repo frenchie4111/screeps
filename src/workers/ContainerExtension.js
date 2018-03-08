@@ -55,6 +55,7 @@ class ContainerExtension extends ContainerHarvester {
                 filter: ( structure ) => {
                     return (
                         structure.structureType !== constants.STRUCTURE_TOWER &&
+                        structure.structureType !== constants.STRUCTURE_LINK &&
                         ( 'energyCapacity' in structure ) &&
                         structure.energy < structure.energyCapacity
                     );

@@ -29,6 +29,7 @@ const addWorkerCountsForLongDistanceMining = ( worker_counts, room ) => {
     let rooms_to_reserve = _.uniq( _.map( room.memory._long_distance, ( long_distance ) => long_distance.room_name ) );
     rooms_to_reserve = _
         .filter( rooms_to_reserve, ( room ) => {
+            if( Memory.rooms[ room ].dangerous_until && Memory.rooms[ room ].dangerous_until > Game.time ) return false;
             if( !Memory.rooms[ room ].hasOwnProperty( 'resevered_until' ) ) return true;
             let ticks_til_unreserved = Memory.rooms[ room ].resevered_until - Game.time;
             return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;

@@ -1,6 +1,6 @@
 const position = require( '~/lib/position' );
 
-const MAP_VERSION = 8;
+const MAP_VERSION = 9;
 
 module.exports = {
     getRoomMap: () => {
@@ -20,21 +20,35 @@ module.exports = {
         return null;
     },
 
-    needsScout: ( room_name ) => {
-        if( module.exports.hasRoom( room_name ) ) {
-            let exits = module.exports.getRoom( room_name ).exits;
-            for( let direction in exits ) {
-                let exit_room_name = exits[ direction ];
-
-                if( !module.exports.hasRoom( exit_room_name ) ) {
-                    return true;
-                }
+    getRoomsToScout_rec: ( start_room_name, ret_arr=[], seen=[] ) => {
+        seen.push( start_room_name );
+        if( module.exports.hasRoom( start_room_name ) ) {
+            if( Memory.rooms[ start_room_name ] && Memory.rooms[ start_room_name ]._state && Memory.rooms[ start_room_name ]._state.type ) {
+                let exits = _.values( module.exports.getRoom( start_room_name ).exits );
+                _.forEach( exits, ( exit ) => {
+                    if( !seen.includes( exit ) ) {
+                        module.exports.getRoomsToScout_rec( exit, ret_arr, seen );
+                    }
+                } );
             }
-            
-            return false;
+        } else {
+            ret_arr.push( start_room_name );
+            return ret_arr;
         }
+    },
+    
+    getRoomsToScout: ( start_room_name ) => {
+        let rooms = [];
+        module.exports.getRoomsToScout_rec( start_room_name, rooms, [] );
+        return rooms;
+    },
 
-        return true;
+    needsScout: ( room_name ) => {
+        let rooms_to_scout = module.exports.getRoomsToScout( room_name );
+
+        console.log( 'rooms_to_scout', JSON.stringify( rooms_to_scout ) );
+
+        return rooms_to_scout.length > 0;
     },
 
     storeRoom: ( creep, room, entrance_direction ) => {
@@ -55,8 +69,9 @@ module.exports = {
 
                 let oposite_entrance_dir = position.getOpositeDirection( entrance_direction );
                 console.log( 'Finding Closest to', JSON.stringify( source.pos ), oposite_entrance_dir );
-                let exit_pos = source.pos.findClosestByPath( oposite_entrance_dir );
-                if( !exit_pos ) exit_pos = source.pos.findClosestByRange( oposite_entrance_dir );
+                let exit_pos = source.pos.findClosestByPath( +oposite_entrance_dir );
+                if( !exit_pos ) exit_pos = source.pos.findClosestByRange( +oposite_entrance_dir );
+                if( !exit_pos ) return source_info;
                 console.log( 'exit_pos', JSON.stringify( exit_pos ) );
                 let exit_path = source.pos.findPathTo( exit_pos );
                 console.log( 'exit_path', JSON.stringify( exit_path ) );
@@ -67,10 +82,36 @@ module.exports = {
                 return source_info;
             } );
 
-        room_map[ room.name ].mineral_ids = room.find( FIND_MINERALS ).map( ( mineral ) => mineral.id );
+        room_map[ room.name ].mineral_ids = room
+            .find( FIND_MINERALS )
+            .map( ( mineral ) => { 
+                return {
+                    id: mineral.id,
+                    type: mineral.mineralType
+                }
+            } );
+
         room_map[ room.name ].controller_id = room.controller ? room.controller.id : null;
         room_map[ room.name ].exits = Game.map.describeExits( room.name );
-        room_map[ room.name ].saw_enemies = ( room.find( FIND_HOSTILE_CREEPS ).length > 0 || room.find( FIND_HOSTILE_STRUCTURES ).length > 0 );
+
+        let hostile_creeps = room.find( FIND_HOSTILE_CREEPS );
+        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
+
+        let saw_enemies = false;
+        let enemy_username = null;
+
+        if( hostile_creeps.length > 0 ) {
+            saw_enemies = true;
+            room_map[ room.name ].enemy_username = hostile_creeps[ 0 ].owner.username;
+            room_map[ room.name ].saw_enemy_creeps = true;
+        }
+        if( hostile_structures.length > 0 ) {
+            saw_enemies = true;
+            room_map[ room.name ].enemy_username = hostile_structures[ 0 ].owner.username;
+            room_map[ room.name ].saw_enemy_structures = true;
+        }
+
+        room_map[ room.name ].saw_enemies = saw_enemies;
 
         room_map[ room.name ]._version = MAP_VERSION;
     }

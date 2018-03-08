@@ -109,6 +109,7 @@ class Assigner {
                 let reserve_rooms = _.uniq( _.map( this.room.memory._long_distance, ( long_distance ) => long_distance.room_name ) );
                 reserve_rooms = _
                     .filter( reserve_rooms, ( room ) => {
+                        if( Memory.rooms[ room ].dangerous_until && Memory.rooms[ room ].dangerous_until > Game.time ) return false;
                         if( !Memory.rooms[ room ].hasOwnProperty( 'resevered_until' ) ) return true;
                         let ticks_til_unreserved = Memory.rooms[ room ].resevered_until - Game.time;
                         return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;

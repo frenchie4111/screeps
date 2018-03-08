@@ -49,18 +49,22 @@ class BaseLinkManager extends RenewWorker {
 
                 let link = Game.getObjectById( this.room.memory.links.base )
 
-                if( creep.carry[ RESOURCE_ENERGY ] < creep.carryCapacity && link.energy > 0 ) {
-                    creep.withdraw( link, RESOURCE_ENERGY );
-                } else if( creep.carry[ RESOURCE_ENERGY ] < 100 ) {
-                    creep.withdraw( this.room.storage, RESOURCE_ENERGY, 100 );
-                }
-
-                if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
-                    if( this.spawn.energy < 100 ) {
-                        creep.transfer( this.room.storage, 100 );
+                if( link.energy > 0 ) {
+                    let creep_available_capacity = creep.carryCapacity - creep.carry[ RESOURCE_ENERGY ];
+                    if( creep_available_capacity >= link.energy ) {
+                        creep.withdraw( link, RESOURCE_ENERGY );
                     } else {
-                        creep.transfer( this.room.storage, RESOURCE_ENERGY, creep.carry[ RESOURCE_ENERGY ] - 100 );
+                        creep.transfer( this.room.storage, RESOURCE_ENERGY );
                     }
+                } else if( this.spawn.energy < 300 ) {
+                    let spawn_needed = this.spawn.energyCapacity - this.spawn.energy;
+                    if( creep.carry[ RESOURCE_ENERGY ] >= spawn_needed ) {
+                        creep.transfer( this.spawn, RESOURCE_ENERGY );
+                    } else {
+                        creep.withdraw( this.room.storage, RESOURCE_ENERGY, spawn_needed );
+                    }
+                } else if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
+                    creep.transfer( this.room.storage, RESOURCE_ENERGY, creep.carry[ RESOURCE_ENERGY ] - 100 );
                 }
 
                 return;

@@ -43,9 +43,10 @@ class RenewWorker extends StateWorker {
 
     setRunAway( creep, enemy ) {
         this.setState( STATES.MOVE_TO_SPAWN );
+        Memory.rooms[ creep.room.name ].dangerous_until = Game.time + enemy.ticksToLive;
         this.getMemory().running_until = Game.time + enemy.ticksToLive;
     }
-    
+
     shouldRunFrom( creep, enemy ) {
         return true;
     };
