@@ -66,6 +66,9 @@ class Worker {
             return;
         }
 
+        this.room = room;
+        this.spawn = spawn;
+
         this.setCreep( creep );
         this.setRoom( room );
         this._doWork( creep, room, spawn );

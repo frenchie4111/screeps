@@ -67,7 +67,7 @@ class HarvestWorker extends RenewWorker {
     }
 
     getTargetRoomName( creep, worker_memory ) {
-        let target = this.getTarget( creep );
+        let target = this.getTarget( creep, worker_memory );
         if( !target ) return null;
         return target.room.name;
     }
@@ -185,7 +185,7 @@ class HarvestWorker extends RenewWorker {
                 }
 
                 if( !worker_memory.target_id ) {
-                    let target = this.getTarget( creep );
+                    let target = this.getTarget( creep, worker_memory );
                     if( !target ) return; // Idle, no available targets
                     worker_memory.target_id = target.id;
                 }

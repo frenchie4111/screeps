@@ -65,6 +65,11 @@ module.exports.normalizeDir = ( int_dir ) => {
     return int_dir;
 }
 
+module.exports.directionFromIntDirection = ( int_dir ) => {
+    int_dir = module.exports.normalizeDir( +int_dir );
+    return INT_DIRECTIONS[ int_dir ].slice();
+};
+
 module.exports.directionToPosition = ( pos, dir ) => {
     return module.exports
         .fromJSON( {
@@ -83,3 +88,10 @@ module.exports.intDirectionToPosition = ( pos, int_dir ) => {
 module.exports.getOpositeDirection = ( int_dir ) => {
     return module.exports.normalizeDir( (+int_dir) + 4 );
 };
+
+module.exports.mergeDirs = ( dir1, dir2 ) => {
+    let new_dir = dir1.slice();
+    new_dir[ 0 ] += dir2[ 0 ];
+    new_dir[ 1 ] += dir2[ 1 ];
+    return new_dir;
+}

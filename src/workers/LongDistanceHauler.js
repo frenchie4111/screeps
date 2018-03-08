@@ -10,7 +10,7 @@ class LongDistanceHauler extends ContainerHarvester {
     constructor( assigner ) {
         super( assigner );
         this.default_state = HarvestWorker.STATES.MOVE_TO_TRANSFER;
-        this.MAX_CARRY = 15;
+        this.MAX_CARRY = 16;
         this.run_from_enemy = true;
     }
     
@@ -23,6 +23,13 @@ class LongDistanceHauler extends ContainerHarvester {
         return false;
     }
 
+    getLongDistance( creep, worker_memory ) {
+        if( !worker_memory.long_distance_source ) {
+            worker_memory.long_distance_source = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_HAULER );
+        }
+        return worker_memory.long_distance_source;
+    }
+
     shouldStopHarvesting( creep, container ) {
         if( container.structureType === constants.STRUCTURE_CONTAINER ) {
             return container.store[ constants.RESOURCE_ENERGY ] <= 50;
@@ -30,10 +37,43 @@ class LongDistanceHauler extends ContainerHarvester {
         return super.shouldStopHarvesting( creep, container );
     }
 
+    getTargetRoomName( creep, worker_memory ) {
+        this.spawn.room.name;
+    }
+
     getTarget( creep, worker_memory ) {
         let memory = this.getMemory();
-        let storages = this
-            .room
+
+        let long_distance = this.getLongDistance( creep, worker_memory );
+        console.log( 'getTarget', JSON.stringify( long_distance ) );
+
+        if( long_distance.use_link ) {
+            console.log( 'Trying to find link' );
+            if( long_distance.link_id ) {
+                console.log( 'Had link already' );
+                let link = Game.getObjectById( long_distance.link_id );
+                if( link ) return link;
+            }
+
+            let link = creep.pos
+                .findClosestByRange( FIND_MY_STRUCTURES, {
+                    filter: {
+                        structureType: STRUCTURE_LINK
+                    }
+                } );
+            console.log( 'All links', JSON.stringify( link ) );
+
+            if( link ) {
+                let path = creep.pos.findPathTo( link );
+                console.log( 'Link path', path.length );
+                if( path.length < 10 ) {
+                    long_distance.link_id = link.id;
+                    return link;
+                }
+            }
+        }
+
+        let storages = this.room
             .find( FIND_MY_STRUCTURES, {
                 filter: {
                     structureType: STRUCTURE_STORAGE

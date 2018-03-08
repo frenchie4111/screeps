@@ -1,12 +1,14 @@
-const map = require( '~/lib/map' );
+const map = require( '~/lib/map' ),
+    position = require( '~/lib/position' );
 
 const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 10;
+const VERSION = 12;
 
 const ONE_HAULER_PER = 125;
+const LINK_THRESHOLD = 25;
 
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
@@ -53,6 +55,12 @@ class LongDistanceMiningPlanner extends Planner {
                             .forEach( ( source ) => {
                                 let haulers = Math.ceil( ( ( source.path_length + exit_path_length ) * 2 ) / ONE_HAULER_PER );
 
+                                let path_to_room_exit = spawn.pos.findPathTo( position.getOpositeEntrancePosition( source.exit_pos, spawn.room.name ) );
+                                let use_link = false;
+                                if( path_to_room_exit ) {
+                                    use_link = path_to_room_exit.length > LINK_THRESHOLD;
+                                }
+
                                 sources
                                     .push( {
                                         source_id: source.source_id,
@@ -62,6 +70,7 @@ class LongDistanceMiningPlanner extends Planner {
                                         haulers: haulers,
                                         direction: direction,
                                         source: source,
+                                        use_link: use_link,
                                         _version: VERSION
                                     } );
                             } );

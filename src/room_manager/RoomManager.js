@@ -4,7 +4,8 @@ const constants = require( '~/constants' ),
     workers = require( '~/workers' );
 
 const Assigner = require( './Assigner' ),
-    SpawnManager = require( './SpawnManager' );
+    SpawnManager = require( './SpawnManager' ),
+    LinkManager = require( './LinkManager' );
 
 const types = require( './types' );
 
@@ -171,6 +172,11 @@ class RoomManager {
             } );
     }
 
+    handleLinks( room, spawn, current_state ) {
+        const link_manager = new LinkManager();
+        link_manager.doManage( room, spawn );
+    }
+
     doManage( room ) {
         const current_state = this._getCurrentState( room );
 
@@ -200,6 +206,10 @@ class RoomManager {
 
         loopItem( 'towers', () => {
             this.handleTowers( room, spawn, current_state );
+        } );
+
+        loopItem( 'links', () => {
+            this.handleLinks( room, spawn, current_state );
         } );
 
         if( has_spawn ) {

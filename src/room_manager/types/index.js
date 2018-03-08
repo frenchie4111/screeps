@@ -14,6 +14,7 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     BaseExitRoadPlanner = require( '~/planner/BaseExitRoadPlanner' ),
     LongDistanceMiningRoadPlanner = require( '~/planner/LongDistanceMiningRoadPlanner' ),
     LongDistanceMiningPlanner = require( '~/planner/LongDistanceMiningPlanner' ),
+    LongDistanceLinkPlanner = require( '~/planner/LongDistanceLinkPlanner' ),
     BaseLinkPlanner = require( '~/planner/BaseLinkPlanner' ),
     ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' );
@@ -50,8 +51,15 @@ const addWorkerCountsForExtractor = ( worker_counts, room ) => {
             }
         } );
 
+    worker_counts[ workers.types.EXTRACTOR_HARVESTER ] = 0;
+
     if( extractors.length > 0 ) {
-        worker_counts[ workers.types.EXTRACTOR_HARVESTER ] = extractors.length;
+        let minerals = room.lookForAt( LOOK_MINERALS, extractors[ 0 ].pos );
+        if( minerals.length > 0 ) {
+            if( minerals[ 0 ].mineralAmount > 0 ) {
+                worker_counts[ workers.types.EXTRACTOR_HARVESTER ] = extractors.length;
+            }
+        }
     }
 }
 
@@ -251,10 +259,10 @@ module.exports = {
             },
             worker_counts: ( room ) => {
                 let worker_counts = {
-                    [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
                     [ workers.types.CONTAINER_BUILDER ]: 1,
                     [ workers.types.CONTAINER_MINER ]: 2,
+                    [ workers.types.BASE_LINK_MANAGER ]: 1
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
@@ -277,6 +285,16 @@ module.exports = {
                     } );
 
                 planners = planners.concat( long_distance_road_planners );
+
+                let long_distance_link_planners = []
+                _
+                    .forEach( room.memory._long_distance, ( long_distance ) => {
+                        if( !long_distance.use_link ) return;
+
+                        long_distance_link_planners.push( new LongDistanceLinkPlanner( 'ldml-' + long_distance.source_id, long_distance ) );
+                    } );
+
+                planners = planners.concat( long_distance_link_planners );
 
                 return planners;
             }
