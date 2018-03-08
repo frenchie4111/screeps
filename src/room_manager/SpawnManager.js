@@ -82,22 +82,22 @@ class SpawnManager {
 
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
-        let needed_counts = _
-            .reduce( worker_counts, ( needed, val, type ) => {
-                let current_val = current_counts.hasOwnProperty( type ) ? current_counts[ type ] : 0;
-                
-                // Ignore types of creeps that can't be suicided
+        let over_spawns = _
+            .reduce( current_counts, ( over_counts, count, type ) => {
+                let needed_val = worker_counts.hasOwnProperty( type ) ? worker_counts[ type ] : 0;
+        
                 if( !workers.workerClassHasProperty( type, 'setSuicide' ) ) {
-                    return needed;
+                    return over_counts;
                 }
-
-                if( val - current_val < 0 ) {
-                    needed[ type ] = val - current_val;
+        
+                if( needed_val - count < 0 ) {
+                    over_counts[ type ] = needed_val - count;
                 }
-                return needed;
+        
+                return over_counts;
             }, {} );
 
-        return needed_counts;
+        return over_spawns;
     }
 
     getNeededSpawns( room, current_creeps, worker_counts ) {
@@ -175,6 +175,7 @@ class SpawnManager {
         }
 
         if( currently_renewing_creeps.length < MAX_RENEWING ) {
+            console.log( 'Currently renewing', currently_renewing_creeps );
             if( creeps_to_renew.length > 0 ) {
                 let creep = creeps_to_renew[ 0 ];
 
@@ -197,7 +198,7 @@ class SpawnManager {
                         temp_worker.setRenew( spawn.id );
                     }
                 }
-            } else { // Spawn
+            } else if( currently_renewing_creeps.length === 0 ) { // Spawn
                 const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
                 
                 console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );

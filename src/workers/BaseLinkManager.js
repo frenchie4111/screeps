@@ -49,12 +49,18 @@ class BaseLinkManager extends RenewWorker {
 
                 let link = Game.getObjectById( this.room.memory.links.base )
 
-                if( link.energy > 0 ) {
+                if( creep.carry[ RESOURCE_ENERGY ] < creep.carryCapacity && link.energy > 0 ) {
                     creep.withdraw( link, RESOURCE_ENERGY );
+                } else if( creep.carry[ RESOURCE_ENERGY ] < 100 ) {
+                    creep.withdraw( this.room.storage, RESOURCE_ENERGY, 100 );
                 }
 
                 if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
-                    creep.transfer( this.room.storage, RESOURCE_ENERGY );
+                    if( this.spawn.energy < 100 ) {
+                        creep.transfer( this.room.storage, 100 );
+                    } else {
+                        creep.transfer( this.room.storage, RESOURCE_ENERGY, creep.carry[ RESOURCE_ENERGY ] - 100 );
+                    }
                 }
 
                 return;

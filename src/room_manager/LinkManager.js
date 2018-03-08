@@ -44,7 +44,7 @@ class LinkManager {
 
         for( let all_link_i in all_link_ids ) {
             let link = Game.getObjectById( all_link_ids[ all_link_i ] );
-            if( link.energy > 700 && link.cooldown === 0 ) {
+            if( link.energy > 700 && base_link.energy === 0 && link.cooldown === 0 ) {
                 link.transferEnergy( base_link );
                 return;
             }

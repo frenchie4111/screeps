@@ -4,6 +4,9 @@ const constants = require( '~/constants' ),
 
 const StateWorker = require( './StateWorker' );
 
+let TTL_REMAINING_START_RENEW = 250;
+let TTL_REMAINING_FINISH_RENEW = 1450;
+
 let STATES = {
     MOVE_TO_SPAWN: 'MOVE_TO_SPAWN',
     RENEW: 'RENEW',
@@ -109,7 +112,7 @@ class RenewWorker extends StateWorker {
                 this.setRenew();
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
-                if( creep.ticksToLive > 1400 ) {
+                if( creep.ticksToLive > TTL_REMAINING_FINISH_RENEW ) {
                     worker_memory.renewing = false;
 
                     if( worker_memory.running_until ) {
@@ -162,5 +165,5 @@ module.exports.isSuicide = ( creep ) => {
 };
 
 module.exports.needsRenewing = ( creep ) => {
-    return creep.ticksToLive < 500;
+    return creep.ticksToLive < TTL_REMAINING_START_RENEW;
 };

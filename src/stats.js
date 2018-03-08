@@ -41,6 +41,20 @@ module.exports = () => {
             }
 
             Memory.stats[ 'room.' + room.name + '.storedEnergy' ] = stored
+
+            let creeps = _
+                .reduce( room.memory.creeps, ( full, creep ) => {
+                    creep = Game.creeps[ creep ];
+                    if( creep && creep.my ) {
+                        full[ creep.name.replace( '-', '.' ) ] = {
+                            ticks_to_live: creep.ticksToLive,
+                            one: 1
+                        }
+                    }
+                    return full;
+                }, {} );
+
+            Memory.stats[ 'room.' + room.name + '.creeps' ] = creeps;
         }
         if( room_type === 'long_distance' ) {
             let ldm_rooms = Memory.stats.ldm_room = Memory.stats.ldm_room || {};

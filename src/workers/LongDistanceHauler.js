@@ -38,7 +38,7 @@ class LongDistanceHauler extends ContainerHarvester {
     }
 
     getTargetRoomName( creep, worker_memory ) {
-        this.spawn.room.name;
+        return this.spawn.room.name;
     }
 
     getTarget( creep, worker_memory ) {
@@ -88,11 +88,7 @@ class LongDistanceHauler extends ContainerHarvester {
     }
 
     getSourceRoomName( creep, worker_memory ) {
-        if( !worker_memory.long_distance_source ) {
-            worker_memory.long_distance_source = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_HAULER );
-        }
-
-        return worker_memory.long_distance_source.room_name;
+        return this.getLongDistance( creep, worker_memory ).room_name;
     }
 
     getSource( creep, worker_memory ) {

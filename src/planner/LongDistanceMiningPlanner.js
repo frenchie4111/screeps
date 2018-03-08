@@ -5,10 +5,11 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 12;
+const VERSION = 13;
 
-const ONE_HAULER_PER = 125;
+const ONE_HAULER_PER = 200;
 const LINK_THRESHOLD = 25;
+const RE_RUN_EVERY = 1000;
 
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
@@ -71,6 +72,7 @@ class LongDistanceMiningPlanner extends Planner {
                                         direction: direction,
                                         source: source,
                                         use_link: use_link,
+                                        _run_at: Game.time,
                                         _version: VERSION
                                     } );
                             } );

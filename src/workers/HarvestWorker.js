@@ -49,6 +49,7 @@ class HarvestWorker extends RenewWorker {
             .find( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
                     return ( 'energyCapacity' in structure ) &&
+                        structure.structureType !== STRUCTURE_LINK &&
                         structure.energy < structure.energyCapacity &&
                         structure.structureType !== constants.STRUCTURE_TOWER;
                 }
@@ -177,7 +178,11 @@ class HarvestWorker extends RenewWorker {
             [ STATES.MOVE_TO_TRANSFER ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.target_room_name ) {
                     worker_memory.target_room_name = this.getTargetRoomName( creep, worker_memory );
-                    if( !worker_memory.target_room_name ) return; // Idle, no available targets
+                    if( !worker_memory.target_room_name ) {
+                        // Idle, no available targets
+                        console.log( 'No targets' );
+                        return;
+                    }
                 }
 
                 if( creep.room.name !== worker_memory.target_room_name ) {
@@ -209,7 +214,7 @@ class HarvestWorker extends RenewWorker {
                     case constants.ERR_FULL:
                         // Current target is full, get new target
                         worker_memory.target_id = null;
-                        return this.instantTransition( STATES.MOVE_TO_TRANSFER );
+                        return STATES.MOVE_TO_TRANSFER;
                         break;
                     case constants.ERR_NOT_IN_RANGE:
                         this.moveTo( Game.getObjectById( worker_memory.target_id ) );
