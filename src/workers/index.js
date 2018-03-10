@@ -14,6 +14,7 @@ const worker_type_conversion = {
     LONG_DISTANCE_RESERVER: require( './LongDistanceReserver' ),
     EXTRACTOR_HARVESTER: require( './ExtractorHarvester' ),
     BASE_LINK_MANAGER: require( './BaseLinkManager' ),
+    LONG_DISTANCE_ROOM_CLEARER: require( './LongDistanceClearer' ),
 };
 
 const types = {
@@ -33,6 +34,7 @@ const types = {
     LONG_DISTANCE_RESERVER: 'LONG_DISTANCE_RESERVER',
     EXTRACTOR_HARVESTER: 'EXTRACTOR_HARVESTER',
     BASE_LINK_MANAGER: 'BASE_LINK_MANAGER',
+    LONG_DISTANCE_ROOM_CLEARER: 'LONG_DISTANCE_ROOM_CLEARER',
 };
 
 module.exports = {

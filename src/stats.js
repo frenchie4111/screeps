@@ -40,6 +40,10 @@ module.exports = () => {
                 storedTotal = 0
             }
 
+            if( room.terminal ) {
+                Memory.stats[ 'room.' + room.name + '.terminal.store' ]  = room.terminal.store;
+            }
+
             Memory.stats[ 'room.' + room.name + '.storedEnergy' ] = stored
 
             let creeps = _
@@ -93,6 +97,8 @@ module.exports = () => {
             return full;
         }, {} );
     Memory.stats.creeps = creeps;
+
+    Memory.stats.credits = Game.market.credits;
 
     Memory.stats = flat( Memory.stats );
     

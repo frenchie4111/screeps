@@ -5,7 +5,8 @@ const constants = require( '~/constants' ),
 
 const Assigner = require( './Assigner' ),
     SpawnManager = require( './SpawnManager' ),
-    LinkManager = require( './LinkManager' );
+    LinkManager = require( './LinkManager' ),
+    MarketManager = require( './MarketManager' );
 
 const types = require( './types' );
 
@@ -71,9 +72,9 @@ class RoomManager {
             } );
     }
 
-    handleSpawns( room, spawn, current_state ) {
+    handleSpawns( room, spawn, current_state, assigner ) {
         let manager = new SpawnManager();
-        manager.doManage( room, spawn, current_state, this.getRoomCreeps( room ) );
+        manager.doManage( room, spawn, current_state, this.getRoomCreeps( room ), assigner );
     }
 
     handleCreeps( room, spawn, current_state, assigner ) {
@@ -177,6 +178,11 @@ class RoomManager {
         link_manager.doManage( room, spawn );
     }
 
+    handleMarket( room, spawn, current_state ) {
+        const market_manager = new MarketManager();
+        market_manager.doManage( room, spawn );
+    }
+
     doManage( room ) {
         const current_state = this._getCurrentState( room );
 
@@ -212,9 +218,13 @@ class RoomManager {
             this.handleLinks( room, spawn, current_state );
         } );
 
+        loopItem( 'market', () => {
+            this.handleMarket( room, spawn, current_state );
+        } );
+
         if( has_spawn ) {
             loopItem( 'spawn', () => {
-                this.handleSpawns( room, spawn, current_state );
+                this.handleSpawns( room, spawn, current_state, assigner );
             } );
         }
         

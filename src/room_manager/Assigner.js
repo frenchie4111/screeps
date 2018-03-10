@@ -1,4 +1,3 @@
-
 const constants = require( '~/constants' );
 
 const position = require( '~/lib/position' );
@@ -32,7 +31,6 @@ class Assigner {
 
     _canBeAssigned( key_name, thing_id, allowed_count=1 ) {
         if( !this._getAssignedForType( key_name ).hasOwnProperty( thing_id ) ) {
-            console.log( 'nokey' );
             return true;
         }
         return this._getAssignedForType( key_name )[ thing_id ].length < allowed_count;
@@ -91,12 +89,12 @@ class Assigner {
             }, {} );
     }
 
-    getAssignable( creep, type ) {
+    getAssignable( type ) {
         const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
 
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
-                return this._arrayToAllowedCounts( _.map( creep.room.find( FIND_SOURCES ), ( source ) => source.id ) );
+                return this._arrayToAllowedCounts( _.map( this.room.find( FIND_SOURCES ), ( source ) => source.id ) );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
                 return this._arrayToAllowedCounts( _.map( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id ) );
             case Assigner.types.LONG_DISTANCE_HAULER:
@@ -115,6 +113,15 @@ class Assigner {
                         return ticks_til_unreserved < ROOM_TICKS_TO_UNRESERVE_THRESHOLD;
                     } );
                 return this._arrayToAllowedCounts( reserve_rooms );
+            case Assigner.types.LONG_DISTANCE_ROOM_CLEARER:
+                let rooms = Memory.rooms;
+                let dangerous_rooms = [];
+                for( let room_name in rooms ) {
+                    if( rooms[ room_name ].dangerous_until > Game.time ) {
+                        dangerous_rooms.push( room_name );
+                    }
+                }
+                return this._arrayToAllowedCounts( dangerous_rooms );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
                     [ -5, -1 ],
@@ -148,6 +155,8 @@ class Assigner {
                 return found_long_distance;
             case Assigner.types.LONG_DISTANCE_RESERVER:
                 return assigned_id;
+            case Assigner.types.LONG_DISTANCE_ROOM_CLEARER:
+                return assigned_id;
             case Assigner.types.WAITING_SPOT:
                 let assigned_id_split = _.map( assigned_id.split( ':' ), ( item ) => +item );
                 
@@ -158,6 +167,35 @@ class Assigner {
         }
     }
 
+    getUnassigned( type ) {
+        let unassigned = this.getAssignable( type );
+
+        unassigned = _
+            .map( unassigned, ( allowed_count, thing_id ) => {
+                return {
+                    allowed_count: allowed_count,
+                    id: thing_id
+                }
+            } );
+
+        unassigned = _
+            .filter( unassigned, ( thing_obj ) => {
+                return this._canBeAssigned( type, thing_obj.id, thing_obj.allowed_count );
+            } );
+
+        return unassigned;
+    }
+
+    getSpawnCount( type ) {
+        let unassigned = this.getUnassigned( type );
+        let assigned = this._getAssignedForType( type );
+
+        let unassigned_count = _.sum( _.map( unassigned, ( unassigned_for_id ) => unassigned_for_id.allowed_count ) );
+        let assigned_count = _.sum( _.map( assigned, ( assigned_for_id ) => assigned_for_id.length ) );
+
+        return unassigned_count + assigned_count;
+    }
+
     getAssigned( creep, type ) {
         let assigned_to_me = this._getAssignedToForCreep( type, creep.id );
         if( assigned_to_me ) {
@@ -165,30 +203,16 @@ class Assigner {
             return this.getObjectFromId( type, assigned_to_me );
         }
 
-        let assignable = this.getAssignable( creep, type );
-        console.log( 'assignable', JSON.stringify( assignable ) );
-        assignable = _
-            .map( assignable, ( allowed_count, thing_id ) => {
-                return {
-                    allowed_count: allowed_count,
-                    thing_id: thing_id
-                }
-            } );
-        console.log( 'assignable map', JSON.stringify( assignable ) );
-        assignable = _
-            .filter( assignable, ( thing_obj ) => {
-                return this._canBeAssigned( type, thing_obj.thing_id, thing_obj.allowed_count );
-            } );
-        console.log( 'assignable filter', JSON.stringify( assignable ) );
+        let unassigned = this.getUnassigned( type );
 
-        if( assignable.length === 0 ) {
+        if( unassigned.length === 0 ) {
             throw new Error( 'Assigner can not assign anymore type', type );
         }
 
-        let assigned = assignable[ 0 ];
-        this._setAssigned( type, assigned.thing_id, creep.id );
+        let assigned = unassigned[ 0 ];
+        this._setAssigned( type, assigned.id, creep.id );
 
-        return this.getObjectFromId( type, assigned.thing_id );
+        return this.getObjectFromId( type, assigned.id );
     }
 };
 
@@ -198,6 +222,7 @@ Assigner.types = {
     LONG_DISTANCE_HAULER: 'LONG_DISTANCE_HAULER',
     LONG_DISTANCE_RESERVER: 'LONG_DISTANCE_RESERVER',
     WAITING_SPOT: 'WAITING_SPOT',
+    LONG_DISTANCE_ROOM_CLEARER: 'LONG_DISTANCE_ROOM_CLEARER',
 };
 
 Assigner.prototype.types = Assigner.types;

@@ -44,7 +44,12 @@ class RenewWorker extends StateWorker {
     setRunAway( creep, enemy ) {
         this.setState( STATES.MOVE_TO_SPAWN );
         Memory.rooms[ creep.room.name ].dangerous_until = Game.time + enemy.ticksToLive;
-        this.getMemory().running_until = Game.time + enemy.ticksToLive;
+        this.getMemory().running_from_room = creep.room.name;
+    }
+
+    stillRunning( creep ) {
+        let room = this.getMemory().running_from_room;
+        return Memory.rooms[ room ].dangerous_until && Memory.rooms[ room ].dangerous_until > Game.time;
     }
 
     shouldRunFrom( creep, enemy ) {
@@ -52,7 +57,9 @@ class RenewWorker extends StateWorker {
     };
 
     shouldKeepRunning( worker_memory ) {
-        return Game.time < worker_memory.running_until;
+        let room = worker_memory.running_from_room;
+        if( !room ) return false;
+        return Memory.rooms[ room ].dangerous_until && Memory.rooms[ room ].dangerous_until > Game.time;
     }
 
     _getRenewStates() {
@@ -69,7 +76,7 @@ class RenewWorker extends StateWorker {
                     if( worker_memory.renewing ) {
                         return STATES.RENEW;
                     }
-                    if( worker_memory.running_until ) {
+                    if( this.shouldKeepRunning( worker_memory ) ) {
                         return STATES.WAIT_FOR_ENEMY;
                     }
                 }
@@ -106,7 +113,7 @@ class RenewWorker extends StateWorker {
 
                 console.log( 'Done Running' );
 
-                worker_memory.running_until = null;
+                worker_memory.running_from_room = null;
                 this.assigner.unassign( this.assigner.types.WAITING_SPOT, creep.id, worker_memory.waiting_spot.id );
                 worker_memory.waiting_spot = null;
 
@@ -116,7 +123,7 @@ class RenewWorker extends StateWorker {
                 if( creep.ticksToLive > TTL_REMAINING_FINISH_RENEW ) {
                     worker_memory.renewing = false;
 
-                    if( worker_memory.running_until ) {
+                    if( this.shouldKeepRunning( worker_memory ) ) {
                         return STATES.MOVE_TO_WAITING_SPOT;
                     }
 
@@ -137,7 +144,7 @@ class RenewWorker extends StateWorker {
     _doWork( creep, room, spawn ) {
         this.getMemory().spawn_id = spawn.id;
 
-        if( this.run_from_enemy && !this.getMemory().running_until && position.inRoom( creep.pos ) ) {
+        if( this.run_from_enemy && !this.shouldKeepRunning( this.getMemory() ) && position.inRoom( creep.pos ) ) {
             let hostile_creeps = creep.room.find( FIND_HOSTILE_CREEPS );
             // TODO: Check for allies, etc etc
 

@@ -76,10 +76,6 @@ class SpawnManager {
     }
 
     getOverSpawns( room, current_creeps, worker_counts ) {
-        if( _.isFunction( worker_counts ) ) {
-            worker_counts = worker_counts( room );
-        }
-
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
         let over_spawns = _
@@ -101,10 +97,6 @@ class SpawnManager {
     }
 
     getNeededSpawns( room, current_creeps, worker_counts ) {
-        if( _.isFunction( worker_counts ) ) {
-            worker_counts = worker_counts( room );
-        }
-
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
         let needed_counts = _
@@ -154,11 +146,16 @@ class SpawnManager {
         return construction_sites.length > 0;
     }
 
-    doManage( room, spawn, current_state, current_creeps ) {
+    doManage( room, spawn, current_state, current_creeps, assigner ) {
         let creeps_to_renew = this.findCreepsToRenew( current_creeps );
         let currently_renewing_creeps = this.findCurrentlyRenewingCreeps( current_creeps );
 
-        const over_spawns = this.getOverSpawns( room, current_creeps, current_state.worker_counts );
+        let worker_counts = current_state.worker_counts;
+        if( _.isFunction( worker_counts ) ) {
+            worker_counts = worker_counts( room, assigner );
+        }
+
+        const over_spawns = this.getOverSpawns( room, current_creeps, worker_counts );
 
         _
             .forEach( over_spawns, ( count, type ) => {
@@ -199,7 +196,7 @@ class SpawnManager {
                     }
                 }
             } else if( currently_renewing_creeps.length === 0 ) { // Spawn
-                const needed_spawns = this.getNeededSpawns( room, current_creeps, current_state.worker_counts );
+                const needed_spawns = this.getNeededSpawns( room, current_creeps, worker_counts );
                 
                 console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );
                 

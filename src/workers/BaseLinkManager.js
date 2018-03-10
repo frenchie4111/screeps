@@ -56,15 +56,20 @@ class BaseLinkManager extends RenewWorker {
                     } else {
                         creep.transfer( this.room.storage, RESOURCE_ENERGY );
                     }
-                } else if( this.spawn.energy < 300 ) {
-                    let spawn_needed = this.spawn.energyCapacity - this.spawn.energy;
-                    if( creep.carry[ RESOURCE_ENERGY ] >= spawn_needed ) {
+                } else if( this.spawn.energy < 150 ) {
+                    if( creep.carry[ RESOURCE_ENERGY ] >= 300 ) {
                         creep.transfer( this.spawn, RESOURCE_ENERGY );
                     } else {
-                        creep.withdraw( this.room.storage, RESOURCE_ENERGY, spawn_needed );
+                        creep.withdraw( this.room.storage, RESOURCE_ENERGY, 300 );
+                    }
+                } else if( this.room.terminal && this.room.terminal.store[ RESOURCE_ENERGY ] < 100000 && this.room.storage.store[ RESOURCE_ENERGY ] > 700000 ) {
+                    if( creep.carry[ RESOURCE_ENERGY ] === creep.carryCapacity ) {
+                        creep.transfer( this.room.terminal, RESOURCE_ENERGY );
+                    } else {
+                        creep.withdraw( this.room.storage, RESOURCE_ENERGY );
                     }
                 } else if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
-                    creep.transfer( this.room.storage, RESOURCE_ENERGY, creep.carry[ RESOURCE_ENERGY ] - 100 );
+                    creep.transfer( this.room.storage, RESOURCE_ENERGY, creep.carry[ RESOURCE_ENERGY ] );
                 }
 
                 return;

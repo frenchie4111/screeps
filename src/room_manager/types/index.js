@@ -258,7 +258,7 @@ module.exports = {
             isComplete: ( room ) => {
                 return false;
             },
-            worker_counts: ( room ) => {
+            worker_counts: ( room, assigner ) => {
                 let worker_counts = {
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
                     [ workers.types.CONTAINER_BUILDER ]: 1,
@@ -269,6 +269,8 @@ module.exports = {
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
                 addWorkerCountsForExtractor( worker_counts, room );
+
+                worker_counts[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] = assigner.getSpawnCount( assigner.types.LONG_DISTANCE_ROOM_CLEARER );
 
                 return worker_counts;
             },
