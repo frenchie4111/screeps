@@ -17,7 +17,8 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     LongDistanceLinkPlanner = require( '~/planner/LongDistanceLinkPlanner' ),
     BaseLinkPlanner = require( '~/planner/BaseLinkPlanner' ),
     ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
-    ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' );
+    ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' ),
+    ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
 
