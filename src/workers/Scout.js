@@ -16,7 +16,12 @@ const directions = [
 
 class Scout extends Worker {
     getBody( available_energy ) {
-        return [ constants.MOVE, constants.MOVE ];
+        let parts = [ MOVE, MOVE ];
+
+        if( available_energy > this.getEnergyOf( parts ) ) {
+            return parts;
+        }
+        return [];
     }
 
     _doWork( creep ) {

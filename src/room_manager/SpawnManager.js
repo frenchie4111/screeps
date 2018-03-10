@@ -131,6 +131,7 @@ class SpawnManager {
 
     getMaxBodyForWorker( spawn, worker ) {
         let energy_capacity = this.getTotalEnergyCapacity( spawn );
+        console.log( 'energy_capacity', energy_capacity );
         let max_body = worker.getBody( energy_capacity ).sort();
         return max_body;
     }
@@ -222,6 +223,8 @@ class SpawnManager {
 
                     let current_body = worker.getBody( current_energy ).sort();
                     let max_body = this.getMaxBodyForWorker( spawn, worker );
+
+                    console.log( 'cur', current_body, 'max', max_body );
 
                     if( _.isEqual( current_body, max_body ) || current_creeps.length === 0 ) {
                         this.spawnCreep( room, spawn, spawn_type );
