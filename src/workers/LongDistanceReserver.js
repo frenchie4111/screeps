@@ -17,7 +17,7 @@ class LongDistanceReserver extends StateWorker {
     }
 
     getBody( energy ) {
-        let body = [ constants.MOVE, constants.CLAIM, constants.MOVE, constants.CLAIM ];
+        let body = [ constants.MOVE, constants.CLAIM, constants.MOVE, constants.CLAIM, constants.MOVE, constants.CLAIM ];
 
         if( energy > this.getEnergyOf( body ) ) {
             return body;

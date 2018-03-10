@@ -41,7 +41,9 @@ class Scout extends Worker {
             creep.suicide();
         }
 
-        this.moveToRoom( memory.rooms_to_scout[ 0 ] );
+        if( memory.rooms_to_scout ) {
+            this.moveToRoom( memory.rooms_to_scout[ 0 ], { avoid_enemies: true } );
+        }
     }
 }
 

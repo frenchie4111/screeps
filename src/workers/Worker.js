@@ -28,12 +28,12 @@ class Worker {
         return this.creep.memory.worker_memory;
     }
 
-    moveTo( target ) {
-        return move.moveTo( this.creep, this.getMemory( '_moveTo' ), target );
+    moveTo( target, opts ) {
+        return move.moveTo( this.creep, this.getMemory( '_moveTo' ), target, opts );
     }
-    
-    moveToRoom( target_room_name ) {
-        return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name );
+
+    moveToRoom( target_room_name, opts ) {
+        return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name, opts );
     }
 
     isNear( creep, id ) {

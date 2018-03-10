@@ -130,7 +130,7 @@ class LongDistanceHauler extends ContainerHarvester {
                 exit_pos = position.getOpositeEntrancePosition( exit_pos, this.creep.room.name );
             }
 
-            return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name, direction, exit_pos );
+            return move.moveToRoom( this.creep, this.getMemory( '_moveToRoom' ), target_room_name, {}, direction, exit_pos );
         }
         return super.moveToRoom( target_room_name );
     }

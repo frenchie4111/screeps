@@ -10,7 +10,37 @@ const _drawPath = ( creep, path ) => {
     }
 };
 
-const moveTo = ( creep, move_memory, target ) => {
+const findPathTo = ( thing, target, opts ) => {
+    return thing.pos
+        .findPathTo( target, {
+            costCallback: ( room_name, cost_matrix ) => {
+                if( !Game.rooms[ room_name ] ) return cost_matrix;
+                if( opts.avoid_enemies ) {
+                    console.log( 'Avoiding enemies' );
+
+                    let hostile_creeps = Game.rooms[ room_name ].find( FIND_HOSTILE_CREEPS );
+                    if( hostile_creeps.length === 0 ) return cost_matrix;
+
+                    cost_matrix = cost_matrix.clone();
+                    _
+                        .each( hostile_creeps, ( hostile_creep ) => {
+                            let hostile_creep_pos = hostile_creep.pos;
+                            for( let x = hostile_creep_pos.x - 3; x < hostile_creep_pos.x + 3; x++ ) {
+                                for( let y = hostile_creep_pos.y - 3; y < hostile_creep_pos.y + 3; y++ ) {
+                                    Game.rooms[ room_name ].visual.circle( x, y, { color: 'red' } );
+                                    cost_matrix.set( hostile_creep.pos.x, hostile_creep.pos.y, 255 );
+                                }
+                            }
+                        } );
+                    return cost_matrix;
+                }
+
+                return cost_matrix;
+            }
+        } );
+};
+
+const moveTo = ( creep, move_memory, target, opts={} ) => {
     if( target.pos ) {
         target = target.pos;
     }
@@ -22,12 +52,12 @@ const moveTo = ( creep, move_memory, target ) => {
 
     if( !move_memory.path ) {
         profiler.incrementCallsFor( 'move.findPathTo' );
-        move_memory.path = creep.pos.findPathTo( target );
+        move_memory.path = findPathTo( creep, target, opts );
     } else {
         // Make sure we aren't stuck
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
             profiler.incrementCallsFor( 'move.findPathTo' );
-            move_memory.path = creep.pos.findPathTo( target );
+            move_memory.path = findPathTo( creep, target, opts );
         }
     }
 
@@ -88,7 +118,7 @@ const moveIn = ( creep, move_memory, target_room_name ) => {
 
 module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
 
-const moveToRoom = ( creep, move_memory, target_room_name, use_exit_direction=null, use_exit=null ) => {
+const moveToRoom = ( creep, move_memory, target_room_name, opts={}, use_exit_direction=null, use_exit=null ) => {
     if( move_memory.target_room_name !== target_room_name ) {
         move_memory.exit = null;
         move_memory.target_room_name = target_room_name;
@@ -118,6 +148,6 @@ const moveToRoom = ( creep, move_memory, target_room_name, use_exit_direction=nu
         move_memory.exit = position.clone( exit );
     }
 
-    return module.exports.moveTo( creep, move_memory, position.fromJSON( move_memory.exit ) );
+    return module.exports.moveTo( creep, move_memory, position.fromJSON( move_memory.exit ), opts );
 }
 module.exports.moveToRoom = moveToRoom;
