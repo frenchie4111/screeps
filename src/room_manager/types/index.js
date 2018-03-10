@@ -18,6 +18,7 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     BaseLinkPlanner = require( '~/planner/BaseLinkPlanner' ),
     ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' ),
+    ExpansionPlanner = require( '~/planner/ExpansionPlanner' ),
     ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -280,7 +281,8 @@ module.exports = {
                     new ExtensionPlanner( 'extension-5' ),
                     new LongDistanceMiningPlanner( 'ldm-1' ),
                     new BaseLinkPlanner( 'base-link-planner' ),
-                    new ExtratorPlanner( 'extrator-planner-1' )
+                    new ExtratorPlanner( 'extrator-planner-1' ),
+                    new ExpansionPlanner( 'expansion' ),
                 ];
 
                 let long_distance_road_planners = _
@@ -304,5 +306,6 @@ module.exports = {
             }
         }
     ],
-    long_distance: null
+    long_distance: null,
+    expansion: null
 };
