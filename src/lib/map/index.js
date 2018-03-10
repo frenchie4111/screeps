@@ -1,6 +1,6 @@
 const position = require( '~/lib/position' );
 
-const MAP_VERSION = 9;
+const MAP_VERSION = 11;
 
 module.exports = {
     getRoomMap: () => {
@@ -70,19 +70,27 @@ module.exports = {
                 let oposite_entrance_dir = position.getOpositeDirection( entrance_direction );
                 console.log( 'Finding Closest to', JSON.stringify( source.pos ), oposite_entrance_dir );
                 let exit_pos = source.pos.findClosestByPath( +oposite_entrance_dir );
-                if( !exit_pos ) exit_pos = source.pos.findClosestByRange( +oposite_entrance_dir );
-                if( !exit_pos ) return source_info;
+                let exit_pos_type = 'path';
+                if( !exit_pos ) {
+                    exit_pos_type = 'range';
+                    exit_pos = source.pos.findClosestByRange( +oposite_entrance_dir );
+                }
+                if( !exit_pos ) {
+                    source_info.exit_pos_type = null;
+                    return source_info;
+                }
                 console.log( 'exit_pos', JSON.stringify( exit_pos ) );
                 let exit_path = source.pos.findPathTo( exit_pos );
                 console.log( 'exit_path', JSON.stringify( exit_path ) );
 
                 source_info.exit_pos = position.clone( exit_pos );
                 source_info.exit_path_length = exit_path.length;
+                source_info.exit_pos_type = exit_pos_type;
 
                 return source_info;
             } );
 
-        room_map[ room.name ].mineral_ids = room
+        room_map[ room.name ].minerals = room
             .find( FIND_MINERALS )
             .map( ( mineral ) => { 
                 return {
@@ -91,7 +99,15 @@ module.exports = {
                 }
             } );
 
-        room_map[ room.name ].controller_id = room.controller ? room.controller.id : null;
+        room_map[ room.name ].controller = null;
+        if( room.controller ) {
+            room_map[ room.name ].controller = {
+                id: room.controller.id,
+                owner: room.controller.owner,
+                level: room.controller.level,
+                reservation: room.controller.reservation
+            };
+        }
         room_map[ room.name ].exits = Game.map.describeExits( room.name );
 
         let hostile_creeps = room.find( FIND_HOSTILE_CREEPS );
