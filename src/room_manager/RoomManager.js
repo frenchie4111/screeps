@@ -18,7 +18,8 @@ class RoomManager {
     _getCurrentState( room ) {
         if( !room.memory.hasOwnProperty( '_state' ) ) room.memory._state = {};
         if( !room.memory._state.hasOwnProperty( 'type' ) ) {
-            throw new Error( 'Room Has No Type: ' + room.name );
+            console.log( 'Room Has No Type: ' + room.name );
+            return null;
         }
         const room_state_memory = room.memory._state;
         const type = room.memory._state.type;
