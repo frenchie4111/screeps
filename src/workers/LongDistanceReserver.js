@@ -14,6 +14,7 @@ class LongDistanceReserver extends StateWorker {
         super( assigner );
         this.default_state = STATES.GO_TO_RESERVE_ROOM;
         this.controller_message = 'Reserved for long distance mining';
+        if( this.assigner ) this.assigner_type = this.assigner.types.LONG_DISTANCE_RESERVER;
     }
 
     getBody( energy ) {
@@ -26,11 +27,15 @@ class LongDistanceReserver extends StateWorker {
         return [];
     }
 
+    doReserve( creep, target ) {
+        return creep.reserveController( creep.room.controller );
+    }
+
     _getStates() {
         return {
             [ STATES.GO_TO_RESERVE_ROOM ]: ( creep, state_memory, worker_memory ) => {
                 if( !worker_memory.reserve_room_name ) {
-                    worker_memory.reserve_room_name = this.assigner.getAssigned( creep, this.assigner.types.LONG_DISTANCE_RESERVER );
+                    worker_memory.reserve_room_name = this.assigner.getAssigned( creep, this.assigner_type );
                 }
                 creep.memory.ignore_death = true;
 
@@ -44,7 +49,7 @@ class LongDistanceReserver extends StateWorker {
                     return STATES.GO_TO_RESERVE_ROOM;
                 }
 
-                if( creep.reserveController( creep.room.controller ) === OK ) {
+                if( this.doReserve( creep, creep.room.controller ) === OK ) {
                     return STATES.RESERVE;
                 }
 
@@ -56,7 +61,7 @@ class LongDistanceReserver extends StateWorker {
                     console.log( 'Signing', creep.room.controller.sign, this.controller_message );
                     reserve_response = creep.signController( creep.room.controller, this.controller_message );
                 } else {
-                    reserve_response = creep.reserveController( creep.room.controller );
+                    reserve_response = this.doReserve( creep, creep.room.controller );
                 }
 
                 if( reserve_response !== OK ) {

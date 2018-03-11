@@ -14,16 +14,16 @@ const ALLOWED_ENEMY_USERNAMES = [ SYSTEM_USERNAME ];
 
 class LongDistanceMiningPlanner extends Planner {
     getRoomType( room_name ) {
-        return _.get( Memory.rooms, [ room_name, '_state', 'type' ], null );
+        return _.get( Memory.rooms, [ room_name, 'type' ], null );
     }
 
     shouldRun( room, spawn ) {
         let expansion_rooms = _
-            .filter( Game.rooms, ( room, room_name ) => {
+            .filter( Memory.rooms, ( room, room_name ) => {
                 return [ EXPANSION_ROOM_TYPE, STANDARD_ROOM_TYPE ].includes( this.getRoomType( room_name ) );
             } );
 
-        if( expansion_rooms.length < Game.gcl.level ) {
+        if( expansion_rooms.length >= Game.gcl.level ) {
             return false;
         }
 
@@ -67,9 +67,14 @@ class LongDistanceMiningPlanner extends Planner {
             .each( room => console.log( JSON.stringify( room ) ) )
             .value();
 
-        console.log( 'Found', rooms_to_expand.length, 'expansion candidate' );
+        if( rooms_to_expand.length === 0 ) {
+            throw new Error( 'No expansion candidates' );
+        }
 
-        
+        let target_room = rooms_to_expand[ 0 ];
+
+        _.set( Memory, [ 'rooms', target_room.room_name, 'type' ], EXPANSION_ROOM_TYPE );
+        room.memory.expansion_target = target_room.room_name;
 
         return true;
     }

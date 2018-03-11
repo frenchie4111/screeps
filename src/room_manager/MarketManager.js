@@ -6,6 +6,16 @@ const constants = require( '~/constants' ),
 
 const Assigner = require( './Assigner' );
 
+const SELL_THRESHOLDS = {
+    [ RESOURCE_ENERGY ]: 100000,
+    [ RESOURCE_LEMERGIUM ]: 3000
+};
+
+const SELL_AMOUNTS = {
+    [ RESOURCE_ENERGY ]: 10000,
+    [ RESOURCE_LEMERGIUM ]: 2000
+};
+
 const REASONABLE_PRICES = {
     [ RESOURCE_ENERGY ]: 0.029,
     [ RESOURCE_LEMERGIUM ]: 0.110
@@ -51,23 +61,33 @@ class MarketManager {
         return orders[ 0 ];
     }
 
-    // handleRoomState : doManage-E44S3 : market : 
-    // false 
-    // {"created":4165479,"type":"buy","amount":10000,"remainingAmount":10000,"resourceType":"energy","price":0.031,"roomName":"W1S19","id":"5a226d6ef30e5c2ce1d2c582","transaction_cost_eng":7842,"per_eng_profit":0.017374733774240557,"per_resource_profit":0.5768321864917066} {"created":6528896,"type":"buy","amount":242550,"remainingAmount":8992810,"resourceType":"energy","price":0.03,"roomName":"E9N21","id":"5a9a249d621ca73755b491c0","transaction_cost_eng":6886,"per_resource_profit":0.6003674248640167}
-
-
     doManage( room, spawn ) {
         let memory = this.getMemory( room );
 
         let current_energy = room.terminal.store[ RESOURCE_ENERGY ];
-        if( current_energy < 100000 ) return;
+        if( current_energy < 10000 ) return;
         if( room.terminal.cooldown > 0 ) return;
 
-        let order = this.getBestBuyOrderFor( room, RESOURCE_ENERGY, 10000, current_energy );
+        let thing_to_sell = _
+            .chain( room.terminal.store )
+            .map( ( amount, type ) => {
+                return { amount, type }
+            } )
+            .find( thing => thing.amount > SELL_THRESHOLDS[ thing.type ] )
+            .value();
 
-        let response = Game.market.deal( order.id, 10000, room.name );
+        if( !thing_to_sell ) return;
+
+        console.log( 'thing_to_sell', thing_to_sell );
+        let order = this.getBestBuyOrderFor( room, thing_to_sell.type, SELL_AMOUNTS[ thing_to_sell.type ], current_energy );
+
+        console.log( JSON.stringify( order ) );
+
+        let response = Game.market.deal( order.id, SELL_AMOUNTS[ thing_to_sell.type ], room.name );
         console.log( 'Market response ', response, constants.lookup( response ) );
     }
 }
+
+MarketManager.SELL_THRESHOLDS = SELL_THRESHOLDS;
 
 module.exports = MarketManager;

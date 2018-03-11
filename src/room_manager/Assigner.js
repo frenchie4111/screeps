@@ -81,16 +81,18 @@ class Assigner {
             } );
     }
 
-    _arrayToAllowedCounts( array ) {
+    _arrayToAllowedCounts( array, per=1 ) {
         return _
             .reduce( array, ( full, val ) => {
-                full[ val ] = 1;
+                full[ val ] = per;
                 return full;
             }, {} );
     }
 
     getAssignable( type ) {
         const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
+
+        const rooms = Memory.rooms;
 
         switch( type ) {
             case Assigner.types.CONTAINER_MINER:
@@ -114,7 +116,6 @@ class Assigner {
                     } );
                 return this._arrayToAllowedCounts( reserve_rooms );
             case Assigner.types.LONG_DISTANCE_ROOM_CLEARER:
-                let rooms = Memory.rooms;
                 let dangerous_rooms = [];
                 for( let room_name in rooms ) {
                     if( rooms[ room_name ].dangerous_until > Game.time ) {
@@ -122,6 +123,33 @@ class Assigner {
                     }
                 }
                 return this._arrayToAllowedCounts( dangerous_rooms );
+            case Assigner.types.EXPANSION_CLEARER:
+                let expansion_rooms = [];
+                for( let room_name in rooms ) {
+                    if( _.get( Memory, [ 'rooms', room_name, 'type' ] ) === 'expansion' &&
+                        _.get( Memory, [ 'rooms', room_name, '_state', 'current_state' ] ) === 0 ) {
+                        expansion_rooms.push( room_name );
+                    }
+                }
+                return this._arrayToAllowedCounts( expansion_rooms, 4 );
+            case Assigner.types.EXPANSION_RESERVER:
+                let expansion_rooms_to_claim = [];
+                for( let room_name in rooms ) {
+                    if( _.get( Memory, [ 'rooms', room_name, 'type' ] ) === 'expansion' &&
+                        _.get( Memory, [ 'rooms', room_name, '_state', 'current_state' ] ) === 1 ) {
+                        expansion_rooms_to_claim.push( room_name );
+                    }
+                }
+                return this._arrayToAllowedCounts( expansion_rooms_to_claim );
+            case Assigner.types.EXPANSION_BUILDER:
+                let expansion_rooms_to_build = [];
+                for( let room_name in rooms ) {
+                    if( _.get( Memory, [ 'rooms', room_name, 'type' ] ) === 'expansion' &&
+                        _.get( Memory, [ 'rooms', room_name, '_state', 'current_state' ] ) === 2 ) {
+                        expansion_rooms_to_build.push( room_name );
+                    }
+                }
+                return this._arrayToAllowedCounts( expansion_rooms_to_build );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
                     [ -5, -1 ],
@@ -154,8 +182,10 @@ class Assigner {
                 console.log( assigned_id, found_long_distance );
                 return found_long_distance;
             case Assigner.types.LONG_DISTANCE_RESERVER:
-                return assigned_id;
             case Assigner.types.LONG_DISTANCE_ROOM_CLEARER:
+            case Assigner.types.EXPANSION_CLEARER:
+            case Assigner.types.EXPANSION_RESERVER:
+            case Assigner.types.EXPANSION_BUILDER:
                 return assigned_id;
             case Assigner.types.WAITING_SPOT:
                 let assigned_id_split = _.map( assigned_id.split( ':' ), ( item ) => +item );
@@ -223,6 +253,9 @@ Assigner.types = {
     LONG_DISTANCE_RESERVER: 'LONG_DISTANCE_RESERVER',
     WAITING_SPOT: 'WAITING_SPOT',
     LONG_DISTANCE_ROOM_CLEARER: 'LONG_DISTANCE_ROOM_CLEARER',
+    EXPANSION_CLEARER: 'EXPANSION_CLEARER',
+    EXPANSION_RESERVER: 'EXPANSION_RESERVER',
+    EXPANSION_BUILDER: 'EXPANSION_BUILDER',
 };
 
 Assigner.prototype.types = Assigner.types;

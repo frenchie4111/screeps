@@ -8,9 +8,6 @@ const stats = require( './stats' ),
 module.exports.loop = function() {
     profiler.resetProfile();
 
-    const spawn = Game.spawns[ 'Spawn1' ];
-    const room = spawn.room;
-
     loopItem( 'garbage-collector', () => {
         for( let i in Memory.creeps ) {
             if( !Game.creeps[ i ] ) {

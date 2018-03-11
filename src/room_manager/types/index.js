@@ -19,6 +19,8 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' ),
     ExpansionPlanner = require( '~/planner/ExpansionPlanner' ),
+    ExpansionSpawnPlanner = require( '~/planner/ExpansionSpawnPlanner' ),
+    RoomTypeTransition = require( '~/planner/RoomTypeTransition' ),
     ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -87,7 +89,8 @@ module.exports = {
                             structureType: STRUCTURE_CONTAINER
                         }
                     } );
-                return containers.length >= 2;
+                let sources = room.find( FIND_SOURCES );
+                return containers.length === sources.length;
             },
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1,
@@ -273,6 +276,9 @@ module.exports = {
                 addWorkerCountsForExtractor( worker_counts, room );
 
                 worker_counts[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] = assigner.getSpawnCount( assigner.types.LONG_DISTANCE_ROOM_CLEARER );
+                worker_counts[ workers.types.EXPANSION_CLEARER ] = assigner.getSpawnCount( assigner.types.EXPANSION_CLEARER );
+                worker_counts[ workers.types.EXPANSION_RESERVER ] = assigner.getSpawnCount( assigner.types.EXPANSION_RESERVER );
+                worker_counts[ workers.types.EXPANSION_BUILDER ] = assigner.getSpawnCount( assigner.types.EXPANSION_BUILDER );
 
                 return worker_counts;
             },
@@ -307,5 +313,48 @@ module.exports = {
         }
     ],
     long_distance: null,
-    expansion: null
+    expansion: [
+        {
+            isComplete: ( room ) => {
+                let hostile_things = []
+
+                let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
+                let walls = room
+                    .find( FIND_STRUCTURES, {
+                        filter: {
+                            structureType: STRUCTURE_WALL
+                        }
+                    } );
+                
+                 hostile_things = hostile_things.concat( hostile_structures, walls );
+
+                 return hostile_things.length === 0;
+            },
+            worker_counts: {},
+            planners: []
+        },
+        {
+            isComplete: ( room ) => {
+                return room.controller.my;
+            },
+            worker_counts: {},
+            planners: []
+        },
+        {
+            isComplete: ( room ) => {
+                return room.find( FIND_MY_SPAWNS ).length > 0;
+            },
+            worker_counts: {},
+            planners: [
+                new ExpansionSpawnPlanner( 'expansion-spawn' )
+            ]
+        },
+        {
+            isComplete: () => {},
+            worker_counts: {},
+            planners: [
+                new RoomTypeTransition( 'room-type-transition-standard', 'standard' )
+            ]
+        }
+    ]
 };

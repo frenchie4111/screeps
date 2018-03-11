@@ -17,12 +17,12 @@ class RoomManager {
 
     _getCurrentState( room ) {
         if( !room.memory.hasOwnProperty( '_state' ) ) room.memory._state = {};
-        if( !room.memory._state.hasOwnProperty( 'type' ) ) {
+        if( !room.memory.hasOwnProperty( 'type' ) ) {
             console.log( 'Room Has No Type: ' + room.name );
             return null;
         }
         const room_state_memory = room.memory._state;
-        const type = room.memory._state.type;
+        const type = room.memory.type;
 
         if( !room_state_memory.hasOwnProperty( 'current_state' ) ) room_state_memory.current_state = 0;
         if( !room_state_memory.hasOwnProperty( 'current_version' ) ) room_state_memory.current_version = types.STATES_VERSION;
@@ -202,7 +202,7 @@ class RoomManager {
 
         while( current_state.isComplete( room ) ) {
             console.log( 'Room Progressed to next state' );
-            Game.notify( 'Room progressed to next state' );
+            Game.notify( 'Room ' + room.name + ' progressed to next state' );
             room.memory._state.current_state++;
             return;
         }
@@ -215,15 +215,18 @@ class RoomManager {
             this.handleTowers( room, spawn, current_state );
         } );
 
-        loopItem( 'links', () => {
-            this.handleLinks( room, spawn, current_state );
-        } );
-
-        loopItem( 'market', () => {
-            this.handleMarket( room, spawn, current_state );
-        } );
+        if( room.terminal ) {
+            console.log( room.terminal );
+            loopItem( 'market', () => {
+                this.handleMarket( room, spawn, current_state );
+            } );
+        }
 
         if( has_spawn ) {
+            loopItem( 'links', () => {
+                this.handleLinks( room, spawn, current_state );
+            } );
+
             loopItem( 'spawn', () => {
                 this.handleSpawns( room, spawn, current_state, assigner );
             } );

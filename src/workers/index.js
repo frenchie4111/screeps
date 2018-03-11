@@ -15,6 +15,9 @@ const worker_type_conversion = {
     EXTRACTOR_HARVESTER: require( './ExtractorHarvester' ),
     BASE_LINK_MANAGER: require( './BaseLinkManager' ),
     LONG_DISTANCE_ROOM_CLEARER: require( './LongDistanceClearer' ),
+    EXPANSION_CLEARER: require( './ExpansionClearer' ),
+    EXPANSION_RESERVER: require( './ExpansionReserver' ),
+    EXPANSION_BUILDER: require( './ExpansionBuilder' ),
 };
 
 const types = {
@@ -35,6 +38,9 @@ const types = {
     EXTRACTOR_HARVESTER: 'EXTRACTOR_HARVESTER',
     BASE_LINK_MANAGER: 'BASE_LINK_MANAGER',
     LONG_DISTANCE_ROOM_CLEARER: 'LONG_DISTANCE_ROOM_CLEARER',
+    EXPANSION_CLEARER: 'EXPANSION_CLEARER',
+    EXPANSION_RESERVER: 'EXPANSION_RESERVER',
+    EXPANSION_BUILDER: 'EXPANSION_BUILDER',
 };
 
 module.exports = {

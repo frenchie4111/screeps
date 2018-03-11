@@ -117,6 +117,7 @@ class SpawnManager {
 
     findCreepsToRenew( creeps ) {
         let renewing_creeps = _.filter( creeps, ( creep ) => {
+            if( !creep ) return false;
             const WorkerClass = workers.getClass( creep.memory.worker_type );
             return (
                 WorkerClass && 'setRenew' in WorkerClass.prototype &&
@@ -206,6 +207,9 @@ class SpawnManager {
                 if( needed_spawns_keys.length > 0 ) {
                     let spawn_type = needed_spawns_keys[ 0 ];
 
+                    if( needed_spawns[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] ) {
+                        spawn_type = workers.types.LONG_DISTANCE_ROOM_CLEARER;
+                    }
                     if( needed_spawns[ workers.types.CONTAINER_MINER ] ) {
                         spawn_type = workers.types.CONTAINER_MINER;
                     }

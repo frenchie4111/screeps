@@ -14,7 +14,7 @@ module.exports = () => {
     for( let roomKey in rooms ) {
         let room = Game.rooms[ roomKey ]
 
-        let room_type = room.memory._state && room.memory._state.type;
+        let room_type = room.memory.type;
 
         if( !room_type ) {
             continue;

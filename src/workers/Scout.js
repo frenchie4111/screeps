@@ -1,5 +1,6 @@
 const position = require( '~/lib/position' ),
-    map = require( '~/lib/map' );
+    map = require( '~/lib/map' ),
+    move = require( '~/lib/move' );
 
 const constants = require( '~/constants' );
 
@@ -47,7 +48,12 @@ class Scout extends Worker {
         }
 
         if( memory.rooms_to_scout ) {
-            this.moveToRoom( memory.rooms_to_scout[ 0 ], { avoid_enemies: true } );
+            let move_response = this.moveToRoom( memory.rooms_to_scout[ 0 ], { avoid_enemies: true } );
+
+            if( move_response === move.ERR_NO_ROUTE ) {
+                map.setUnreachable( creep, memory.rooms_to_scout[ 0 ] );
+                memory.rooms_to_scout = null;
+            }
         }
     }
 }

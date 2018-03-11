@@ -23,7 +23,7 @@ module.exports = {
     getRoomsToScout_rec: ( start_room_name, ret_arr=[], seen=[] ) => {
         seen.push( start_room_name );
         if( module.exports.hasRoom( start_room_name ) ) {
-            if( Memory.rooms[ start_room_name ] && Memory.rooms[ start_room_name ]._state && Memory.rooms[ start_room_name ]._state.type ) {
+            if( Memory.rooms[ start_room_name ] && Memory.rooms[ start_room_name ].type ) {
                 let exits = _.values( module.exports.getRoom( start_room_name ).exits );
                 _.forEach( exits, ( exit ) => {
                     if( !seen.includes( exit ) ) {
@@ -46,9 +46,14 @@ module.exports = {
     needsScout: ( room_name ) => {
         let rooms_to_scout = module.exports.getRoomsToScout( room_name );
 
-        console.log( 'rooms_to_scout', JSON.stringify( rooms_to_scout ) );
-
         return rooms_to_scout.length > 0;
+    },
+
+    setUnreachable: ( creep, room_name ) => {
+        let room_map = module.exports.getRoomMap();
+        room_map[ room_name ] = {}
+        room_map[ room_name ].unreachable = true;
+        room_map[ room_name ]._version = MAP_VERSION;
     },
 
     storeRoom: ( creep, room, entrance_direction ) => {

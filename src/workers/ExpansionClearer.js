@@ -9,18 +9,34 @@ let STATES = {
     CLEAR: 'CLEAR'
 };
 
-class LongDistanceClearer extends RenewWorker {
+class ExpansionClearer extends RenewWorker {
     constructor( assigner ) {
         super( assigner, STATES.MOVE_TO_ROOM );
-        this.MAX_RANGED_ATTACK = 6;
+        this.MAX_ATTACK = 10;
     }
 
     getAssigned() {
         let worker_memory = this.getMemory();
         if( !worker_memory.assigned_room ) {
-            worker_memory.assigned_room = this.assigner.getAssigned( this.creep, this.assigner.types.LONG_DISTANCE_ROOM_CLEARER );
+            worker_memory.assigned_room = this.assigner.getAssigned( this.creep, this.assigner.types.EXPANSION_CLEARER );
         }
         return worker_memory.assigned_room;
+    }
+
+    getHostileThings( room ) {
+        let hostile_things = []
+
+        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
+        let walls = room
+            .find( FIND_STRUCTURES, {
+                filter: {
+                    structureType: STRUCTURE_WALL
+                }
+            } );
+        
+         hostile_things = hostile_things.concat( hostile_structures, walls );
+
+         return hostile_things;
     }
 
     _getStates() {
@@ -38,32 +54,37 @@ class LongDistanceClearer extends RenewWorker {
 
                 let target_enemy = Game.getObjectById( worker_memory.target_id );
                 if( !target_enemy ) {
-                    let enemies = creep.room.find( FIND_HOSTILE_CREEPS );
+                    let enemies = this.getHostileThings( creep.room );
 
                     if( enemies.length === 0 ) {
                         console.log( 'Done' );
                         this.setSuicide();
-                        Memory.rooms[ this.getAssigned() ].dangerous_until = null;
                         return;
                     }
 
-                    worker_memory.target_id = enemies[ 0 ].id;
-                    target_enemy = enemies[ 0 ];
+                    let target = creep.pos.findClosestByPath( enemies );
+
+                    worker_memory.target_id = target.id;
+                    target_enemy = target;
                 }
 
-                if( position.inRoom( target_enemy.pos ) && creep.pos.getRangeTo( target_enemy.pos ) > 2 ) {
+                if( position.inRoom( target_enemy.pos ) && creep.pos.getRangeTo( target_enemy.pos ) > 1 ) {
                     creep.moveTo( target_enemy );
                 }
-                creep.rangedAttack( target_enemy );
+                if( creep.getActiveBodyparts( ATTACK ) ) {
+                    let response = creep.attack( target_enemy );
+                } else {
+                    let response = creep.dismantle( target_enemy );
+                }
             }
         }
     }
 
     getBody( available_energy ) {
-        let parts = [ MOVE, RANGED_ATTACK ];
-        let body = [ TOUGH, TOUGH, TOUGH, TOUGH ];
+        let parts = [ MOVE, WORK ];
+        let body = [];
 
-        for( let i = 0; i < this.MAX_RANGED_ATTACK && this.getEnergyOf( body ) < available_energy; i++ ) {
+        for( let i = 0; i < this.MAX_ATTACK && ( this.getEnergyOf( body ) + this.getEnergyOf( parts ) ) < available_energy; i++ ) {
             body = body.concat( parts );
         }
 
@@ -71,6 +92,6 @@ class LongDistanceClearer extends RenewWorker {
     }
 }
 
-LongDistanceClearer.STATES = STATES;
+ExpansionClearer.STATES = STATES;
 
-module.exports = LongDistanceClearer;
+module.exports = ExpansionClearer;

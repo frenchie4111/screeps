@@ -117,6 +117,7 @@ const moveIn = ( creep, move_memory, target_room_name ) => {
 };
 
 module.exports.ERR_IN_ROOM = 'ERR_IN_ROOM';
+module.exports.ERR_NO_ROUTE = 'ERR_NO_ROUTE';
 
 const moveToRoom = ( creep, move_memory, target_room_name, opts={}, use_exit_direction=null, use_exit=null ) => {
     if( move_memory.target_room_name !== target_room_name ) {
@@ -136,6 +137,10 @@ const moveToRoom = ( creep, move_memory, target_room_name, opts={}, use_exit_dir
         if( !exit_direction ) {
             let route = Game.map.findRoute( creep.room, target_room_name );
 
+            if( route === ERR_NO_PATH ) {
+                return module.exports.ERR_NO_ROUTE;
+            }
+
             exit_direction = route[ 0 ].exit;
         }
 
@@ -146,6 +151,10 @@ const moveToRoom = ( creep, move_memory, target_room_name, opts={}, use_exit_dir
 
         move_memory.direction = exit_direction;
         move_memory.exit = position.clone( exit );
+    }
+
+    if( !move_memory.exit ) {
+        return module.exports.ERR_NO_ROUTE;
     }
 
     return module.exports.moveTo( creep, move_memory, position.fromJSON( move_memory.exit ), opts );
