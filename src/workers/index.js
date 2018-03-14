@@ -18,6 +18,8 @@ const worker_type_conversion = {
     EXPANSION_CLEARER: require( './ExpansionClearer' ),
     EXPANSION_RESERVER: require( './ExpansionReserver' ),
     EXPANSION_BUILDER: require( './ExpansionBuilder' ),
+    CONTAINER_UPGRADER: require( './ContainerUpgrader' ),
+    CLEARER: require( './Clearer' ),
 };
 
 const types = {
@@ -41,6 +43,8 @@ const types = {
     EXPANSION_CLEARER: 'EXPANSION_CLEARER',
     EXPANSION_RESERVER: 'EXPANSION_RESERVER',
     EXPANSION_BUILDER: 'EXPANSION_BUILDER',
+    CONTAINER_UPGRADER: 'CONTAINER_UPGRADER',
+    CLEARER: 'CLEARER',
 };
 
 module.exports = {

@@ -123,6 +123,7 @@ class HarvestWorker extends RenewWorker {
 
                 if( !worker_memory.source_id ) {
                     let source = this.getSource( creep, worker_memory );
+                    console.log( 'No available source' );
                     if( !source ) return; // Idle, no available sources
                     worker_memory.source_id = source.id;
                 }
@@ -191,6 +192,7 @@ class HarvestWorker extends RenewWorker {
 
                 if( !worker_memory.target_id ) {
                     let target = this.getTarget( creep, worker_memory );
+                    console.log( 'No available targets' );
                     if( !target ) return; // Idle, no available targets
                     worker_memory.target_id = target.id;
                 }

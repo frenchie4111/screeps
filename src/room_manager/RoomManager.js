@@ -102,6 +102,8 @@ class RoomManager {
             planners = planners( room, spawn );
         }
 
+        console.log( 'planners', JSON.stringify( planners ) );
+
         planners
             .forEach( ( planner ) => {
                 loopItem( 'planner-' + planner.name, () => {
@@ -206,6 +208,39 @@ class RoomManager {
             room.memory._state.current_state++;
             return;
         }
+
+        loopItem( 'safe-mode', () => {
+            let hostile_creeps = room
+                .find( FIND_HOSTILE_CREEPS, {
+                    filter: ( creep ) => {
+                        return (
+                            creep.owner.username !== SYSTEM_USERNAME &&
+                            (
+                                creep.getActiveBodyparts( ATTACK ) > 0 ||
+                                creep.getActiveBodyparts( RANGED_ATTACK ) > 0
+                            )
+                        );
+                    }
+                } );
+            console.log( 'hostile_creeps', hostile_creeps.length );
+
+            if( hostile_creeps.length === 0 ) return;
+
+            if( !room.controller.safeMode ) {
+                if( !room.controller.safeModeAvailable ) {
+                    Game.notify( 'Safe mode not available' );
+                    throw new Error( 'Safe mode not available' );
+                }
+
+                let safe_mode_response = room.controller.activateSafeMode();
+                if( safe_mode_response !== OK ) {
+                    Game.notify( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );
+                    throw new Error( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );;
+                }
+            } else {
+                console.log( 'Already in safe mode' );
+            }
+        } );
 
         loopItem( 'creeps', () => {
             this.handleCreeps( room, spawn, current_state, assigner );

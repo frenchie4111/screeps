@@ -99,6 +99,8 @@ class SpawnManager {
     getNeededSpawns( room, current_creeps, worker_counts ) {
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
+        console.log( current_counts );
+
         let needed_counts = _
             .reduce( worker_counts, ( needed, val, type ) => {
                 let current_val = current_counts.hasOwnProperty( type ) ? current_counts[ type ] : 0;

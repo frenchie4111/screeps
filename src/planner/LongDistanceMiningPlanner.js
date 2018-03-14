@@ -15,6 +15,10 @@ class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
         let memory = this.getRoomLongDistanceMemory( room );
 
+        if( !this.getClosestSource( room, spawn ) ) {
+            return false;
+        }
+
         if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
             return true;
         }
@@ -85,7 +89,7 @@ class LongDistanceMiningPlanner extends Planner {
         sources = _.filter( sources, ( source_map_item ) => !long_distance_memory.hasOwnProperty( source_map_item.source_id ) );
 
         if( sources.length === 0 ) {
-            throw new Error( 'No More Safe Sources' );
+            return null;
         }
 
         console.log( JSON.stringify( sources ) );

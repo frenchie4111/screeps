@@ -1,6 +1,8 @@
 const position = require( '~/lib/position' );
 
-const MAP_VERSION = 11;
+const MAP_VERSION = 12;
+
+const RERUN_EVERY = 10000;
 
 module.exports = {
     getRoomMap: () => {
@@ -10,7 +12,10 @@ module.exports = {
 
     hasRoom: ( room_name ) => {
         let room_map = module.exports.getRoomMap();
-        if( !room_map.hasOwnProperty( room_name ) || room_map[ room_name ]._version !== MAP_VERSION ) return false;
+        if( !room_map.hasOwnProperty( room_name ) ) return false;
+        if( room_map[ room_name ]._version !== MAP_VERSION ) return false;
+        if( !room_map[ room_name ].hasOwnProperty( 'run_at' ) ) return false;
+        if( room_map[ room_name ].run_at + RERUN_EVERY < Game.time ) return false;
         return true;
     },
 
@@ -18,6 +23,11 @@ module.exports = {
         let room_map = module.exports.getRoomMap();
         if( room_map.hasOwnProperty( room_name ) ) return room_map[ room_name ];
         return null;
+    },
+
+    invalidateRoom: ( room_name ) => {
+        let room = module.exports.getRoom( room_name );
+        if( room ) room._version = 'invalid';
     },
 
     getRoomsToScout_rec: ( start_room_name, ret_arr=[], seen=[] ) => {
@@ -54,6 +64,22 @@ module.exports = {
         room_map[ room_name ] = {}
         room_map[ room_name ].unreachable = true;
         room_map[ room_name ]._version = MAP_VERSION;
+    },
+
+    storeController: ( room ) => {
+        let room_map = module.exports.getRoomMap();
+
+        if( room.controller ) {
+            room_map[ room.name ].controller = {
+                id: room.controller.id,
+                owner: room.controller.owner,
+                level: room.controller.level,
+                reservation: room.controller.reservation,
+                safeMode: room.controller.safeMode,
+                safeModeAvailable: room.controller.safeModeAvailable,
+                safeModeCooldown: room.controller.safeModeCooldown,
+            };
+        }
     },
 
     storeRoom: ( creep, room, entrance_direction ) => {
@@ -105,14 +131,8 @@ module.exports = {
             } );
 
         room_map[ room.name ].controller = null;
-        if( room.controller ) {
-            room_map[ room.name ].controller = {
-                id: room.controller.id,
-                owner: room.controller.owner,
-                level: room.controller.level,
-                reservation: room.controller.reservation
-            };
-        }
+        module.exports.storeController( room );
+
         room_map[ room.name ].exits = Game.map.describeExits( room.name );
 
         let hostile_creeps = room.find( FIND_HOSTILE_CREEPS );
@@ -133,6 +153,8 @@ module.exports = {
         }
 
         room_map[ room.name ].saw_enemies = saw_enemies;
+
+        room_map[ room.name ].run_at = Game.time;
 
         room_map[ room.name ]._version = MAP_VERSION;
     }

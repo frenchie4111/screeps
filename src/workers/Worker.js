@@ -45,12 +45,14 @@ class Worker {
     }
 
     getBody( available_energy ) {
-        let per_parts = constants.BODYPART_COST[ constants.MOVE ] + constants.BODYPART_COST[ constants.CARRY ] + constants.BODYPART_COST[ constants.WORK ];
+        let part_priorities = [ MOVE, WORK, CARRY ];
+        let curr_part = 0;
         let parts = [];
 
-        while( available_energy > per_parts ) {
-            parts = parts.concat( [ constants.MOVE, constants.CARRY, constants.WORK ] );
-            available_energy -= per_parts;
+        while( this.getEnergyOf( parts ) + BODYPART_COST[ part_priorities[ curr_part ] ] <= available_energy ) {
+            parts.push( part_priorities[ curr_part ] );
+            curr_part++;
+            curr_part %= part_priorities.length;
         }
 
         return parts;

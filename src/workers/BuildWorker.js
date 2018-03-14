@@ -17,6 +17,17 @@ class BuildWorker extends HarvestWorker {
         return super_target;
     }
 
+    getBody( available_energy ) {
+        if( available_energy < 250 ) return [];
+        return [
+            WORK,
+            CARRY,
+            MOVE,
+            MOVE
+        ];
+        if( available_energy > 300 ) return super.getBody( available_energy );
+    }
+
     doTransfer( creep, target ) {
         let build_results = creep.build( target );
         if( build_results === constants.ERR_INVALID_TARGET ) {

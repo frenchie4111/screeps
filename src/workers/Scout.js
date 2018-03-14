@@ -17,7 +17,7 @@ const directions = [
 
 class Scout extends Worker {
     getBody( available_energy ) {
-        let parts = [ MOVE, MOVE ];
+        let parts = [ TOUGH, ATTACK, MOVE, MOVE ];
 
         if( available_energy > this.getEnergyOf( parts ) ) {
             return parts;

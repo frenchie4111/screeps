@@ -15,7 +15,7 @@ class ContainerExtension extends ContainerHarvester {
                 filter: ( structure ) => {
                     return (
                         structure.structureType === constants.STRUCTURE_CONTAINER &&
-                        structure.store[ constants.RESOURCE_ENERGY ] > 1500
+                        structure.store[ constants.RESOURCE_ENERGY ] > 900
                     );
                 }
             } );

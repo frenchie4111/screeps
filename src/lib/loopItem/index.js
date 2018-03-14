@@ -15,6 +15,10 @@ const loopItem = ( name, func ) => {
     try {
         func();
     } catch ( error ) {
+        console.log( 'Error in ' + name );
+        console.log( error );
+        console.log( error.stack );
+
         Memory.error_log = new Deque( Memory.error_log );
         Memory.error_log.push( {
             name: name,
@@ -25,10 +29,6 @@ const loopItem = ( name, func ) => {
                 stack: error.stack
             }
         } );
-
-        console.log( 'Error in ' + name );
-        console.log( error );
-        console.log( error.stack );
     } finally {
         logger.unpatch();
         profiler.setCpuFor( path, Game.cpu.getUsed() - start );

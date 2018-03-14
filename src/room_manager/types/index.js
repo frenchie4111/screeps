@@ -69,7 +69,7 @@ const addWorkerCountsForExtractor = ( worker_counts, room ) => {
 }
 
 module.exports = { 
-    STATES_VERSION: 3, // Increment this and the code will automatically reset current state on next deploy
+    STATES_VERSION: 5, // Increment this and the code will automatically reset current state on next deploy
     standard: [
         {
             isComplete: ( room ) => {
@@ -84,12 +84,13 @@ module.exports = {
         {
             isComplete: ( room ) => {
                 let containers = room
-                    .find( FIND_MY_STRUCTURES, {
+                    .find( FIND_STRUCTURES, {
                         filter: {
                             structureType: STRUCTURE_CONTAINER
                         }
                     } );
                 let sources = room.find( FIND_SOURCES );
+                console.log( 'isComplete', containers.length, sources.length );
                 return containers.length === sources.length;
             },
             worker_counts: {
@@ -122,15 +123,18 @@ module.exports = {
         },
         {
             isComplete: ( room ) => {
+                let planners_run = room.memory._planners[ 'extension-road' ];
                 let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
-                return construction_sites.length >= 0;
+                return planners_run && construction_sites.length === 0;
             },
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_BUILDER ]: 3,
+                [ workers.types.CONTAINER_MINER ]: 2,
                 [ workers.types.CONTAINER_REPAIRER ]: 1
             },
             planners: [
+                new ExtensionRoadPlanner( 'extension-road' ),
                 new SourceRoadPlanner( 'spawn' ),
                 new ControllerSourceRoad( 'controller' )
             ]
@@ -142,7 +146,8 @@ module.exports = {
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_HARVESTER ]: 3,
-                [ workers.types.CONATINER_REPAIRER ]: 1
+                [ workers.types.CONTAINER_MINER ]: 2,
+                [ workers.types.CONTAINER_REPAIRER ]: 1
             },
             planners: []
         },
@@ -154,7 +159,7 @@ module.exports = {
                             structureType: constants.STRUCTURE_EXTENSION
                         }
                     } );
-                return extensions.length === 10;
+                return extensions.length >= 10;
             },
             worker_counts: {
                 [ workers.types.HARVESTER ]: 1, // Always keep a harvester around just in case
@@ -165,7 +170,41 @@ module.exports = {
             },
             planners: [
                 new ExtensionPlanner( 'extension-2' ),
+                new ExtensionRoadPlanner( 'extension-road-lvl-3' ),
                 new TowerPlanner( 'tower-1' )
+            ]
+        },
+        {
+            isComplete: ( room ) => {
+                return room.controller.level >= 4;
+            },
+            worker_counts: {
+                [ workers.types.HARVESTER ]: 1,
+                [ workers.types.CONTAINER_EXTENSION ]: 1,
+                [ workers.types.CONTAINER_HARVESTER ]: 1,
+                [ workers.types.CONTAINER_MINER ]: 2,
+                [ workers.types.CONTAINER_UPGRADER ]: 3,
+            },
+            planners: []
+        },
+        {
+            isComplete: ( room ) => {
+                let extensions = room
+                    .find( FIND_MY_STRUCTURES, {
+                        filter: {
+                            structureType: constants.STRUCTURE_EXTENSION
+                        }
+                    } );
+                return extensions.length >= 20;
+            },
+            worker_counts: {
+                [ workers.types.HARVESTER ]: 1, // Always keep a harvester around just in case
+                [ workers.types.CONTAINER_EXTENSION ]: 1,
+                [ workers.types.CONTAINER_BUILDER ]: 3,
+                [ workers.types.CONTAINER_MINER ]: 2
+            },
+            planners: [
+                new ExtensionPlanner( 'extension-lvl-4' )
             ]
         },
         {
@@ -185,11 +224,9 @@ module.exports = {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_EXTENSION ]: 1,
                 [ workers.types.CONTAINER_BUILDER ]: 3,
-                [ workers.types.CONTAINER_MINER ]: 2,
-                [ workers.types.CONTAINER_REPAIRER ]: 1
+                [ workers.types.CONTAINER_MINER ]: 2
             },
             planners: [
-                new ExtensionPlanner( 'extension-3' ),
                 new ExtensionRoadPlanner( 'extension-road-1' ),
                 new StoragePlanner( 'storage-1' )
             ]
@@ -198,13 +235,20 @@ module.exports = {
             isComplete: ( room ) => {
                 return room.controller.level >= 5;
             },
-            worker_counts: {
-                [ workers.types.HARVESTER ]: 1,
-                [ workers.types.CONTAINER_EXTENSION ]: 1,
-                [ workers.types.CONTAINER_BUILDER ]: 3,
-                [ workers.types.CONTAINER_MINER ]: 2,
-                [ workers.types.CONTAINER_REPAIRER ]: 1,
-                [ workers.types.SCOUT ]: 1
+            worker_counts: ( room, assigner ) => {
+                let worker_counts = {
+                    [ workers.types.HARVESTER ]: 1,
+                    [ workers.types.CONTAINER_EXTENSION ]: 1,
+                    [ workers.types.CONTAINER_HARVESTER ]: 1,
+                    [ workers.types.CONTAINER_MINER ]: 2,
+                    [ workers.types.CONTAINER_UPGRADER ]: 3,
+                };
+
+                addWorkerCountsForScout( worker_counts, room );
+
+                worker_counts[ workers.types.CLEARER ] = assigner.getSpawnCount( assigner.types.CLEARER );
+
+                return worker_counts;
             },
             planners: []
         },
@@ -225,8 +269,7 @@ module.exports = {
                 [ workers.types.HARVESTER ]: 1,
                 [ workers.types.CONTAINER_EXTENSION ]: 1,
                 [ workers.types.CONTAINER_BUILDER ]: 3,
-                [ workers.types.CONTAINER_MINER ]: 2,
-                [ workers.types.CONTAINER_REPAIRER ]: 1
+                [ workers.types.CONTAINER_MINER ]: 2
             },
             planners: [
                 new ExtensionPlanner( 'extension-4' ),
@@ -235,7 +278,8 @@ module.exports = {
                 new RampartPlanner( 'rampart-planner-1' ),
                 new OuterBaseRoads( 'outer-base-roads-1' ),
                 new TowerPlanner( 'tower-2' ),
-                new BaseExitRoadPlanner( 'base-exit-road-1' )
+                new BaseExitRoadPlanner( 'base-exit-road-1' ),
+                new BaseLinkPlanner( 'base-link-planner' )
             ]
         },
         {
@@ -246,12 +290,14 @@ module.exports = {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_BUILDER ]: 2,
+                    [ workers.types.CONTAINER_UPGRADER ]: 2,
                     [ workers.types.CONTAINER_MINER ]: 2,
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
+
+                worker_counts[ workers.types.CLEARER ] = assigner.getSpawnCount( assigner.types.CLEARER );
 
                 return worker_counts;
             },
@@ -286,7 +332,6 @@ module.exports = {
                 let planners = [
                     new ExtensionPlanner( 'extension-5' ),
                     new LongDistanceMiningPlanner( 'ldm-1' ),
-                    new BaseLinkPlanner( 'base-link-planner' ),
                     new ExtratorPlanner( 'extrator-planner-1' ),
                     new ExpansionPlanner( 'expansion' ),
                 ];

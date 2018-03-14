@@ -6,6 +6,7 @@ class SourceRoadPlanner extends ConstructionPlanner {
     constructor( name, dry_run, max_sources=2 ) {
         super( name, constants.STRUCTURE_ROAD, dry_run );
         this.max_sources = max_sources;
+        this.rerun_on_fail = false;
     }
 
     getTarget( room, spawn ) {

@@ -12,6 +12,7 @@ const DIRECTIONS = [
 class FirstTowerPlanner extends ConstructionPlanner {
     constructor( name, dry_run ) {
         super( name, constants.STRUCTURE_TOWER, dry_run );
+        this.color = 'blue';
     }
 
     _getNewPosition( room, spawn, pending ) {

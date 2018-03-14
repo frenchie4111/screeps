@@ -131,6 +131,10 @@ class RenewWorker extends StateWorker {
                 }
                 let renew_response = Game.getObjectById( worker_memory.spawn_id ).renewCreep( creep );
                 if( renew_response !== OK ) {
+                    if( renew_response === ERR_FULL ) {
+                        worker_memory.renewing = false;
+                        return this.default_state;
+                    }
                     console.log( 'NOT OK RENEW RESPONSE', renew_response, constants.lookup( renew_response ) );
                 }
             }

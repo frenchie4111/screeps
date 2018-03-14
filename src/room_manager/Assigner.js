@@ -150,6 +150,20 @@ class Assigner {
                     }
                 }
                 return this._arrayToAllowedCounts( expansion_rooms_to_build );
+            case Assigner.types.CLEARER:
+                let rooms_to_clear = [];
+                _
+                    .each( Memory._room_map, ( room_info, room_name ) => {
+                        if( 
+                            ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
+                            _.get( room_info, [ 'controller', 'level' ] ) <= 2 &&
+                            _.get( room_info, [ 'saw_enemies' ] ) &&
+                            ( _.get( room_info, [ 'controller', 'safeMode' ], 0 ) + _.get( room_info, [ 'run_at' ] ) ) < Game.time
+                        ) {
+                            rooms_to_clear.push( room_name );
+                        }
+                    } );
+                return this._arrayToAllowedCounts( rooms_to_clear, 2 );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
                     [ -5, -1 ],
@@ -186,6 +200,7 @@ class Assigner {
             case Assigner.types.EXPANSION_CLEARER:
             case Assigner.types.EXPANSION_RESERVER:
             case Assigner.types.EXPANSION_BUILDER:
+            case Assigner.types.CLEARER:
                 return assigned_id;
             case Assigner.types.WAITING_SPOT:
                 let assigned_id_split = _.map( assigned_id.split( ':' ), ( item ) => +item );
@@ -256,6 +271,7 @@ Assigner.types = {
     EXPANSION_CLEARER: 'EXPANSION_CLEARER',
     EXPANSION_RESERVER: 'EXPANSION_RESERVER',
     EXPANSION_BUILDER: 'EXPANSION_BUILDER',
+    CLEARER: 'CLEARER',
 };
 
 Assigner.prototype.types = Assigner.types;

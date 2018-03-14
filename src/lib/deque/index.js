@@ -1,6 +1,6 @@
 class Deque {
     constructor( memory_item={}, maxlen ) {
-        this.queue = memory_item.queue || {};
+        this.queue = memory_item.queue || [];
         this.maxlen = memory_item.maxlen || maxlen || 10;
     }
 

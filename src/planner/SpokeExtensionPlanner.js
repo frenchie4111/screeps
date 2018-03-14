@@ -8,15 +8,10 @@ const MAX_FAR_DIST = 7;
 const CONSIDER_CORNERS_AFTER = 2;
 
 const DIRECTIONS = [
-    [ -1, -1 ],
-    [ -1, 1 ],
-    [ 1, 1 ],
-    [ 1, -1 ]
-];
-
-const IGNORE_DIRECTIONS = [
-    [ -2, -4 ],
-    [ +2, -4 ],
+    [ -1,  0 ],
+    [  0,  1 ],
+    [  1,  0 ],
+    [  0, -1 ]
 ];
 
 class ExtensionPlanner extends ConstructionPlanner {

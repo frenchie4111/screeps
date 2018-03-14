@@ -20,9 +20,11 @@ const IGNORE_DIRECTIONS = [
 ];
 
 class ExtensionPlanner extends ConstructionPlanner {
-    constructor( name, dry_run=false ) {
+    constructor( name, dry_run=false, override_count=null ) {
         super( name, constants.STRUCTURE_EXTENSION, dry_run );
         this._direction_lists = {};
+        this.override_count = override_count;
+        this.color = 'purple'
     }
 
     _shouldCreateNewStructure( room, spawn, pending=[] ) {
@@ -30,6 +32,11 @@ class ExtensionPlanner extends ConstructionPlanner {
             ( !this.hasRunBefore( room ) ) &&
             ( this.getNewAllowedStructureCount( room ) - pending.length ) > 0
         );
+    }
+
+    getNewAllowedStructureCount( room ) {
+        if( this.override_count ) return this.override_count;
+        return super.getNewAllowedStructureCount( room );
     }
 
     shouldIgnoreDirection( direction ) {
@@ -142,7 +149,7 @@ class ExtensionPlanner extends ConstructionPlanner {
                 let direction = direction_list[ direction_list_i ];
 
                 let position = this._directionToPosition( room, start_pos, direction );
-                if( this.isValidConstruction( room, position, pending ) ) {
+                if( this.isValidConstruction( room, position, pending, [ STRUCTURE_ROAD ] ) ) {
                     return position;
                 }
             }

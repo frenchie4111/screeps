@@ -11,33 +11,34 @@ const _drawPath = ( creep, path ) => {
 };
 
 const findPathTo = ( thing, target, opts ) => {
-    return thing.pos
-        .findPathTo( target, {
-            costCallback: ( room_name, cost_matrix ) => {
-                if( !Game.rooms[ room_name ] ) return cost_matrix;
-                if( opts.avoid_enemies ) {
-                    console.log( 'Avoiding enemies' );
-
-                    let hostile_creeps = Game.rooms[ room_name ].find( FIND_HOSTILE_CREEPS );
-                    if( hostile_creeps.length === 0 ) return cost_matrix;
-
-                    cost_matrix = cost_matrix.clone();
-                    _
-                        .each( hostile_creeps, ( hostile_creep ) => {
-                            let hostile_creep_pos = hostile_creep.pos;
-                            for( let x = hostile_creep_pos.x - 3; x < hostile_creep_pos.x + 3; x++ ) {
-                                for( let y = hostile_creep_pos.y - 3; y < hostile_creep_pos.y + 3; y++ ) {
-                                    Game.rooms[ room_name ].visual.circle( x, y, { color: 'red' } );
-                                    cost_matrix.set( hostile_creep.pos.x, hostile_creep.pos.y, 255 );
-                                }
-                            }
-                        } );
-                    return cost_matrix;
-                }
-
-                return cost_matrix;
-            }
-        } );
+    return thing.pos.findPathTo( target );
+    // return thing.pos
+    //     .findPathTo( target, {
+    //         costCallback: ( room_name, cost_matrix ) => {
+    //             if( !Game.rooms[ room_name ] ) return cost_matrix;
+    //             if( opts.avoid_enemies ) {
+    //                 console.log( 'Avoiding enemies' );
+    // 
+    //                 let hostile_creeps = Game.rooms[ room_name ].find( FIND_HOSTILE_CREEPS );
+    //                 if( hostile_creeps.length === 0 ) return cost_matrix;
+    // 
+    //                 cost_matrix = cost_matrix.clone();
+    //                 _
+    //                     .each( hostile_creeps, ( hostile_creep ) => {
+    //                         let hostile_creep_pos = hostile_creep.pos;
+    //                         for( let x = hostile_creep_pos.x - 3; x < hostile_creep_pos.x + 3; x++ ) {
+    //                             for( let y = hostile_creep_pos.y - 3; y < hostile_creep_pos.y + 3; y++ ) {
+    //                                 Game.rooms[ room_name ].visual.circle( x, y, { color: 'red' } );
+    //                                 cost_matrix.set( hostile_creep.pos.x, hostile_creep.pos.y, 255 );
+    //                             }
+    //                         }
+    //                     } );
+    //                 return cost_matrix;
+    //             }
+    // 
+    //             return cost_matrix;
+    //         }
+    //     } );
 };
 
 const moveTo = ( creep, move_memory, target, opts={} ) => {
@@ -46,7 +47,6 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
     }
 
     if( !position.equal( target, move_memory.path_target ) ) {
-        console.log( 'Need new path' );
         move_memory.path = null;
     }
 
@@ -81,6 +81,7 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
         default:
             console.log( 'Got Non-Zero moveByPath result:', move_result, constants.lookup( move_result ) );
     }
+    return move_result;
 }
 module.exports.moveTo = moveTo;
 
@@ -98,6 +99,7 @@ const _canMoveTo = ( room, pos ) => {
 
 const moveIn = ( creep, move_memory, target_room_name ) => {
     let direction = +move_memory.direction;
+    if( !direction ) return;
     let move_target = position.intDirectionToPosition( creep.pos, direction );
     if( _canMoveTo( creep.room, move_target ) ) {
         return creep.move( direction );

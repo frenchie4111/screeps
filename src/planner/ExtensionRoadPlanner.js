@@ -12,6 +12,7 @@ let DIRECTIONS = [
 class ExtensionRoadPlanner extends ConstructionPlanner {
     constructor( name, dry_run ) {
         super( name, constants.STRUCTURE_ROAD, dry_run );
+        this.rerun_on_fail = false;
     }
 
     _getNewPositions( room, spawn ) {
