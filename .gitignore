@@ -30,6 +30,6 @@ $RECYCLE.BIN/
 node_modules
 .screeps.json
 dist/
-
 *.tmp.*
 .screeps-ps.json
+test_build/

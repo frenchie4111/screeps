@@ -9,6 +9,7 @@
   "author": "Mike Lyons <mdl0394@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "chai": "^4.1.2",
     "flat": "^4.0.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "1.0.0",

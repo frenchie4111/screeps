@@ -21,7 +21,6 @@ module.exports = function( grunt ) {
     // Load needed tasks
     grunt.loadNpmTasks( 'grunt-screeps-customserver' );
     grunt.loadNpmTasks( 'grunt-contrib-clean' );
-    grunt.loadNpmTasks( 'grunt-webpack' );
 
     var screeps_options = {
         username: email,
@@ -42,10 +41,6 @@ module.exports = function( grunt ) {
             dist: {
                 src: [ 'dist/*.js' ]
             }
-        },
-
-        webpack: {
-            prod: require( './webpack.config' )
         },
 
         // Clean the dist folder.
