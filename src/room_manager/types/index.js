@@ -16,11 +16,13 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     LongDistanceMiningPlanner = require( '~/planner/LongDistanceMiningPlanner' ),
     LongDistanceLinkPlanner = require( '~/planner/LongDistanceLinkPlanner' ),
     BaseLinkPlanner = require( '~/planner/BaseLinkPlanner' ),
-    ExtratorPlanner = require( '~/planner/ExtratorPlanner' ),
+    ExtractorPlanner = require( '~/planner/ExtractorPlanner' ),
+    ExtractorRoad = require( '~/planner/ExtractorRoad' ),
     ExtensionRoadPlanner = require( '~/planner/ExtensionRoadPlanner' ),
     ExpansionPlanner = require( '~/planner/ExpansionPlanner' ),
     ExpansionSpawnPlanner = require( '~/planner/ExpansionSpawnPlanner' ),
     RoomTypeTransition = require( '~/planner/RoomTypeTransition' ),
+    ExtensionTreePlanner = require( '~/planner/ExtensionTreePlanner' ),
     ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -274,30 +276,48 @@ module.exports = {
             planners: [
                 new ExtensionPlanner( 'extension-4' ),
                 new ExtensionRoadPlanner( 'extension-road-2' ),
+                new OuterBaseRoads( 'outer-base-roads-1' ),
+                new BaseExitRoadPlanner( 'base-exit-road-1' ),
+                new TowerPlanner( 'tower-2' )
+            ]
+        },
+        {
+            isComplete: ( room ) => {
+                let planners_run = room.memory._planners[ 'clp-1' ];
+                let construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+                return planners_run && construction_sites.length <= 0;
+            },
+            worker_counts: {
+                [ workers.types.HARVESTER ]: 1,
+                [ workers.types.CONTAINER_EXTENSION ]: 1,
+                [ workers.types.CONTAINER_BUILDER ]: 3,
+                [ workers.types.CONTAINER_MINER ]: 2
+            },
+            planners: [
                 new WallPlanner( 'wall-planner-1' ),
                 new RampartPlanner( 'rampart-planner-1' ),
-                new OuterBaseRoads( 'outer-base-roads-1' ),
-                new TowerPlanner( 'tower-2' ),
-                new BaseExitRoadPlanner( 'base-exit-road-1' ),
-                new BaseLinkPlanner( 'base-link-planner' )
+                new BaseLinkPlanner( 'base-link-planner' ),
+                new ControllerLinkPlanner( 'clp-1' )
             ]
         },
         {
             isComplete: ( room ) => {
                 return room.controller.level >= 6;
             },
-            worker_counts: ( room ) => {
+            worker_counts: ( room, assigner ) => {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_UPGRADER ]: 2,
+                    [ workers.types.CONTAINER_UPGRADER ]: 3,
                     [ workers.types.CONTAINER_MINER ]: 2,
+                    // [ workers.types.BASE_LINK_MANAGER ]: 1
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
 
                 worker_counts[ workers.types.CLEARER ] = assigner.getSpawnCount( assigner.types.CLEARER );
+                // worker_counts[ workers.types.DRAINER ] = assigner.getSpawnCount( assigner.types.DRAINER );
 
                 return worker_counts;
             },
@@ -332,7 +352,8 @@ module.exports = {
                 let planners = [
                     new ExtensionPlanner( 'extension-5' ),
                     new LongDistanceMiningPlanner( 'ldm-1' ),
-                    new ExtratorPlanner( 'extrator-planner-1' ),
+                    new ExtractorPlanner( 'extractor-planner-1' ),
+                    new ExtractorRoad( 'extractor-road-1' ),
                     new ExpansionPlanner( 'expansion' ),
                 ];
 

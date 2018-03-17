@@ -29,7 +29,8 @@ class RenewWorker extends StateWorker {
     }
 
     setSuicide( spawn_id ) {
-        this.creep.suicide();
+        this.setState( STATES.MOVE_TO_SPAWN );
+        this.getMemory().suicide = true;
     }
 
     isSuicide() {
@@ -72,15 +73,21 @@ class RenewWorker extends StateWorker {
                 }
             },
             [ STATES.MOVE_TO_SPAWN ]: ( creep, state_memory, worker_memory ) => {
+                const spawn = Game.getObjectById( worker_memory.spawn_id );
+
                 if( this.isNear( creep, worker_memory.spawn_id ) ) {
                     if( worker_memory.renewing ) {
                         return STATES.RENEW;
+                    }
+                    if( worker_memory.suicide ) {
+                        const spawn = Game.getObjectById( worker_memory.spawn_id );
+                        console.log( 'recycle creep' );
+                        return spawn.recycleCreep( creep );
                     }
                     if( this.shouldKeepRunning( worker_memory ) ) {
                         return STATES.WAIT_FOR_ENEMY;
                     }
                 }
-                const spawn = Game.getObjectById( worker_memory.spawn_id );
 
                 if( creep.room.name !== spawn.room.name ) {
                     return STATES.MOVE_TO_SPAWN_ROOM;

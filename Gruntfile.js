@@ -1,7 +1,7 @@
 module.exports = function( grunt ) {
 
     // Pull defaults (including username and password) from .screeps.json
-    var config = require( './.screeps.json' )
+    var config = require( grunt.option( 'config' ) || './.screeps.json' )
     if ( !config.branch ) {
         config.branch = 'sim'
     }
@@ -14,22 +14,31 @@ module.exports = function( grunt ) {
     var branch = grunt.option( 'branch' ) || config.branch;
     var email = grunt.option( 'email' ) || config.email;
     var password = grunt.option( 'password' ) || config.password;
-    var ptr = grunt.option( 'ptr' ) ? true : config.ptr
+    var ptr = grunt.option( 'ptr' ) ? true : config.ptr;
+    var host = grunt.option( 'host' ) || config.host || null;
+    var port = grunt.option( 'port' ) || config.port || null;
 
     // Load needed tasks
-    grunt.loadNpmTasks( 'grunt-screeps' );
+    grunt.loadNpmTasks( 'grunt-screeps-customserver' );
     grunt.loadNpmTasks( 'grunt-contrib-clean' );
     grunt.loadNpmTasks( 'grunt-webpack' );
+
+    var screeps_options = {
+        username: email,
+        password: password,
+        branch: branch,
+        hostname: host,
+        port: port,
+        'use-https': false,
+        ptr: ptr
+    };
+    
+    console.log( screeps_options );
 
     grunt.initConfig( {
         // Push all files in the dist folder to screeps
         screeps: {
-            options: {
-                email: email,
-                password: password,
-                branch: branch,
-                ptr: ptr
-            },
+            options: screeps_options,
             dist: {
                 src: [ 'dist/*.js' ]
             }

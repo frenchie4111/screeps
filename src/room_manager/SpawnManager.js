@@ -99,8 +99,6 @@ class SpawnManager {
     getNeededSpawns( room, current_creeps, worker_counts ) {
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
-        console.log( current_counts );
-
         let needed_counts = _
             .reduce( worker_counts, ( needed, val, type ) => {
                 let current_val = current_counts.hasOwnProperty( type ) ? current_counts[ type ] : 0;
@@ -160,6 +158,9 @@ class SpawnManager {
         }
 
         const over_spawns = this.getOverSpawns( room, current_creeps, worker_counts );
+        const needed_spawns = this.getNeededSpawns( room, current_creeps, worker_counts );
+        const needed_spawns_keys = Object.keys( needed_spawns );
+        console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );
 
         _
             .forEach( over_spawns, ( count, type ) => {
@@ -189,7 +190,7 @@ class SpawnManager {
                     let max_body = this.getMaxBodyForWorker( spawn, temp_worker );
                     let current_body = _.map( creep.body, ( body_item ) => body_item.type ).sort();
 
-                    if( !_.isEqual( max_body, current_body ) && !this.checkForExtensionConstruction( room ) ) {
+                    if( !_.isEqual( max_body, current_body ) && !this.checkForExtensionConstruction( room ) && needed_spawns_keys.length === 0 ) {
                         console.log( 'Upgrading', creep.name );
                         if( !temp_worker.isSuicide() ) {
                             temp_worker.setSuicide();
@@ -200,11 +201,7 @@ class SpawnManager {
                     }
                 }
             } else if( currently_renewing_creeps.length === 0 ) { // Spawn
-                const needed_spawns = this.getNeededSpawns( room, current_creeps, worker_counts );
                 
-                console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );
-                
-                const needed_spawns_keys = Object.keys( needed_spawns );
 
                 if( needed_spawns_keys.length > 0 ) {
                     let spawn_type = needed_spawns_keys[ 0 ];

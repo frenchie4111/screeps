@@ -9,14 +9,8 @@ class SourceRoadPlanner extends ConstructionPlanner {
         this.rerun_on_fail = false;
     }
 
-    getTarget( room, spawn ) {
-        return spawn;
-    }
-
-    _getNewPositions( room, spawn, pending=[] ) {
+    getSources( room, target ) {
         let sources = room.find( FIND_SOURCES );
-
-        const target = this.getTarget( room, spawn );
 
         sources = sources
             .map( ( source ) => {
@@ -32,6 +26,17 @@ class SourceRoadPlanner extends ConstructionPlanner {
             } );
 
         sources = _.sortBy( sources, ( source ) => source.path.length ).reverse();
+
+        return sources;
+    }
+
+    getTarget( room, spawn ) {
+        return spawn;
+    }
+
+    _getNewPositions( room, spawn, pending=[] ) {
+        const target = this.getTarget( room, spawn );
+        const sources = this.getSources( room, target );
 
         let positions = [];
         for( let i = 0; i < sources.length && i < this.max_sources; i++ ) {

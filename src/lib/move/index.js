@@ -41,6 +41,8 @@ const findPathTo = ( thing, target, opts ) => {
     //     } );
 };
 
+const STUCK_DEBOUNCE = 2;
+
 const moveTo = ( creep, move_memory, target, opts={} ) => {
     if( target.pos ) {
         target = target.pos;
@@ -54,8 +56,16 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
         profiler.incrementCallsFor( 'move.findPathTo' );
         move_memory.path = findPathTo( creep, target, opts );
     } else {
-        // Make sure we aren't stuck
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
+            if( !move_memory.hasOwnProperty( 'stuck_timer' ) ) move_memory.stuck_timer = 0;
+            console.log( 'stopped', move_memory.stuck_timer );
+            move_memory.stuck_timer++;
+        } else {
+            move_memory.stuck_timer = 0;
+        }
+
+        if( move_memory.stuck_timer >= STUCK_DEBOUNCE ) {
+            console.log( 'Was stuck for too long' );
             profiler.incrementCallsFor( 'move.findPathTo' );
             move_memory.path = findPathTo( creep, target, opts );
         }
@@ -86,6 +96,7 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
 module.exports.moveTo = moveTo;
 
 const _canMoveTo = ( room, pos ) => {
+    if( !position.inRoom( pos ) ) return false;
     let things_at = room.lookAt( pos );
     return !_
         .some( things_at, ( thing_at ) => {
@@ -128,7 +139,9 @@ const moveToRoom = ( creep, move_memory, target_room_name, opts={}, use_exit_dir
     }
 
     if( creep.room.name === target_room_name ) {
-        let move_response = moveIn( creep, move_memory );
+        if( !opts.dont_move_in ) {
+            let move_response = moveIn( creep, move_memory );
+        }
         return module.exports.ERR_IN_ROOM;
     }
 

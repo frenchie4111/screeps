@@ -108,7 +108,7 @@ class ConstructionPlanner extends Planner {
                     console.log( position, this.structure_type );
                     let return_status = room.createConstructionSite( position, this.structure_type );
                     if( return_status !== constants.OK ) {
-                        console.log( 'createConstructionSite non OK status', return_status );
+                        console.log( 'createConstructionSite non OK status', return_status, constants.lookup( return_status ) );
                         succeeded = false;
                     }
                 }

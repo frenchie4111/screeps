@@ -8,9 +8,16 @@ class ContainerUpgrader extends ContainerHarvester {
         if( creep.room.storage && creep.room.storage.store[ RESOURCE_ENERGY ] > 50 ) {
             options.push( creep.room.storage );
         }
-        options.push( super.getSource( creep ) );
+        
+        const super_source = super.getSource( creep );
+        if( super_source ) {
+            options.push( super_source );
+        }
 
-        return creep.pos.findClosestByPath( options );
+        if( options.length > 0 ) {
+            return creep.pos.findClosestByPath( options );
+        }
+        return null;
     }
 
     getTarget( creep ) {
@@ -18,7 +25,7 @@ class ContainerUpgrader extends ContainerHarvester {
     }
 
     getBody( available_energy ) {
-        let body = [ CARRY, WORK, MOVE ];
+        let body = [ CARRY, CARRY, CARRY, WORK, MOVE, MOVE ];
         let parts = [ WORK, WORK, MOVE ];
 
         while( this.getEnergyOf( body ) + this.getEnergyOf( parts ) <= available_energy ) {

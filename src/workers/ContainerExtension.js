@@ -6,9 +6,27 @@ class ContainerExtension extends ContainerHarvester {
     constructor( assigner ) {
         super( assigner );
         this.MAX_MOVE = 10;
+        this.match_energy = false;
+        this.use_storage = false;
     }
 
     getSource( creep ) {
+        let tombstone = creep
+            .pos
+            .findClosestByPath( FIND_TOMBSTONES, {
+                filter: ( tombstone ) => {
+                    return tombstone.store[ RESOURCE_ENERGY ] > 0;
+                }
+            } );
+
+        if( tombstone ) return tombstone;
+        
+        let energy = creep
+            .pos
+            .findClosestByPath( FIND_DROPPED_ENERGY );
+
+        if( energy ) return energy;
+
         let container = creep
             .pos
             .findClosestByPath( constants.FIND_STRUCTURES, {
@@ -24,7 +42,9 @@ class ContainerExtension extends ContainerHarvester {
             return container;
         }
 
-        if( creep.room.storage ) {
+        let target = this.getTarget( creep );
+
+        if( creep.room.storage && target.structureType !== STRUCTURE_STORAGE ) {
             if( creep.room.storage.store[ constants.RESOURCE_ENERGY ] > 50 ) {
                 return creep.room.storage;
             }

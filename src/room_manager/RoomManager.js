@@ -123,7 +123,7 @@ class RoomManager {
         let damaged_creeps = tower.room
             .find( FIND_MY_CREEPS, {
                 filter: ( creep ) => {
-                    return creep.hits < creep.hitsMax
+                    return creep.hits < creep.hitsMax && !creep.memory.dont_heal
                 }
             } );
 
@@ -139,7 +139,8 @@ class RoomManager {
 
         const types_to_repair = {
             [ constants.STRUCTURE_ROAD ]: 0.5, 
-            [ constants.STRUCTURE_WALL ]: 0.0005, 
+            // [ constants.STRUCTURE_WALL ]: 0.00015, 
+            [ constants.STRUCTURE_WALL ]: 0.000015, 
             [ constants.STRUCTURE_RAMPART ]: 0.0005
         };
 
@@ -157,7 +158,7 @@ class RoomManager {
             } );
 
         if( structures_to_repair.length > 0 ) {
-            structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => ( structure.hits / structure.hitsMax ) );
+            structures_to_repair = _.sortBy( structures_to_repair, ( structure ) => ( ( structure.hits / structure.hitsMax ) / types_to_repair[ structure.structureType ] ) );
             return tower.repair( structures_to_repair[ 0 ] );
         }
     };

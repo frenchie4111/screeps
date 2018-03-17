@@ -20,6 +20,7 @@ const worker_type_conversion = {
     EXPANSION_BUILDER: require( './ExpansionBuilder' ),
     CONTAINER_UPGRADER: require( './ContainerUpgrader' ),
     CLEARER: require( './Clearer' ),
+    DRAINER: require( './Drainer' ),
 };
 
 const types = {
@@ -45,6 +46,7 @@ const types = {
     EXPANSION_BUILDER: 'EXPANSION_BUILDER',
     CONTAINER_UPGRADER: 'CONTAINER_UPGRADER',
     CLEARER: 'CLEARER',
+    DRAINER: 'DRAINER',
 };
 
 module.exports = {

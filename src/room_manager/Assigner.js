@@ -164,6 +164,20 @@ class Assigner {
                         }
                     } );
                 return this._arrayToAllowedCounts( rooms_to_clear, 2 );
+            case Assigner.types.DRAINER:
+                let rooms_to_drain = [];
+                _
+                    .each( Memory._room_map, ( room_info, room_name ) => {
+                        if( 
+                            ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
+                            _.get( room_info, [ 'controller', 'level' ] ) <= 3 &&
+                            _.get( room_info, [ 'saw_enemies' ] )
+                        ) {
+                            rooms_to_drain.push( room_name );
+                        }
+                    } );
+                console.log( 'rooms_to_drain' );
+                return this._arrayToAllowedCounts( rooms_to_drain, 1 );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
                     [ -5, -1 ],
@@ -195,13 +209,6 @@ class Assigner {
                 let found_long_distance = _.find( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id === assigned_id );
                 console.log( assigned_id, found_long_distance );
                 return found_long_distance;
-            case Assigner.types.LONG_DISTANCE_RESERVER:
-            case Assigner.types.LONG_DISTANCE_ROOM_CLEARER:
-            case Assigner.types.EXPANSION_CLEARER:
-            case Assigner.types.EXPANSION_RESERVER:
-            case Assigner.types.EXPANSION_BUILDER:
-            case Assigner.types.CLEARER:
-                return assigned_id;
             case Assigner.types.WAITING_SPOT:
                 let assigned_id_split = _.map( assigned_id.split( ':' ), ( item ) => +item );
                 
@@ -209,6 +216,8 @@ class Assigner {
                 console.log( waiting_spot_position );
                 waiting_spot_position.id = assigned_id;
                 return waiting_spot_position;
+            default:
+                return assigned_id;
         }
     }
 
@@ -272,6 +281,7 @@ Assigner.types = {
     EXPANSION_RESERVER: 'EXPANSION_RESERVER',
     EXPANSION_BUILDER: 'EXPANSION_BUILDER',
     CLEARER: 'CLEARER',
+    DRAINER: 'DRAINER',
 };
 
 Assigner.prototype.types = Assigner.types;

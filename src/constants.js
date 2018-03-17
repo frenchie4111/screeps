@@ -40,6 +40,7 @@ module.exports = {
     FIND_HOSTILE_CONSTRUCTION_SITES: 115,
     FIND_MINERALS: 116,
     FIND_NUKES: 117,
+    FIND_TOMBSTONES: 118,
 
     TOP: 1,
     TOP_RIGHT: 2,
