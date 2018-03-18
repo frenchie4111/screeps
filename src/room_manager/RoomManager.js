@@ -141,7 +141,8 @@ class RoomManager {
             [ constants.STRUCTURE_ROAD ]: 0.5, 
             // [ constants.STRUCTURE_WALL ]: 0.00015, 
             [ constants.STRUCTURE_WALL ]: 0.000015, 
-            [ constants.STRUCTURE_RAMPART ]: 0.0005
+            [ constants.STRUCTURE_RAMPART ]: 0.0005,
+            [ constants.STRUCTURE_CONTAINER ]: 0.95
         };
 
         let structures_to_repair = tower

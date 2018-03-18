@@ -63,6 +63,20 @@ class RenewWorker extends StateWorker {
         return Memory.rooms[ room ].dangerous_until && Memory.rooms[ room ].dangerous_until > Game.time;
     }
 
+    getTotalEnergy( spawn ) {
+        let extensions = spawn
+            .room
+            .find( FIND_MY_STRUCTURES, {
+                filter: {
+                    structureType: constants.STRUCTURE_EXTENSION
+                }
+            } );
+
+        let extension_total = _.sum( _.map( extensions, ( extension ) => extension.energy ) );
+
+        return extension_total + spawn.energy;
+    }
+
     _getRenewStates() {
         return {
             [ STATES.MOVE_TO_SPAWN_ROOM ]: ( creep, state_memory, worker_memory ) => {
@@ -127,7 +141,8 @@ class RenewWorker extends StateWorker {
                 this.setRenew();
             },
             [ STATES.RENEW ]: ( creep, state_memory, worker_memory ) => {
-                if( creep.ticksToLive > TTL_REMAINING_FINISH_RENEW ) {
+                let spawn = Game.getObjectById( worker_memory.spawn_id );
+                if( creep.ticksToLive > TTL_REMAINING_FINISH_RENEW || this.getTotalEnergy( spawn ) <= 5 ) {
                     worker_memory.renewing = false;
 
                     if( this.shouldKeepRunning( worker_memory ) ) {
@@ -136,7 +151,7 @@ class RenewWorker extends StateWorker {
 
                     return this.default_state;
                 }
-                let renew_response = Game.getObjectById( worker_memory.spawn_id ).renewCreep( creep );
+                let renew_response = spawn.renewCreep( creep );
                 if( renew_response !== OK ) {
                     if( renew_response === ERR_FULL ) {
                         worker_memory.renewing = false;

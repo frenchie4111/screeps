@@ -20,19 +20,31 @@ module.exports = function( grunt ) {
     var src = grunt.option( 'src' ) || "dist/*.js";
 
     // Load needed tasks
-    grunt.loadNpmTasks( 'grunt-screeps-customserver' );
     grunt.loadNpmTasks( 'grunt-contrib-clean' );
 
-    var screeps_options = {
-        username: email,
-        password: password,
-        branch: branch,
-        hostname: host,
-        port: port,
-        'use-https': false,
-        ptr: ptr
-    };
-    
+    if( host ) {
+        grunt.loadNpmTasks( 'grunt-screeps-customserver' );
+
+        var screeps_options = {
+            username: email,
+            password: password,
+            branch: branch,
+            hostname: host,
+            port: port,
+            'use-https': false,
+            ptr: ptr
+        };
+    } else {
+        grunt.loadNpmTasks( 'grunt-screeps' );
+
+        var screeps_options = {
+            email: email,
+            password: password,
+            branch: branch,
+            ptr: ptr
+        };
+    }
+
     console.log( screeps_options );
 
     grunt.initConfig( {

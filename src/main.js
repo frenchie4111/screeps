@@ -1,3 +1,5 @@
+require( './fake_test.js' );
+
 const loopItem = require( '~/lib/loopItem' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );
