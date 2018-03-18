@@ -33,3 +33,4 @@ dist/
 *.tmp.*
 .screeps-ps.json
 test_build/
+test_dist/

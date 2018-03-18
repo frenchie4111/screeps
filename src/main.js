@@ -1,5 +1,3 @@
-require( './mocha_fake_globals' );
-
 const loopItem = require( '~/lib/loopItem' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );

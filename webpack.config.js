@@ -1,10 +1,13 @@
 const path = require( 'path' );
 
 module.exports = {
-    entry: path.join( __dirname, 'src', 'main.js' ),
+    entry: {
+        main: path.join( __dirname, 'src', 'main.js' ),
+        test: path.join( __dirname, 'src', 'test.js' ),
+    },
     output: {
         path: path.join( __dirname, 'dist' ),
-        filename: 'main.js',
+        filename: '[name]/main.js',
         libraryTarget: 'commonjs-module'
     },
     resolve: {

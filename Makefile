@@ -1,7 +1,7 @@
 test:
-	webpack --target=node --output-path=test_build
-	mocha --require=mocha_globals.js test_build/
+	webpack
+	grunt screeps --config=./.screeps-ps.json --src="dist/test/*"
 
 deploy_ps:
 	webpack
-	grunt screeps --config=./.screeps-ps.json
+	grunt screeps --config=./.screeps-ps.json --src="dist/main/*"

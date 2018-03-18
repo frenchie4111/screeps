@@ -17,6 +17,7 @@ module.exports = function( grunt ) {
     var ptr = grunt.option( 'ptr' ) ? true : config.ptr;
     var host = grunt.option( 'host' ) || config.host || null;
     var port = grunt.option( 'port' ) || config.port || null;
+    var src = grunt.option( 'src' ) || "dist/*.js";
 
     // Load needed tasks
     grunt.loadNpmTasks( 'grunt-screeps-customserver' );
@@ -39,7 +40,7 @@ module.exports = function( grunt ) {
         screeps: {
             options: screeps_options,
             dist: {
-                src: [ 'dist/*.js' ]
+                src: [ src ]
             }
         },
 
