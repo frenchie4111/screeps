@@ -26,7 +26,7 @@ class ContainerExtension extends ContainerHarvester {
             .findClosestByPath( FIND_DROPPED_ENERGY );
 
         if( energy ) return energy;
-
+        
         let container = creep
             .pos
             .findClosestByPath( constants.FIND_STRUCTURES, {
@@ -56,6 +56,25 @@ class ContainerExtension extends ContainerHarvester {
     getTarget( creep ) {
         let capacity_structure;
         // Tower first
+
+        capacity_structure = creep.pos
+            .findClosestByPath( FIND_MY_STRUCTURES, {
+                filter: ( structure ) => {
+                    return (
+                        structure.structureType !== constants.STRUCTURE_TOWER &&
+                        structure.structureType !== constants.STRUCTURE_SPAWN &&
+                        structure.structureType !== constants.STRUCTURE_LINK &&
+                        structure.structureType !== constants.STRUCTURE_LAB &&
+                        ( 'energyCapacity' in structure ) &&
+                        structure.energy < structure.energyCapacity
+                    );
+                }
+            } );
+
+        if( capacity_structure ) {
+            return capacity_structure;
+        }
+
         capacity_structure = creep.pos
             .findClosestByPath( FIND_MY_STRUCTURES, {
                 filter: ( structure ) => {
@@ -66,23 +85,6 @@ class ContainerExtension extends ContainerHarvester {
                 }
             } );
         
-        if( capacity_structure ) {
-            return capacity_structure;
-        }
-
-        capacity_structure = creep.pos
-            .findClosestByPath( FIND_MY_STRUCTURES, {
-                filter: ( structure ) => {
-                    return (
-                        structure.structureType !== constants.STRUCTURE_TOWER &&
-                        structure.structureType !== constants.STRUCTURE_SPAWN &&
-                        structure.structureType !== constants.STRUCTURE_LINK &&
-                        ( 'energyCapacity' in structure ) &&
-                        structure.energy < structure.energyCapacity
-                    );
-                }
-            } );
-
         if( capacity_structure ) {
             return capacity_structure;
         }

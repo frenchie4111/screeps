@@ -63,7 +63,7 @@ class Clearer extends RenewWorker {
                     return STATES.MOVE_TO_ROOM;
                 }
 
-                map.storeController( room );
+                map.storeController( creep.room );
 
                 let target_enemy = Game.getObjectById( worker_memory.target_id );
                 if( !target_enemy ) {

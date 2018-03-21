@@ -21,6 +21,8 @@ const worker_type_conversion = {
     CONTAINER_UPGRADER: require( './ContainerUpgrader' ),
     CLEARER: require( './Clearer' ),
     DRAINER: require( './Drainer' ),
+    ATTACK_PAIR_LEAD: require( './AttackPairLead' ),
+    ATTACK_PAIR_FOLLOW: require( './AttackPairFollow' ),
 };
 
 const types = {
@@ -47,6 +49,8 @@ const types = {
     CONTAINER_UPGRADER: 'CONTAINER_UPGRADER',
     CLEARER: 'CLEARER',
     DRAINER: 'DRAINER',
+    ATTACK_PAIR_LEAD: 'ATTACK_PAIR_LEAD',
+    ATTACK_PAIR_FOLLOW: 'ATTACK_PAIR_FOLLOW',
 };
 
 module.exports = {

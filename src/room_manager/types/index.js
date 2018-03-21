@@ -23,6 +23,8 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     ExpansionSpawnPlanner = require( '~/planner/ExpansionSpawnPlanner' ),
     RoomTypeTransition = require( '~/planner/RoomTypeTransition' ),
     ExtensionTreePlanner = require( '~/planner/ExtensionTreePlanner' ),
+    TerminalPlanner = require( '~/planner/TerminalPlanner' ),
+    BoostLabPlanner = require( '~/planner/BoostLabPlanner' ),
     ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -331,10 +333,12 @@ module.exports = {
             },
             worker_counts: ( room, assigner ) => {
                 let worker_counts = {
+                    [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_BUILDER ]: 1,
+                    // [ workers.types.CONTAINER_BUILDER ]: 1,
                     [ workers.types.CONTAINER_MINER ]: 2,
-                    [ workers.types.BASE_LINK_MANAGER ]: 1
+                    [ workers.types.BASE_LINK_MANAGER ]: 1,
+                    [ workers.types.ATTACK_PAIR_LEAD ]: 0
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
@@ -342,9 +346,12 @@ module.exports = {
                 addWorkerCountsForExtractor( worker_counts, room );
 
                 worker_counts[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] = assigner.getSpawnCount( assigner.types.LONG_DISTANCE_ROOM_CLEARER );
-                worker_counts[ workers.types.EXPANSION_CLEARER ] = assigner.getSpawnCount( assigner.types.EXPANSION_CLEARER );
-                worker_counts[ workers.types.EXPANSION_RESERVER ] = assigner.getSpawnCount( assigner.types.EXPANSION_RESERVER );
-                worker_counts[ workers.types.EXPANSION_BUILDER ] = assigner.getSpawnCount( assigner.types.EXPANSION_BUILDER );
+                worker_counts[ workers.types.ATTACK_PAIR_LEAD ] = assigner.getSpawnCount( assigner.types.ATTACK_PAIR_LEAD );
+                worker_counts[ workers.types.ATTACK_PAIR_FOLLOW ] = assigner.getSpawnCount( assigner.types.ATTACK_PAIR_FOLLOW );
+
+                // worker_counts[ workers.types.EXPANSION_CLEARER ] = assigner.getSpawnCount( assigner.types.EXPANSION_CLEARER );
+                // worker_counts[ workers.types.EXPANSION_RESERVER ] = assigner.getSpawnCount( assigner.types.EXPANSION_RESERVER );
+                // worker_counts[ workers.types.EXPANSION_BUILDER ] = assigner.getSpawnCount( assigner.types.EXPANSION_BUILDER );
 
                 return worker_counts;
             },
@@ -354,7 +361,10 @@ module.exports = {
                     new LongDistanceMiningPlanner( 'ldm-1' ),
                     new ExtractorPlanner( 'extractor-planner-1' ),
                     new ExtractorRoad( 'extractor-road-1' ),
-                    new ExpansionPlanner( 'expansion' ),
+                    new ExtractorRoad( 'extractor-road-1' ),
+                    new TerminalPlanner( 'terminal-1' ),
+                    new BoostLabPlanner( 'boost-lab-1' ),
+                    // new ExpansionPlanner( 'expansion' ),
                 ];
 
                 let long_distance_road_planners = _

@@ -1,6 +1,6 @@
 const position = require( '~/lib/position' );
 
-const MAP_VERSION = 12;
+const MAP_VERSION = 13;
 
 const RERUN_EVERY = 10000;
 
@@ -146,6 +146,7 @@ module.exports = {
             room_map[ room.name ].enemy_username = hostile_creeps[ 0 ].owner.username;
             room_map[ room.name ].saw_enemy_creeps = true;
         }
+
         if( hostile_structures.length > 0 ) {
             saw_enemies = true;
             room_map[ room.name ].enemy_username = hostile_structures[ 0 ].owner.username;

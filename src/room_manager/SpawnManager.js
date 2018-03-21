@@ -3,7 +3,7 @@ const constants = require( '~/constants' );
 const workers = require( '~/workers' ),
     RenewWorker = require( '~/workers/RenewWorker' );
 
-const MAX_RENEWING = 2;
+const MAX_RENEWING = 1;
 
 class SpawnManager {
     getTotalEnergyCapacity( spawn ) {
@@ -229,10 +229,10 @@ class SpawnManager {
 
                     console.log( 'cur', current_body, 'max', max_body );
 
-                    if( _.isEqual( current_body, max_body ) || current_creeps.length === 0 ) {
+                    if( _.isEqual( current_body, max_body ) || ( current_energy >= 300 && current_creeps.length <= 1 ) ) {
                         this.spawnCreep( room, spawn, spawn_type );
                     } else {
-                        console.log( 'Cant spawn', current_energy );
+                        console.log( 'Cant spawn', spawn_type, current_energy );
                     }
                 }
             }

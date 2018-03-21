@@ -5,6 +5,7 @@ const constants = require( '~/constants' ),
 const RenewWorker = require( './RenewWorker' );
 
 const MarketManager = require( '~/room_manager/MarketManager' );
+const BoostManager = require( '~/room_manager/BoostManager' );
 
 let STATES = {
     MOVE_TO_POSITION: 'MOVE_TO_POSITION',
@@ -16,6 +17,7 @@ let position_direction = [  0, +1 ];
 const WITHDRAW_THRESHOLDS = {
     [ RESOURCE_ENERGY ]: 700000,
     [ RESOURCE_LEMERGIUM ]: 15000,
+    [ RESOURCE_UTRIUM ]: 3000,
 };
 
 class BaseLinkManager extends RenewWorker {
@@ -29,6 +31,15 @@ class BaseLinkManager extends RenewWorker {
 
         let storage_store = this.room.storage.store;
         let terminal_store = this.room.terminal.store;
+
+        if( terminal_store.energy < MarketManager.MIN_ENERGY ) {
+            return [ 
+                {
+                    type: RESOURCE_ENERGY,
+                    amount: MarketManager.MIN_ENERGY - terminal_store.energy
+                } 
+            ]
+        };
 
         return _
             .chain( storage_store )
@@ -47,7 +58,21 @@ class BaseLinkManager extends RenewWorker {
     }
     
     needToTransferToTerminal() {
+        if( !this.room.terminal || !this.room.storage ) return false;
         return this.getWhatNeedsTransferFromStorageToTerminal().length > 0;
+    }
+
+    needToTransferFromTerminalToLab( room ) {
+        if( !this.room.terminal || !this.room.storage ) return false;
+
+        let mineral = BoostManager.getNeededMineral( room );
+        if( !mineral ) return false;
+
+        if( this.room.terminal.store[ mineral.mineral ] > 0 ) {
+            return mineral.mineral;
+        }
+
+        return false;
     }
 
     getTotalCarry( creep ) {
@@ -81,7 +106,7 @@ class BaseLinkManager extends RenewWorker {
                     return;
                 }
 
-                console.log( this.getWhatNeedsTransferFromStorageToTerminal() );
+                console.log( JSON.stringify( this.getWhatNeedsTransferFromStorageToTerminal() ) );
 
                 let link = Game.getObjectById( this.room.memory.links.base )
 
@@ -104,18 +129,40 @@ class BaseLinkManager extends RenewWorker {
                         creep.withdraw( this.room.storage, RESOURCE_ENERGY, 300 );
                     }
                 } else if( this.needToTransferToTerminal() ) {
+                    console.log( 'transfer to terminal' );
                     let transfer_things = this.getWhatNeedsTransferFromStorageToTerminal()
                     let thing_to_transfer = worker_memory.thing_to_transfer = worker_memory.thing_to_transfer || transfer_things[ 0 ].type;
 
                     if( this.carryingSomethingElse( creep, thing_to_transfer ) ) {
+                        console.log( 'TransferAll' );
                         this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );
                     } else if( creep.carry[ thing_to_transfer ] === creep.carryCapacity ) {
+                        console.log( 'Transfer' );
                         creep.transfer( this.room.terminal, thing_to_transfer );
                         worker_memory.thing_to_transfer = null;
                     } else {
+                        console.log( 'Withdraw' );
                         creep.withdraw( this.room.storage, thing_to_transfer );
                     }
+                } else if( this.needToTransferFromTerminalToLab( creep.room ) || worker_memory.boost_transfer ) {
+                    let boost_lab = BoostManager.getBoostLab( creep.room );
+                    let mineral = this.needToTransferFromTerminalToLab( creep.room );
+
+                    let thing_to_transfer = worker_memory.boost_transfer = worker_memory.boost_transfer || mineral;
+
+                    if( this.carryingSomethingElse( creep, thing_to_transfer ) ) {
+                        console.log( 'TransferAll' );
+                        this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );
+                    } else if( creep.carry[ thing_to_transfer ] > 0 ) {
+                        console.log( 'Transfer to lab' );
+                        creep.transfer( boost_lab, thing_to_transfer );
+                        worker_memory.boost_transfer = null;
+                    } else {
+                        console.log( 'Withdraw from terminal' );
+                        creep.withdraw( this.room.terminal, thing_to_transfer );
+                    }
                 } else if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
+                    console.log( 'TransferAll dump' );
                     this.transferAll( creep, this.room.storage );
                 }
 

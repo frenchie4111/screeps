@@ -6,7 +6,8 @@ const constants = require( '~/constants' ),
 const Assigner = require( './Assigner' ),
     SpawnManager = require( './SpawnManager' ),
     LinkManager = require( './LinkManager' ),
-    MarketManager = require( './MarketManager' );
+    MarketManager = require( './MarketManager' ),
+    BoostManager = require( './BoostManager' );
 
 const types = require( './types' );
 
@@ -139,9 +140,8 @@ class RoomManager {
 
         const types_to_repair = {
             [ constants.STRUCTURE_ROAD ]: 0.5, 
-            // [ constants.STRUCTURE_WALL ]: 0.00015, 
-            [ constants.STRUCTURE_WALL ]: 0.000015, 
-            [ constants.STRUCTURE_RAMPART ]: 0.0005,
+            [ constants.STRUCTURE_WALL ]: 0.00005, 
+            [ constants.STRUCTURE_RAMPART ]: 0.005,
             [ constants.STRUCTURE_CONTAINER ]: 0.95
         };
 
@@ -256,6 +256,12 @@ class RoomManager {
             console.log( room.terminal );
             loopItem( 'market', () => {
                 this.handleMarket( room, spawn, current_state );
+            } );
+        }
+        
+        if( BoostManager.getBoostLab( room ) ) {
+            loopItem( 'boost', () => {
+                BoostManager.doManage( room, spawn, current_state );
             } );
         }
 

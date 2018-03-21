@@ -2,6 +2,8 @@ const constants = require( '~/constants' );
 
 const position = require( '~/lib/position' );
 
+const workers = require( '~/workers' );
+
 class Assigner {
     constructor( room, spawn ) {
         this.room = room;
@@ -41,6 +43,11 @@ class Assigner {
         let assignations = this._getAssignedForType( type );
         if( !assignations.hasOwnProperty( thing_id ) ) assignations[ thing_id ] = [];
         assignations[ thing_id ].push( creep_id );
+    }
+
+    getAssignedTo( type, thing_id ) {
+        let all = this._getAssignedForType( type );
+        return all[ thing_id ];
     }
 
     unassign( type, creep_id, thing_id ) {
@@ -176,8 +183,29 @@ class Assigner {
                             rooms_to_drain.push( room_name );
                         }
                     } );
-                console.log( 'rooms_to_drain' );
                 return this._arrayToAllowedCounts( rooms_to_drain, 1 );
+            case Assigner.types.ATTACK_PAIR_FOLLOW:
+                let attack_lead_creeps = [];
+
+                attack_lead_creeps = _
+                    .filter( this.room.memory.creeps, ( creep_name ) => {
+                        return Memory.creeps[ creep_name ].worker_type === workers.types.ATTACK_PAIR_LEAD
+                    } );
+                return this._arrayToAllowedCounts( attack_lead_creeps );
+            case Assigner.types.ATTACK_PAIR_LEAD:
+                let room_to_attack = [];
+                _
+                    .each( Memory._room_map, ( room_info, room_name ) => {
+                        if(
+                            ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
+                            _.get( room_info, [ 'controller', 'level' ] ) < 7 &&
+                            _.get( room_info, [ 'saw_enemies' ] ) &&
+                            ( _.get( room_info, [ 'controller', 'safeMode' ], 0 ) + _.get( room_info, [ 'run_at' ] ) ) < Game.time
+                        ) {
+                            room_to_attack.push( room_name );
+                        }
+                    } );
+                return this._arrayToAllowedCounts( room_to_attack, 1 );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
                     [ -5, -1 ],
@@ -282,6 +310,8 @@ Assigner.types = {
     EXPANSION_BUILDER: 'EXPANSION_BUILDER',
     CLEARER: 'CLEARER',
     DRAINER: 'DRAINER',
+    ATTACK_PAIR_FOLLOW: 'ATTACK_PAIR_FOLLOW',
+    ATTACK_PAIR_LEAD: 'ATTACK_PAIR_LEAD',
 };
 
 Assigner.prototype.types = Assigner.types;
