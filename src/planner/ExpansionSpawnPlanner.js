@@ -18,7 +18,11 @@ class ExpansionSpawnPlanner extends Planner {
         if( !flags || flags.length === 0 ) return;
         let flag = flags[ 0 ];
 
-        room.createConstructionSite( flag.pos, STRUCTURE_SPAWN );
+        let response = room.createConstructionSite( flag.pos.x, flag.pos.y, STRUCTURE_SPAWN, 'spawn-' + flag.room.name + '-1' );
+        if( response !== OK ) {
+            console.log( 'ExpansionSpawnPlanner non OK', constants.lookup( response ), flag.pos.x, flag.pos.y, STRUCTURE_SPAWN, 'spawn-' + flag.room.name + '-1' );
+            return false;
+        }
         flag.remove();
     }
 }

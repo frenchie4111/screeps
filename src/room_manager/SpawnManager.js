@@ -78,8 +78,6 @@ class SpawnManager {
     getOverSpawns( room, current_creeps, worker_counts ) {
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
-        console.log( 'getOverSpawns', JSON.stringify(worker_counts), JSON.stringify(current_creeps) );
-
         let over_spawns = _
             .reduce( current_counts, ( over_counts, count, type ) => {
                 let needed_val = worker_counts.hasOwnProperty( type ) ? worker_counts[ type ] : 0;

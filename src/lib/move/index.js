@@ -58,7 +58,6 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
     } else {
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
             if( !move_memory.hasOwnProperty( 'stuck_timer' ) ) move_memory.stuck_timer = 0;
-            console.log( 'stopped', move_memory.stuck_timer );
             move_memory.stuck_timer++;
         } else {
             move_memory.stuck_timer = 0;
