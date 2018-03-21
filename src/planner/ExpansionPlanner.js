@@ -9,7 +9,7 @@ const VERSION = 13;
 
 const EXPANSION_ROOM_TYPE = 'expansion';
 const STANDARD_ROOM_TYPE = 'standard';
-const ALLOWED_ROOM_TYPES = [ 'long_distance' ];
+const ALLOWED_ROOM_TYPES = [ 'long_distance', 'cleared' ];
 const ALLOWED_ENEMY_USERNAMES = [ SYSTEM_USERNAME ];
 
 class LongDistanceMiningPlanner extends Planner {
@@ -64,11 +64,15 @@ class LongDistanceMiningPlanner extends Planner {
                 }
                 return true;
             } )
+            .filter( ( room ) => {
+                return ( !room.controller.owner || room.controller.my );
+            } )
             .each( room => console.log( JSON.stringify( room ) ) )
             .value();
 
         if( rooms_to_expand.length === 0 ) {
-            throw new Error( 'No expansion candidates' );
+            console.log( 'No expansion candidates' );
+            return false;
         }
 
         let target_room = rooms_to_expand[ 0 ];

@@ -27,8 +27,17 @@ class LongDistanceReserver extends StateWorker {
         return [];
     }
 
+    doAttack( creep, target ) {
+        
+    }
+
     doReserve( creep, target ) {
-        return creep.reserveController( creep.room.controller );
+        if( target.owner ) {
+            return creep.attackController( target );
+        } else {
+            return creep.reserveController( target );
+        }
+        
     }
 
     _getStates() {
@@ -57,15 +66,16 @@ class LongDistanceReserver extends StateWorker {
             },
             [ STATES.RESERVE ]: ( creep, state_memory, worker_memory ) => {
                 let reserve_response = null;
+
+                reserve_response = this.doReserve( creep, creep.room.controller );
+
                 if( !creep.room.controller.sign || creep.room.controller.sign.text !== this.controller_message ) {
                     console.log( 'Signing', creep.room.controller.sign, this.controller_message );
                     reserve_response = creep.signController( creep.room.controller, this.controller_message );
-                } else {
-                    reserve_response = this.doReserve( creep, creep.room.controller );
                 }
 
                 if( reserve_response !== OK ) {
-                    console.log( 'INVALID RESERVE RESPONSE', reserve_response );
+                    console.log( 'INVALID RESERVE RESPONSE', reserve_response, constants.lookup( reserve_response ) );
                 }
 
                 Memory.rooms[ creep.room.name ].resevered_until = Game.time + ( ( creep.room.controller.reservation ) ? creep.room.controller.reservation.ticksToEnd : 0 );

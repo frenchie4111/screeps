@@ -259,7 +259,7 @@ class HarvestWorker extends RenewWorker {
                     return this.instantTransition( STATES.MOVE_TO_TRANSFER );
                 }
 
-                const transfer_results = this.doTransfer( creep, Game.getObjectById( worker_memory.target_id ) );
+                const transfer_results = this.doTransfer( creep, target );
 
                 switch( transfer_results ) {
                     case constants.OK:
@@ -277,7 +277,7 @@ class HarvestWorker extends RenewWorker {
                         worker_memory.target_id = null;
                         break;
                     default:
-                        console.log( 'Unknown case', transfer_results, constants.lookup( transfer_results ) );
+                        console.log( 'Unknown case', target, constants.lookup( transfer_results ) );
                         return this.afterTransferring( creep, worker_memory );
                 }
             }

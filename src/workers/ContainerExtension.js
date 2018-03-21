@@ -23,7 +23,7 @@ class ContainerExtension extends ContainerHarvester {
         
         let energy = creep
             .pos
-            .findClosestByPath( FIND_DROPPED_ENERGY );
+            .findClosestByPath( FIND_DROPPED_RESOURCES );
 
         if( energy ) return energy;
         

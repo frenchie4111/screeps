@@ -78,6 +78,8 @@ class SpawnManager {
     getOverSpawns( room, current_creeps, worker_counts ) {
         let current_counts = this.getCurrentCounts( room, current_creeps );
 
+        console.log( 'getOverSpawns', JSON.stringify(worker_counts), JSON.stringify(current_creeps) );
+
         let over_spawns = _
             .reduce( current_counts, ( over_counts, count, type ) => {
                 let needed_val = worker_counts.hasOwnProperty( type ) ? worker_counts[ type ] : 0;
@@ -98,6 +100,8 @@ class SpawnManager {
 
     getNeededSpawns( room, current_creeps, worker_counts ) {
         let current_counts = this.getCurrentCounts( room, current_creeps );
+
+        console.log( 'current_counts', JSON.stringify( current_counts ) );
 
         let needed_counts = _
             .reduce( worker_counts, ( needed, val, type ) => {
@@ -161,6 +165,7 @@ class SpawnManager {
         const needed_spawns = this.getNeededSpawns( room, current_creeps, worker_counts );
         const needed_spawns_keys = Object.keys( needed_spawns );
         console.log( 'needed_spawns', JSON.stringify( needed_spawns ) );
+        console.log( 'over_spawns', JSON.stringify( over_spawns ) );
 
         _
             .forEach( over_spawns, ( count, type ) => {

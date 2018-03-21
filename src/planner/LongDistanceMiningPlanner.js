@@ -5,7 +5,7 @@ const Planner = require( './Planner' );
 
 const MAX_LONG_DISTANCE_MINER = 3;
 
-const VERSION = 13;
+const VERSION = 15;
 
 const ONE_HAULER_PER = 200;
 const LINK_THRESHOLD = 25;
@@ -15,20 +15,20 @@ class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
         let memory = this.getRoomLongDistanceMemory( room );
 
-        if( !this.getClosestSource( room, spawn ) ) {
-            return false;
-        }
-
-        if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
-            return true;
-        }
-
         for( let source_id in memory ) {
             if( !memory[ source_id ]._version || memory[ source_id ]._version !== VERSION ) {
                 console.log( 'Re-run because of version' );
                 delete memory[ source_id ];
                 return true;
             }
+        }
+
+        if( !this.getClosestSource( room, spawn ) ) {
+            return false;
+        }
+
+        if( Object.keys( memory ).length < MAX_LONG_DISTANCE_MINER ) {
+            return true;
         }
 
         return super.shouldRun( room, spawn );
@@ -50,6 +50,7 @@ class LongDistanceMiningPlanner extends Planner {
                     if( map.hasRoom( exit_room_name ) ) {
                         let exit_room = map.getRoom( exit_room_name );
                         if( exit_room.saw_enemies ) return;
+                        if( exit_room.controller.owner ) return;
 
                         let exit_point = spawn.pos.findClosestByPath( +direction );
                         let exit_path = spawn.pos.findPathTo( exit_point );
@@ -108,7 +109,7 @@ class LongDistanceMiningPlanner extends Planner {
             memory[ closest_source.source_id ] = closest_source;
 
             Memory.rooms[ closest_source.room_name ]._state = Memory.rooms[ closest_source.room_name ]._state || {};
-            Memory.rooms[ closest_source.room_name ]._state.type = 'long_distance';
+            Memory.rooms[ closest_source.room_name ].type = 'long_distance';
             console.log( 'after' );
         }
 

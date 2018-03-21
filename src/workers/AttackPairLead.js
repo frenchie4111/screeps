@@ -10,6 +10,7 @@ const BoostManager = require( '../room_manager/BoostManager' );
 let STATES = {
     MOVE_BOOST: 'MOVE_BOOST',
     BOOST: 'BOOST',
+    WAIT_FOR_FOLLOWER: 'WAIT_FOR_FOLLOWER',
     MOVE_TO_FLAG: 'MOVE_TO_FLAG',
     MOVE_TO_ROOM: 'MOVE_TO_ROOM',
     CLEAR: 'CLEAR'
@@ -18,8 +19,6 @@ let STATES = {
 class AttackPairLead extends RenewWorker {
     constructor( assigner ) {
         super( assigner, STATES.MOVE_BOOST );
-        
-        this.should_renew = false;
     }
 
     setRenew() {
@@ -75,9 +74,10 @@ class AttackPairLead extends RenewWorker {
                                 cost_matrix = cost_matrix.clone();
                                 _
                                     .each( walls, ( wall ) => {
-                                        Game.rooms[ room_name ].visual.circle( wall.pos.x, wall.pos.y, { color: 'red' } );
                                         let health_ratio = ( wall.hits / wall.hitsMax );
-                                        cost_matrix.set( wall.pos.x, wall.pos.y, Math.ceil( 100 - ( 80 * health_ratio ) ) );
+                                        cost_matrix.set( wall.pos.x, wall.pos.y, Math.ceil( 20 + ( 150 * health_ratio ) ) );
+                                        Game.rooms[ room_name ].visual.circle( wall.pos.x, wall.pos.y, { color: 'red' } );
+                                        Game.rooms[ room_name ].visual.text( '' + Math.ceil( 20 + ( 150 * health_ratio ) ), wall.pos.x, wall.pos.y, { color: 'red' } );
                                     } );
 
                                 return cost_matrix;
@@ -86,6 +86,11 @@ class AttackPairLead extends RenewWorker {
 
                     let blocked = _
                         .find( path, ( step ) => {
+                            console.log( 'step', spawn.pos, JSON.stringify( step ) );
+                            if( position.equal( spawn.pos, step, true ) ) {
+                                return false;
+                            }
+
                             let walls = creep.room.lookForAt( LOOK_STRUCTURES, step.x, step.y );
 
                             console.log( walls )
@@ -105,14 +110,36 @@ class AttackPairLead extends RenewWorker {
             } );
 
         if( hostile_spawns.length > 0 ) {
+            let things_at_spawn = creep.room.lookForAt( LOOK_STRUCTURES, hostile_spawns[ 0 ].pos.x, hostile_spawns[ 0 ].pos.y );
+            let rampart = _.find( things_at_spawn, ( thing ) => thing.structureType === STRUCTURE_RAMPART );
+
+            console.log( 'RAPART AT SPAWN', rampart );
+
+            if( rampart && rampart.hits > 2000 ) {
+                console.log( 'Getting extensions first' );
+
+                let extensions = room
+                    .find( FIND_HOSTILE_STRUCTURES, {
+                        filter: {
+                            structureType: STRUCTURE_EXTENSION
+                        }
+                    } );
+
+                if( extensions.length > 0 ) {
+                    return extensions;
+                }
+
+                let hostile_creeps = room.find( FIND_HOSTILE_CREEPS );
+                if( hostile_creeps.length > 0 ) {
+                    return hostile_creeps;
+                }
+            }
+
             return hostile_spawns;
         }
 
         if( blocked_by ) {
             console.log( 'BLOCKED', blocked_by );
-
-            
-
             return [ blocked_by ];
         }
 
@@ -131,17 +158,51 @@ class AttackPairLead extends RenewWorker {
             return hostile_creeps;
         }
 
-        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
-        let walls = room
-            .find( FIND_STRUCTURES, {
-                filter: {
-                    structureType: STRUCTURE_WALL
+        if( !this.getMemory().invalidated_map ) {
+            this.setDontRenew( creep, true );
+            this.setDontRenew( this.getFollower( creep ), true );
+            map.invalidateRoom( room.name );
+            this.getMemory().invalidated_map = true;
+        }
+
+        let ignore_structures = [
+            STRUCTURE_CONTROLLER,
+            STRUCTURE_RAMPART
+        ];
+
+        let hostile_structures = room
+            .find( FIND_HOSTILE_STRUCTURES, {
+                filter: ( structure ) => {
+                    return !ignore_structures.includes( structure.structureType );
                 }
             } );
-        
-         hostile_things = hostile_things.concat( hostile_structures, walls );
 
-         return hostile_things;
+         return hostile_structures;
+    }
+
+    doHeal( creep, other ) {
+        if( creep.hits < creep.hitsMax ) {
+            creep.heal( creep );
+        } else if( other ) {
+            if( this.isNear( creep, other.id ) ) {
+                creep.heal( other );
+            } else {
+                if( creep.rangedHeal( other ) === OK ) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    getFollower( creep ) {
+        let follower_id = this.assigner.getAssignedTo( this.assigner.types.ATTACK_PAIR_FOLLOW, creep.name );
+        if( !follower_id ) return;
+        let follower = Game.getObjectById( follower_id );
+        if( !follower ) return;
+
+        return follower;
     }
 
     _getStates() {
@@ -175,16 +236,32 @@ class AttackPairLead extends RenewWorker {
 
                 console.log( 'all_boosted' );
                 if( all_boosted ) {
-                    return STATES.CLEAR;
+                    return STATES.WAIT_FOR_FOLLOWER;
                 }
             },
             [ STATES.MOVE_TO_FLAG ]: ( creep, state_memory, worker_memory ) => {
                 return STATES.CLEAR;
             },
+            [ STATES.WAIT_FOR_FOLLOWER ]: ( creep, state_memory, worker_memory ) => {
+                let follower_id = this.assigner.getAssignedTo( this.assigner.types.ATTACK_PAIR_FOLLOW, creep.name );
+                if( !follower_id ) return;
+                let follower = Game.getObjectById( follower_id );
+                if( !follower ) return;
+                let all_boosted = _.every( follower.body, ( bodypart ) => bodypart.boost );
+                if( !all_boosted ) return;
+                if( this.isNear( creep, follower_id ) ) {
+                    return STATES.MOVE_TO_ROOM;
+                }
+            },
             [ STATES.MOVE_TO_ROOM ]: ( creep, state_memory, worker_memory ) => {
                 let assigned = this.getAssigned();
-                if( this.moveToRoom( assigned ) === move.ERR_IN_ROOM ) {
-                    return STATES.CLEAR;
+
+                this.doHeal( creep, this.getFollower( creep ) );
+
+                if( this.isNear( creep, this.getFollower( creep ).id ) || !position.inRoom( creep.pos ) ) {
+                    if( this.moveToRoom( assigned ) === move.ERR_IN_ROOM ) {
+                        return STATES.CLEAR;
+                    }
                 }
             },
             [ STATES.CLEAR ]: ( creep, state_memory, worker_memory ) => {
@@ -207,31 +284,25 @@ class AttackPairLead extends RenewWorker {
 
                 let targets = this.getHostileThings( creep.room, creep );
 
-                let target = targets[ 0 ];
+                if( targets.length === 0 ) {
+                    map.invalidateRoom( creep.room.name );
+                    this.assigner.unassign( this.assigner.types.ATTACK_PAIR_FOLLOW, creep.id, this.getAssigned() );
+                }
+
+                let target = creep.pos.findClosestByPath( targets );
                 console.log( 'target', target, JSON.stringify( target.pos ) );
                 worker_memory.target_id = target.id;
 
                 if( this.isNear( creep, follower_id ) ) {
                     this.moveTo( target );
                 }
-
-                if( creep.hits < creep.hitsMax ) {
-                    creep.heal( creep );
+                
+                if( this.doHeal( creep, follower ) ) {
                     let attack_response = creep.rangedAttack( target );
                     console.log( 'attack_response', constants.lookup( attack_response ) );
-                } else {
-                    if( this.isNear( creep, follower.id ) ) {
-                        console.log( 'heal follower' );
-                        creep.heal( follower );
-                        let attack_response = creep.rangedAttack( target );
-                        console.log( 'attack_response', constants.lookup( attack_response ) );
-                    } else {
-                        console.log( 'ranged heal follower' );
-                        creep.rangedHeal( follower );
-                    }
                 }
 
-                map.updateController( creep.room );
+                map.storeController( creep.room );
             }
         }
     }

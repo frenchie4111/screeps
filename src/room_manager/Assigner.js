@@ -1,6 +1,7 @@
 const constants = require( '~/constants' );
 
-const position = require( '~/lib/position' );
+const position = require( '~/lib/position' ),
+    map = require( '~/lib/map' );
 
 const workers = require( '~/workers' );
 
@@ -105,7 +106,17 @@ class Assigner {
             case Assigner.types.CONTAINER_MINER:
                 return this._arrayToAllowedCounts( _.map( this.room.find( FIND_SOURCES ), ( source ) => source.id ) );
             case Assigner.types.LONG_DISTANCE_CONTAINER_MINER:
-                return this._arrayToAllowedCounts( _.map( this.room.memory._long_distance, ( long_distance ) => long_distance.source_id ) );
+                let long_distance_sources_for_mining = _
+                    .chain( this.room.memory._long_distance )
+                    .filter( ( long_distance ) => {
+                        return true;
+                    } )
+                    .map( ( long_distance ) => long_distance.source_id )
+                    .value();
+
+                console.log( long_distance_sources_for_mining )
+
+                return this._arrayToAllowedCounts( long_distance_sources_for_mining );
             case Assigner.types.LONG_DISTANCE_HAULER:
                 return _
                     .reduce( this.room.memory._long_distance, ( full, long_distance ) => {
@@ -161,10 +172,13 @@ class Assigner {
                 let rooms_to_clear = [];
                 _
                     .each( Memory._room_map, ( room_info, room_name ) => {
+                        if( !map.hasRoom( room_name ) ) return;
+
                         if( 
                             ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
-                            _.get( room_info, [ 'controller', 'level' ] ) <= 2 &&
-                            _.get( room_info, [ 'saw_enemies' ] ) &&
+                            _.get( room_info, [ 'spawn_count' ], 0 ) === 0 &&
+                            !_.get( room_info, [ 'saw_enemy_creeps' ] ) &&
+                            _.get( room_info, [ 'saw_enemy_structures' ] ) &&
                             ( _.get( room_info, [ 'controller', 'safeMode' ], 0 ) + _.get( room_info, [ 'run_at' ] ) ) < Game.time
                         ) {
                             rooms_to_clear.push( room_name );
@@ -189,7 +203,7 @@ class Assigner {
 
                 attack_lead_creeps = _
                     .filter( this.room.memory.creeps, ( creep_name ) => {
-                        return Memory.creeps[ creep_name ].worker_type === workers.types.ATTACK_PAIR_LEAD
+                        return Memory.creeps[ creep_name ].worker_type === workers.types.ATTACK_PAIR_LEAD && !Memory.creeps[ creep_name ].worker_memory.suicide
                     } );
                 return this._arrayToAllowedCounts( attack_lead_creeps );
             case Assigner.types.ATTACK_PAIR_LEAD:
@@ -199,12 +213,17 @@ class Assigner {
                         if(
                             ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
                             _.get( room_info, [ 'controller', 'level' ] ) < 7 &&
+                            _.get( room_info, [ 'tower_count' ], 0 ) > 0 &&
+                            ( _.get( room_info, [ 'spawn_count' ], 0 ) > 0 || _.get( room_info, [ 'saw_enemy_creeps' ] ) ) &&
                             _.get( room_info, [ 'saw_enemies' ] ) &&
                             ( _.get( room_info, [ 'controller', 'safeMode' ], 0 ) + _.get( room_info, [ 'run_at' ] ) ) < Game.time
                         ) {
                             room_to_attack.push( room_name );
                         }
                     } );
+
+                console.log( 'rooms_to_attack', JSON.stringify(room_to_attack) );
+
                 return this._arrayToAllowedCounts( room_to_attack, 1 );
             case Assigner.types.WAITING_SPOT:
                 let waiting_spots = [
@@ -273,7 +292,15 @@ class Assigner {
         let assigned = this._getAssignedForType( type );
 
         let unassigned_count = _.sum( _.map( unassigned, ( unassigned_for_id ) => unassigned_for_id.allowed_count ) );
-        let assigned_count = _.sum( _.map( assigned, ( assigned_for_id ) => assigned_for_id.length ) );
+        let assigned_count = _
+            .sum( _
+                .map( assigned, ( assigned_for_id ) => {
+                    return _
+                        .filter( assigned_for_id, ( creep_id ) => {
+                            return !Game.getObjectById( creep_id ).memory.worker_memory.suicide;
+                        } ).length;
+                } ) 
+            );
 
         return unassigned_count + assigned_count;
     }

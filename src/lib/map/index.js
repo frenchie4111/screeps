@@ -1,6 +1,6 @@
 const position = require( '~/lib/position' );
 
-const MAP_VERSION = 13;
+const MAP_VERSION = 16;
 
 const RERUN_EVERY = 10000;
 
@@ -46,7 +46,7 @@ module.exports = {
             return ret_arr;
         }
     },
-    
+
     getRoomsToScout: ( start_room_name ) => {
         let rooms = [];
         module.exports.getRoomsToScout_rec( start_room_name, rooms, [] );
@@ -72,6 +72,7 @@ module.exports = {
         if( room.controller ) {
             room_map[ room.name ].controller = {
                 id: room.controller.id,
+                my: room.controller.my,
                 owner: room.controller.owner,
                 level: room.controller.level,
                 reservation: room.controller.reservation,
@@ -136,10 +137,32 @@ module.exports = {
         room_map[ room.name ].exits = Game.map.describeExits( room.name );
 
         let hostile_creeps = room.find( FIND_HOSTILE_CREEPS );
-        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
+        let hostile_structures = room
+            .find( FIND_HOSTILE_STRUCTURES, {
+                filter: ( structure ) => {
+                    return ( structure.structureType !== STRUCTURE_CONTROLLER );
+                }
+            } );
+
+        let hostile_structure_mapped = _
+            .map( hostile_structures, ( structure ) => {
+                return {
+                    type: structure.structureType,
+                    id: structure.id,
+                    pos: position.clone( structure.pos )
+                }
+            } );
+
+        console.log( 'hostile_structures', JSON.stringify( hostile_structures ) );
+
+        let tower_count = room.find( FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } } ).length;
+        let spawn_count = room.find( FIND_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } } ).length;
 
         let saw_enemies = false;
         let enemy_username = null;
+
+        room_map[ room.name ].saw_enemy_creeps = false;
+        room_map[ room.name ].saw_enemy_structures = false;
 
         if( hostile_creeps.length > 0 ) {
             saw_enemies = true;
@@ -152,8 +175,12 @@ module.exports = {
             room_map[ room.name ].enemy_username = hostile_structures[ 0 ].owner.username;
             room_map[ room.name ].saw_enemy_structures = true;
         }
+        
+        room_map[ room.name ].hostile_structures = hostile_structure_mapped;
 
         room_map[ room.name ].saw_enemies = saw_enemies;
+        room_map[ room.name ].tower_count = tower_count;
+        room_map[ room.name ].spawn_count = spawn_count;
 
         room_map[ room.name ].run_at = Game.time;
 

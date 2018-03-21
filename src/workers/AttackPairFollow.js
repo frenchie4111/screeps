@@ -21,15 +21,16 @@ class AttackPairFollow extends AttackPairLead {
     _getStates() {
         let states = super._getStates();
 
-
+        states[ AttackPairLead.STATES.WAIT_FOR_FOLLOWER ] = () => STATES.FOLLOW;
         states[ AttackPairLead.STATES.MOVE_TO_FLAG ] = () => STATES.FOLLOW;
         states[ AttackPairLead.STATES.MOVE_TO_ROOM ] = () => STATES.FOLLOW;
 
-        states[ STATES.FOLLOW ] = ( creep ) => {
+        states[ STATES.FOLLOW ] = ( creep, state_memory, worker_memory ) => {
             let leader = Game.creeps[ this.getAssigned() ];
 
             if( !leader ) {
                 console.log( 'NO LEADER?', this.getAssigned() );
+                worker_memory.assigned_leader = null;
                 this.assigner.unassign( this.assigner.types.ATTACK_PAIR_FOLLOW, creep.id, this.getAssigned() );
                 return;
             }

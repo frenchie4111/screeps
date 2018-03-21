@@ -132,7 +132,7 @@ class BaseLinkManager extends RenewWorker {
                     console.log( 'transfer to terminal' );
                     let transfer_things = this.getWhatNeedsTransferFromStorageToTerminal()
                     let thing_to_transfer = worker_memory.thing_to_transfer = worker_memory.thing_to_transfer || transfer_things[ 0 ].type;
-
+                
                     if( this.carryingSomethingElse( creep, thing_to_transfer ) ) {
                         console.log( 'TransferAll' );
                         this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );
@@ -155,11 +155,13 @@ class BaseLinkManager extends RenewWorker {
                         this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );
                     } else if( creep.carry[ thing_to_transfer ] > 0 ) {
                         console.log( 'Transfer to lab' );
-                        creep.transfer( boost_lab, thing_to_transfer );
-                        worker_memory.boost_transfer = null;
+                        if( creep.transfer( boost_lab, thing_to_transfer ) === OK ) {
+                            worker_memory.boost_transfer = null;
+                        }
                     } else {
                         console.log( 'Withdraw from terminal' );
                         creep.withdraw( this.room.terminal, thing_to_transfer );
+                        creep.withdraw( this.room.storage, thing_to_transfer );
                     }
                 } else if( creep.carry[ RESOURCE_ENERGY ] > 0 ) {
                     console.log( 'TransferAll dump' );

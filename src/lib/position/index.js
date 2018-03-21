@@ -1,9 +1,9 @@
-module.exports.equal = ( a, b ) => {
+module.exports.equal = ( a, b, ignore_room=false ) => {
     return (
         a && b &&
         a.x === b.x &&
         a.y === b.y &&
-        a.roomName === b.roomName
+        ( ignore_room || a.roomName === b.roomName )
     );
 };
 

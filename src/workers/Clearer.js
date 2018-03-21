@@ -13,7 +13,7 @@ let STATES = {
 class Clearer extends RenewWorker {
     constructor( assigner ) {
         super( assigner, STATES.MOVE_TO_ROOM );
-        this.MAX_ATTACK = 10;
+        this.MAX_ATTACK = 20;
     }
 
     getAssigned() {
@@ -37,17 +37,31 @@ class Clearer extends RenewWorker {
             return hostile_creeps;
         }
 
-        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
-        let walls = room
-            .find( FIND_STRUCTURES, {
-                filter: {
-                    structureType: STRUCTURE_WALL
+        let ignore_structures = [
+            STRUCTURE_CONTROLLER,
+            STRUCTURE_RAMPART
+        ];
+
+        let hostile_structures = room
+            .find( FIND_HOSTILE_STRUCTURES, {
+                filter: ( structure ) => {
+                    return !ignore_structures.includes( structure.structureType );
                 }
             } );
-        
-         hostile_things = hostile_things.concat( hostile_structures, walls );
 
-         return hostile_things;
+        if( hostile_structures.length > 0 ) {
+            return hostile_structures;
+        }
+
+        
+        hostile_structures = room
+            .find( FIND_HOSTILE_STRUCTURES, {
+                filter: ( structure ) => {
+                    return ![ STRUCTURE_CONTROLLER ].includes( structure.structureType );
+                }
+            } );
+
+        return hostile_structures;
     }
 
     _getStates() {
@@ -71,7 +85,10 @@ class Clearer extends RenewWorker {
 
                     if( enemies.length === 0 ) {
                         console.log( 'Done' );
+
                         map.invalidateRoom( creep.room.name );
+                        creep.room.memory.type = 'cleared';
+                        this.assigner.unassign( this.assigner.types.CLEARER, creep.id, this.getAssigned() );
                         this.setSuicide();
                         return;
                     }

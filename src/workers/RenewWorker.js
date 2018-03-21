@@ -41,6 +41,10 @@ class RenewWorker extends StateWorker {
         this.setState( STATES.MOVE_TO_SPAWN );
         this.getMemory().renewing = true;
     }
+    
+    setDontRenew( creep, value ) {
+        creep.memory.worker_memory.dont_renew = value;
+    }
 
     setRunAway( creep, enemy ) {
         this.setState( STATES.MOVE_TO_SPAWN );
@@ -199,5 +203,5 @@ module.exports.isSuicide = ( creep ) => {
 };
 
 module.exports.needsRenewing = ( creep ) => {
-    return creep.ticksToLive < TTL_REMAINING_START_RENEW;
+    return creep.ticksToLive < TTL_REMAINING_START_RENEW && !creep.memory.worker_memory.dont_renew;
 };
