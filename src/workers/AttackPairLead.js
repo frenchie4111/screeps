@@ -69,18 +69,17 @@ class AttackPairLead extends RenewWorker {
                                             );
                                         }
                                     } );
-                                console.log( 'walls.length', walls.length );
+
                                 if( walls.length === 0 ) return cost_matrix;
-            
-                
+
                                 cost_matrix = cost_matrix.clone();
                                 _
                                     .each( walls, ( wall ) => {
                                         Game.rooms[ room_name ].visual.circle( wall.pos.x, wall.pos.y, { color: 'red' } );
-                                        cost_matrix.set( wall.pos.x, wall.pos.y, 20 );
+                                        let health_ratio = ( wall.hits / wall.hitsMax );
+                                        cost_matrix.set( wall.pos.x, wall.pos.y, Math.ceil( 100 - ( 80 * health_ratio ) ) );
                                     } );
-                                return cost_matrix;
-                    
+
                                 return cost_matrix;
                             }
                         } );
