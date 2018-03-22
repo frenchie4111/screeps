@@ -11,6 +11,7 @@ class ExpansionSpawnPlanner extends Planner {
     _doPlan( room, spawn ) {
         if( !this.new_type ) return;
         room.memory.type = this.new_type;
+        room.memory._state = {};
     }
 }
 

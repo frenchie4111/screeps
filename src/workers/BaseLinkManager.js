@@ -153,6 +153,8 @@ class BaseLinkManager extends RenewWorker {
                     if( this.carryingSomethingElse( creep, thing_to_transfer ) ) {
                         console.log( 'TransferAll' );
                         this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );
+                    } if( boost_lab.mineralType && boost_lab.mineralType !== thing_to_transfer ) {
+                        creep.withdraw( boost_lab, boost_lab.mineralType );
                     } else if( creep.carry[ thing_to_transfer ] > 0 ) {
                         console.log( 'Transfer to lab' );
                         if( creep.transfer( boost_lab, thing_to_transfer ) === OK ) {

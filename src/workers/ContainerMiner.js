@@ -268,7 +268,10 @@ class ContainerMiner extends RenewWorker {
                     }
                 }
 
-                this._updateSourceContainer( source, container );
+                if( container ) {
+                    this._updateSourceContainer( source, container );
+                }
+
                 let harvest_response = creep.harvest( source );
                 if( harvest_response !== OK ) {
                     console.log( 'harvest_response', constants.lookup( harvest_response ) );

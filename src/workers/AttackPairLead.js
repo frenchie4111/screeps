@@ -287,6 +287,8 @@ class AttackPairLead extends RenewWorker {
                 if( targets.length === 0 ) {
                     map.invalidateRoom( creep.room.name );
                     this.assigner.unassign( this.assigner.types.ATTACK_PAIR_FOLLOW, creep.id, this.getAssigned() );
+                    this.setSuicide();
+                    return;
                 }
 
                 let target = creep.pos.findClosestByPath( targets );
