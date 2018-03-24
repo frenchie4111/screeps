@@ -7,7 +7,7 @@ module.exports = () => {
 
     const stats_cpu_start = Game.cpu.getUsed();
 
-    stats = {}
+    let stats = {}
 
     let rooms = Game.rooms;
     let spawns = Game.spawns;

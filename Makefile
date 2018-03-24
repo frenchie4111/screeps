@@ -1,3 +1,6 @@
+build:
+	webpack
+
 test:
 	webpack
 	grunt screeps --config=./.screeps-ps.json --src="dist/test/*"

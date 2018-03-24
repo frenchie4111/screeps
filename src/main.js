@@ -5,6 +5,8 @@ const loopItem = require( '~/lib/loopItem' ),
 
 const RoomManager = require( '~/room_manager/RoomManager' );
 
+const GlobalSpawnManager = require( './GlobalSpawnManager' );
+
 const stats = require( './stats' ),
     profiler = require( './profiler' );
 

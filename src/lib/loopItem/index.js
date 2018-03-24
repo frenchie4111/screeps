@@ -1,7 +1,8 @@
 const profiler = require( '~/profiler' );
 
 const Logger = require( '~/lib/logger' ),
-    Deque = require( '~/lib/Deque' );
+    Deque = require( '~/lib/Deque' ),
+    color = require( '~/lib/color' );
 
 const path = [];
 
@@ -17,7 +18,7 @@ const loopItem = ( name, func ) => {
     } catch ( error ) {
         console.log( 'Error in ' + name );
         console.log( error );
-        console.log( error.stack );
+        console.log( color( 'e', error.stack ) );
 
         Memory.error_log = new Deque( Memory.error_log );
         Memory.error_log.push( {

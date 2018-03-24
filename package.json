@@ -9,8 +9,11 @@
   "author": "Mike Lyons <mdl0394@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
-    "colors": "^1.2.1",
     "flat": "^4.0.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "1.0.0",
@@ -21,19 +24,9 @@
     "grunt-screeps": "^1.4.0",
     "grunt-screeps-customserver": "0.0.1",
     "grunt-webpack": "2.0.1",
-    "lodash": "^4.17.5",
-    "mocha": "^5.0.4",
-    "node-fetch": "^2.1.1",
-    "random-string": "0.1.2",
-    "screepsmod-auth": "^2.4.2",
+    "source-map": "^0.7.2",
+    "stack-trace": "0.0.10",
     "webpack": "2.3.2"
   },
-  "devDependencies": {
-    "@screeps/launcher": "file:../@screeps/launcher",
-    "@screeps/storage": "^3.1.4",
-    "base-64": "^0.1.0",
-    "mkdirp": "^0.5.1",
-    "screeps": "^2.13.0",
-    "ws": "^5.0.0"
-  }
+  "devDependencies": {}
 }
