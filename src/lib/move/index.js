@@ -11,7 +11,7 @@ const _drawPath = ( creep, path ) => {
 };
 
 const findPathTo = ( thing, target, opts ) => {
-    return thing.pos.findPathTo( target );
+    return thing.pos.findPathTo( target, opts );
     // return thing.pos
     //     .findPathTo( target, {
     //         costCallback: ( room_name, cost_matrix ) => {
@@ -41,9 +41,11 @@ const findPathTo = ( thing, target, opts ) => {
     //     } );
 };
 
-const STUCK_DEBOUNCE = 2;
+const STUCK_DEBOUNCE = 1;
 
 const moveTo = ( creep, move_memory, target, opts={} ) => {
+    console.log( 'Moving', target );
+    // return creep.moveTo( target );
     if( target.pos ) {
         target = target.pos;
     }
@@ -54,7 +56,15 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
 
     if( !move_memory.path ) {
         profiler.incrementCallsFor( 'move.findPathTo' );
-        move_memory.path = findPathTo( creep, target, opts );
+        let findPathTo_opts = Object
+            .assign(
+                {
+                    maxRooms: 1,
+                    ignoreCreeps: true
+                },
+                opts
+            );
+        move_memory.path = findPathTo( creep, target, findPathTo_opts );
     } else {
         if( !move_memory.was_tired && move_memory.previous_position && position.equal( creep.pos, move_memory.previous_position ) ) {
             if( !move_memory.hasOwnProperty( 'stuck_timer' ) ) move_memory.stuck_timer = 0;
@@ -66,7 +76,14 @@ const moveTo = ( creep, move_memory, target, opts={} ) => {
         if( move_memory.stuck_timer >= STUCK_DEBOUNCE ) {
             console.log( 'Was stuck for too long' );
             profiler.incrementCallsFor( 'move.findPathTo' );
-            move_memory.path = findPathTo( creep, target, opts );
+            let findPathTo_opts = Object
+                .assign(
+                    {
+                        maxRooms: 1
+                    },
+                    opts
+                );
+            move_memory.path = findPathTo( creep, target, findPathTo_opts );
         }
     }
 

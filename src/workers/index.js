@@ -23,6 +23,8 @@ const worker_type_conversion = {
     DRAINER: require( './Drainer' ),
     ATTACK_PAIR_LEAD: require( './AttackPairLead' ),
     ATTACK_PAIR_FOLLOW: require( './AttackPairFollow' ),
+    LINK_UPGRADER: require( './LinkUpgrader' ),
+    HAULER: require( './Hauler' ),
 };
 
 const types = {
@@ -51,6 +53,8 @@ const types = {
     DRAINER: 'DRAINER',
     ATTACK_PAIR_LEAD: 'ATTACK_PAIR_LEAD',
     ATTACK_PAIR_FOLLOW: 'ATTACK_PAIR_FOLLOW',
+    LINK_UPGRADER: 'LINK_UPGRADER',
+    HAULER: 'HAULER',
 };
 
 module.exports = {

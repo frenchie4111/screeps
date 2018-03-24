@@ -1,11 +1,12 @@
-const loopItem = require( '~/lib/loopItem' );
+const loopItem = require( '~/lib/loopItem' ),
+    color = require( '~/lib/color' );
 
 const constants = require( '~/constants' ),
     workers = require( '~/workers' );
 
 const Assigner = require( './Assigner' ),
     SpawnManager = require( './SpawnManager' ),
-    LinkManager = require( './LinkManager' ),
+    link_manager = require( './LinkManager' ),
     MarketManager = require( './MarketManager' ),
     BoostManager = require( './BoostManager' );
 
@@ -48,9 +49,9 @@ class RoomManager {
             let creep_name = room.memory.creeps[ i ]
 
             if( !Game.creeps[ creep_name ] ) {
-                console.log( 'Oops, lost creep', creep_name );
+                console.log( 'Oops, lost creep', creep_name, 'from', room.name );
                 if( !creep_name.includes( 'RESERVE' ) ) {
-                    Game.notify( 'Oops, lost creep ' + creep_name );
+                    Game.notify( 'Oops, lost creep ' + creep_name + ' from ' + room.name );
                 }
                 remove.push( i );
             }
@@ -110,7 +111,7 @@ class RoomManager {
                 loopItem( 'planner-' + planner.name, () => {
                     return planner.doPlan( room, spawn );
                 } );
-            } );
+            } );    
     }
 
     handleTower( tower ) {
@@ -179,7 +180,6 @@ class RoomManager {
     }
 
     handleLinks( room, spawn, current_state ) {
-        const link_manager = new LinkManager();
         link_manager.doManage( room, spawn );
     }
 
@@ -211,7 +211,7 @@ class RoomManager {
             return;
         }
 
-        loopItem( 'safe-mode', () => {
+        loopItem( color( '0B', 'safe-mode' ), () => {
             let hostile_creeps = room
                 .find( FIND_HOSTILE_CREEPS, {
                     filter: ( creep ) => {
@@ -229,26 +229,26 @@ class RoomManager {
             if( hostile_creeps.length === 0 ) return;
 
             if( !room.controller.safeMode ) {
-                if( !room.controller.safeModeAvailable ) {
-                    Game.notify( 'Safe mode not available' );
-                    throw new Error( 'Safe mode not available' );
-                }
-
-                let safe_mode_response = room.controller.activateSafeMode();
-                if( safe_mode_response !== OK ) {
-                    Game.notify( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );
-                    throw new Error( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );;
-                }
+                // if( !room.controller.safeModeAvailable ) {
+                //     Game.notify( 'Safe mode not available' );
+                //     throw new Error( 'Safe mode not available' );
+                // }
+                // 
+                // let safe_mode_response = room.controller.activateSafeMode();
+                // if( safe_mode_response !== OK ) {
+                //     Game.notify( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );
+                //     throw new Error( 'Safe mode failed ' + safe_mode_response + ' ' + constants.lookup( safe_mode_response ) );;
+                // }
             } else {
                 console.log( 'Already in safe mode' );
             }
         } );
 
-        loopItem( 'creeps', () => {
+        loopItem( color( '0A', 'creeps' ), () => {
             this.handleCreeps( room, spawn, current_state, assigner );
         } );
 
-        loopItem( 'towers', () => {
+        loopItem( color( '0C', 'towers' ), () => {
             this.handleTowers( room, spawn, current_state );
         } );
 
@@ -265,17 +265,17 @@ class RoomManager {
             } );
         }
 
-        if( has_spawn ) {
-            loopItem( 'links', () => {
-                this.handleLinks( room, spawn, current_state );
-            } );
+        loopItem( color( '0E', 'links' ), () => {
+            this.handleLinks( room, spawn, current_state );
+        } );
 
-            loopItem( 'spawn', () => {
+        if( has_spawn ) {
+            loopItem( color( '0F', 'spawn' ), () => {
                 this.handleSpawns( room, spawn, current_state, assigner );
             } );
         }
         
-        loopItem( 'construction', () => {
+        loopItem( color( '0D', 'construction' ), () => {
             this.handleConstruction( room, spawn, current_state );
         } );
     }

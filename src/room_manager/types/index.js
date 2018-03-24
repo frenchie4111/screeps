@@ -25,6 +25,8 @@ const ExtensionPlanner = require( '~/planner/ExtensionPlanner' ),
     ExtensionTreePlanner = require( '~/planner/ExtensionTreePlanner' ),
     TerminalPlanner = require( '~/planner/TerminalPlanner' ),
     BoostLabPlanner = require( '~/planner/BoostLabPlanner' ),
+    SpawnRoadPlanner = require( '~/planner/SpawnRoadPlanner' ),
+    ExpansionRoadPlanner = require( '~/planner/ExpansionRoadPlanner' ),
     ControllerLinkPlanner = require( '~/planner/ControllerLinkPlanner' );
 
 const ROOM_TICKS_TO_UNRESERVE_THRESHOLD = 500;
@@ -70,7 +72,15 @@ const addWorkerCountsForExtractor = ( worker_counts, room ) => {
             }
         }
     }
-}
+};
+
+const addWorkerCountsForBuild = ( worker_counts, room ) => {
+    const construction_sites = room.find( FIND_MY_CONSTRUCTION_SITES );
+
+    if( construction_sites.length > 0 ) {
+        worker_counts[ workers.types.CONTAINER_BUILDER ] = 1;
+    }
+};
 
 module.exports = { 
     STATES_VERSION: 5, // Increment this and the code will automatically reset current state on next deploy
@@ -140,7 +150,8 @@ module.exports = {
             planners: [
                 new ExtensionRoadPlanner( 'extension-road' ),
                 new SourceRoadPlanner( 'spawn' ),
-                new ControllerSourceRoad( 'controller' )
+                new ControllerSourceRoad( 'controller' ),
+                new SpawnRoadPlanner( 'srp' )
             ]
         },
         {
@@ -278,7 +289,7 @@ module.exports = {
             planners: [
                 new ExtensionPlanner( 'extension-4' ),
                 new ExtensionRoadPlanner( 'extension-road-2' ),
-                new OuterBaseRoads( 'outer-base-roads-1' ),
+                new WallPlanner( 'wall-planner-1' ),
                 new BaseExitRoadPlanner( 'base-exit-road-1' ),
                 new TowerPlanner( 'tower-2' )
             ]
@@ -296,7 +307,7 @@ module.exports = {
                 [ workers.types.CONTAINER_MINER ]: 2
             },
             planners: [
-                new WallPlanner( 'wall-planner-1' ),
+                new OuterBaseRoads( 'outer-base-roads-1' ),
                 new RampartPlanner( 'rampart-planner-1' ),
                 new BaseLinkPlanner( 'base-link-planner' ),
                 new ControllerLinkPlanner( 'clp-1' )
@@ -310,42 +321,46 @@ module.exports = {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    [ workers.types.CONTAINER_UPGRADER ]: 3,
+                    [ workers.types.LINK_UPGRADER ]: 1,
                     [ workers.types.CONTAINER_MINER ]: 2,
-                    // [ workers.types.BASE_LINK_MANAGER ]: 1
+                    [ workers.types.BASE_LINK_MANAGER ]: 1,
+                    [ workers.types.HAULER ]: 1
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
+                addWorkerCountsForBuild( worker_counts, room );
 
+                worker_counts[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] = assigner.getSpawnCount( assigner.types.LONG_DISTANCE_ROOM_CLEARER );
                 worker_counts[ workers.types.CLEARER ] = assigner.getSpawnCount( assigner.types.CLEARER );
                 // worker_counts[ workers.types.DRAINER ] = assigner.getSpawnCount( assigner.types.DRAINER );
 
                 return worker_counts;
             },
             planners: [
-                new LongDistanceMiningPlanner( 'ldm-1' )
+                new LongDistanceMiningPlanner( 'ldm-1' ),
+                new WallPlanner( 'wall-planner-re' ),
             ]
         },
         {
             isComplete: ( room ) => {
                 return false;
             },
+            max_renew: 2,
             worker_counts: ( room, assigner ) => {
                 let worker_counts = {
                     [ workers.types.HARVESTER ]: 1,
                     [ workers.types.CONTAINER_EXTENSION ]: 1,
-                    // [ workers.types.CONTAINER_BUILDER ]: 1,
+                    [ workers.types.LINK_UPGRADER ]: 2,
                     [ workers.types.CONTAINER_MINER ]: 2,
-                    [ workers.types.BASE_LINK_MANAGER ]: 1,
-                    [ workers.types.ATTACK_PAIR_LEAD ]: 0
+                    [ workers.types.BASE_LINK_MANAGER ]: 1
                 };
 
                 addWorkerCountsForLongDistanceMining( worker_counts, room );
                 addWorkerCountsForScout( worker_counts, room );
                 addWorkerCountsForExtractor( worker_counts, room );
+                addWorkerCountsForBuild( worker_counts, room );
 
-                worker_counts[ workers.types.LONG_DISTANCE_ROOM_CLEARER ] = assigner.getSpawnCount( assigner.types.LONG_DISTANCE_ROOM_CLEARER );
                 worker_counts[ workers.types.ATTACK_PAIR_LEAD ] = assigner.getSpawnCount( assigner.types.ATTACK_PAIR_LEAD );
                 worker_counts[ workers.types.ATTACK_PAIR_FOLLOW ] = assigner.getSpawnCount( assigner.types.ATTACK_PAIR_FOLLOW );
 
@@ -395,19 +410,7 @@ module.exports = {
     expansion: [
         {
             isComplete: ( room ) => {
-                let hostile_things = []
-
-                let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
-                let walls = room
-                    .find( FIND_STRUCTURES, {
-                        filter: {
-                            structureType: STRUCTURE_WALL
-                        }
-                    } );
-                
-                 hostile_things = hostile_things.concat( hostile_structures, walls );
-
-                 return hostile_things.length === 0;
+                return room.find( FIND_HOSTILE_STRUCTURES );
             },
             worker_counts: {},
             planners: []
@@ -425,7 +428,8 @@ module.exports = {
             },
             worker_counts: {},
             planners: [
-                new ExpansionSpawnPlanner( 'expansion-spawn' )
+                new ExpansionSpawnPlanner( 'expansion-spawn' ),
+                new ExpansionRoadPlanner( 'erp' )
             ]
         },
         {

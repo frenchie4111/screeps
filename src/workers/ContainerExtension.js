@@ -11,35 +11,40 @@ class ContainerExtension extends ContainerHarvester {
     }
 
     getSource( creep ) {
-        let tombstone = creep
-            .pos
-            .findClosestByPath( FIND_TOMBSTONES, {
-                filter: ( tombstone ) => {
-                    return tombstone.store[ RESOURCE_ENERGY ] > 0;
-                }
-            } );
+        let room_has_hauler = creep.room.find( FIND_MY_CREEPS, { filter: ( creep ) => creep.memory.worker_type === 'HAULER' } );
+        room_has_hauler = room_has_hauler.length > 0;
 
-        if( tombstone ) return tombstone;
-        
-        let energy = creep
-            .pos
-            .findClosestByPath( FIND_DROPPED_RESOURCES );
+        if( !room_has_hauler ) {
+            let tombstone = creep
+                .pos
+                .findClosestByPath( FIND_TOMBSTONES, {
+                    filter: ( tombstone ) => {
+                        return tombstone.store[ RESOURCE_ENERGY ] > 0;
+                    }
+                } );
 
-        if( energy ) return energy;
-        
-        let container = creep
-            .pos
-            .findClosestByPath( constants.FIND_STRUCTURES, {
-                filter: ( structure ) => {
-                    return (
-                        structure.structureType === constants.STRUCTURE_CONTAINER &&
-                        structure.store[ constants.RESOURCE_ENERGY ] > 900
-                    );
-                }
-            } );
+            if( tombstone ) return tombstone;
+            
+            let energy = creep
+                .pos
+                .findClosestByPath( FIND_DROPPED_RESOURCES );
 
-        if( container ) {
-            return container;
+            if( energy ) return energy;
+            
+            let container = creep
+                .pos
+                .findClosestByPath( constants.FIND_STRUCTURES, {
+                    filter: ( structure ) => {
+                        return (
+                            structure.structureType === constants.STRUCTURE_CONTAINER &&
+                            structure.store[ constants.RESOURCE_ENERGY ] > 900
+                        );
+                    }
+                } );
+
+            if( container ) {
+                return container;
+            }
         }
 
         let target = this.getTarget( creep );
@@ -95,7 +100,7 @@ class ContainerExtension extends ContainerHarvester {
                     return (
                         structure.structureType === constants.STRUCTURE_SPAWN &&
                         ( 'energyCapacity' in structure ) &&
-                        structure.energy < structure.energyCapacity
+                        structure.energy < 50
                     );
                 }
             } );

@@ -6,6 +6,7 @@ const RenewWorker = require( './RenewWorker' );
 
 const MarketManager = require( '~/room_manager/MarketManager' );
 const BoostManager = require( '~/room_manager/BoostManager' );
+const LinkManager = require( '~/room_manager/LinkManager' );
 
 let STATES = {
     MOVE_TO_POSITION: 'MOVE_TO_POSITION',
@@ -102,16 +103,23 @@ class BaseLinkManager extends RenewWorker {
                 return this.moveTo( target_position );
             },
             [ STATES.MANAGE ]: ( creep, state_memory, worker_memory ) => {
-                if( !this.room.memory.links.base ) {
-                    return;
-                }
+                let link = LinkManager.getBaseLink( creep.room );
+                if( link ) link = link.ref;
 
-                console.log( JSON.stringify( this.getWhatNeedsTransferFromStorageToTerminal() ) );
-
-                let link = Game.getObjectById( this.room.memory.links.base )
-
-                if( link.energy > 0 ) {
-                    console.log( 'Link' );
+                if( link && LinkManager.baseLinkNeedsEnergy( creep.room ) ) {
+                    console.log( 'To Link' );
+                    if( this.carryingSomethingElse( creep, RESOURCE_ENERGY ) ) {
+                        console.log( 'Something else' );
+                        this.transferAll( creep, this.room.storage, [ RESOURCE_ENERGY ] );
+                    } if( creep.carry[ RESOURCE_ENERGY ] >= 800 ) {
+                        console.log( 'To Link' );
+                        creep.transfer( link, RESOURCE_ENERGY );
+                    } else {
+                        console.log( 'Withdraw' );
+                        creep.withdraw( this.room.storage, RESOURCE_ENERGY );
+                    }
+                } else if( link && link.energy > 0 ) {
+                    console.log( 'From Link' );
                     let creep_available_capacity = creep.carryCapacity - this.getTotalCarry( creep );
                     if( creep_available_capacity >= link.energy ) {
                         creep.withdraw( link, RESOURCE_ENERGY );
@@ -128,11 +136,11 @@ class BaseLinkManager extends RenewWorker {
                     } else {
                         creep.withdraw( this.room.storage, RESOURCE_ENERGY, 300 );
                     }
-                } else if( this.needToTransferToTerminal() ) {
+                } else if( this.needToTransferToTerminal() || worker_memory.thing_to_transfer ) {
                     console.log( 'transfer to terminal' );
                     let transfer_things = this.getWhatNeedsTransferFromStorageToTerminal()
                     let thing_to_transfer = worker_memory.thing_to_transfer = worker_memory.thing_to_transfer || transfer_things[ 0 ].type;
-                
+
                     if( this.carryingSomethingElse( creep, thing_to_transfer ) ) {
                         console.log( 'TransferAll' );
                         this.transferAll( creep, this.room.storage, [ thing_to_transfer ] );

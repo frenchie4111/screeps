@@ -37,7 +37,10 @@ class ContainerHarvester extends HarvestWorker {
     }
 
     doHarvest( creep, container ) {
-        if( container.structureType === constants.STRUCTURE_CONTAINER || container.structureType === constants.STRUCTURE_STORAGE || container.deathTime ) {
+        if( container.structureType === constants.STRUCTURE_CONTAINER ||
+            container.structureType === constants.STRUCTURE_STORAGE || 
+            container.structureType === constants.STRUCTURE_LINK || 
+            container.deathTime ) {
             return creep.withdraw( container, constants.RESOURCE_ENERGY );
         }
 

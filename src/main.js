@@ -1,6 +1,7 @@
 require( './fake_test.js' );
 
-const loopItem = require( '~/lib/loopItem' );
+const loopItem = require( '~/lib/loopItem' ),
+    color = require( '~/lib/color' );
 
 const RoomManager = require( '~/room_manager/RoomManager' );
 
@@ -18,10 +19,10 @@ module.exports.loop = function() {
         }
     } );
 
-    loopItem( 'handleRoomState', () => {
+    loopItem( color( '02', 'handleRoomState' ), () => {
         let room_manager = new RoomManager();
         for( let i in Game.rooms ) {
-            loopItem( 'doManage-' + i, () => {
+            loopItem( color( '04', 'doManage-' + i ), () => {
                 room_manager.doManage( Game.rooms[ i ] );
             } );
         }

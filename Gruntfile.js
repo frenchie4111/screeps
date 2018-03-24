@@ -45,8 +45,6 @@ module.exports = function( grunt ) {
         };
     }
 
-    console.log( screeps_options );
-
     grunt.initConfig( {
         // Push all files in the dist folder to screeps
         screeps: {

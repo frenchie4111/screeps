@@ -42,6 +42,8 @@ class Scout extends Worker {
             memory.rooms_to_scout = null;
         }
 
+        console.log( 'memory.rooms_to_scout', JSON.stringify( memory.rooms_to_scout ) );
+
         // We know we are finally done
         if( !map.needsScout( memory.start_room_name ) ) {
             creep.suicide();

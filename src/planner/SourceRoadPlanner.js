@@ -16,7 +16,8 @@ class SourceRoadPlanner extends ConstructionPlanner {
             .map( ( source ) => {
                 let path = target.pos
                     .findPathTo( source, {
-                        ignoreCreeps: true
+                        ignoreCreeps: true,
+                        swampCost: 1
                     } );
 
                 return {
@@ -25,7 +26,7 @@ class SourceRoadPlanner extends ConstructionPlanner {
                 }
             } );
 
-        sources = _.sortBy( sources, ( source ) => source.path.length ).reverse();
+        sources = _.sortBy( sources, ( source ) => source.path.length );
 
         return sources;
     }

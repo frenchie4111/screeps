@@ -1,5 +1,3 @@
-require( 'colors' );
-
 class TestRunner {
     constructor() {
         this.registered = {};

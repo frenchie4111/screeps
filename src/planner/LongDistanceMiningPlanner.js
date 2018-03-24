@@ -11,6 +11,8 @@ const ONE_HAULER_PER = 200;
 const LINK_THRESHOLD = 25;
 const RE_RUN_EVERY = 1000;
 
+const ALLOWED_ROOM_TYPES = [ 'cleared' ];
+
 class LongDistanceMiningPlanner extends Planner {
     shouldRun( room, spawn ) {
         let memory = this.getRoomLongDistanceMemory( room );
@@ -49,6 +51,12 @@ class LongDistanceMiningPlanner extends Planner {
                 ( exit_room_name, direction ) => {
                     if( map.hasRoom( exit_room_name ) ) {
                         let exit_room = map.getRoom( exit_room_name );
+
+                        if( Memory.rooms[ exit_room_name ] && Memory.rooms[ exit_room_name ].type ) {
+                            if( !ALLOWED_ROOM_TYPES.includes( Memory.rooms[ exit_room_name ].type ) ) {
+                                return;
+                            }
+                        }
                         if( exit_room.saw_enemies ) return;
                         if( exit_room.controller.owner ) return;
 

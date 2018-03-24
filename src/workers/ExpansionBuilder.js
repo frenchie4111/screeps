@@ -29,7 +29,7 @@ class ExpansionBuilder extends HarvestWorker {
         const construction_sites = creep.room.find( FIND_MY_CONSTRUCTION_SITES );
         if( construction_sites.length > 0 ) {
             console.log( JSON.stringify( construction_sites ) );
-            return construction_sites[ 0 ];
+            return creep.pos.findClosestByPath( construction_sites );
         }
         // No more sites, revert to HarvestWorker
         let super_target = super.getTarget( creep );

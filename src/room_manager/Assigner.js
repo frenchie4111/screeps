@@ -177,7 +177,7 @@ class Assigner {
                         if( 
                             ![ SYSTEM_USERNAME, 'none' ].includes( _.get( room_info, [ 'controller', 'owner', 'username' ], 'none' ) ) && 
                             _.get( room_info, [ 'tower_count' ], 0 ) === 0 &&
-                            !_.get( room_info, [ 'saw_enemy_creeps' ] ) &&
+                            ( !_.get( room_info, [ 'saw_enemy_creeps' ] ) || _.get( room_info, [ 'controller', 'level' ], Infinity ) <= 2 ) &&
                             _.get( room_info, [ 'saw_enemy_structures' ] ) &&
                             ( _.get( room_info, [ 'controller', 'safeMode' ], 0 ) + _.get( room_info, [ 'run_at' ] ) ) < Game.time
                         ) {

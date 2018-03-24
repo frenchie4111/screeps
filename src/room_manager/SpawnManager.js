@@ -179,7 +179,9 @@ class SpawnManager {
             return;
         }
 
-        if( currently_renewing_creeps.length < MAX_RENEWING ) {
+        let max_renewing = ( current_state.hasOwnProperty( 'max_renew' ) ? current_state.max_renew : MAX_RENEWING );
+        console.log( 'max_renewing', max_renewing );
+        if( currently_renewing_creeps.length < max_renewing ) {
             console.log( 'Currently renewing', currently_renewing_creeps );
             if( creeps_to_renew.length > 0 ) {
                 let creep = creeps_to_renew[ 0 ];

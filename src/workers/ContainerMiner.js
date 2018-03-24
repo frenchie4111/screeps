@@ -119,7 +119,8 @@ class ContainerMiner extends RenewWorker {
         let path = creep
             .pos
             .findPathTo( source, { 
-                ignoreCreeps: true 
+                ignoreCreeps: true,
+                swampCost: 1
             } );
 
         let position = path[ path.length - 2 ];

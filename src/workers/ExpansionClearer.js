@@ -24,19 +24,7 @@ class ExpansionClearer extends RenewWorker {
     }
 
     getHostileThings( room ) {
-        let hostile_things = []
-
-        let hostile_structures = room.find( FIND_HOSTILE_STRUCTURES );
-        let walls = room
-            .find( FIND_STRUCTURES, {
-                filter: {
-                    structureType: STRUCTURE_WALL
-                }
-            } );
-        
-         hostile_things = hostile_things.concat( hostile_structures, walls );
-
-         return hostile_things;
+        return room.find( FIND_HOSTILE_STRUCTURES );
     }
 
     _getStates() {

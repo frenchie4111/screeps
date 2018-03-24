@@ -49,12 +49,12 @@ class LongDistanceHauler extends ContainerHarvester {
 
         if( long_distance.use_link ) {
             console.log( 'Trying to find link' );
-            if( long_distance.link_id ) {
-                console.log( 'Had link already' );
-                let link = Game.getObjectById( long_distance.link_id );
-                if( link ) return link;
-            }
-
+            // if( long_distance.link_id ) {
+            //     console.log( 'Had link already' );
+            //     let link = Game.getObjectById( long_distance.link_id );
+            //     if( link ) return link;
+            // }
+        
             let link = creep.pos
                 .findClosestByRange( FIND_MY_STRUCTURES, {
                     filter: {
@@ -62,11 +62,11 @@ class LongDistanceHauler extends ContainerHarvester {
                     }
                 } );
             console.log( 'All links', JSON.stringify( link ) );
-
+        
             if( link ) {
                 let path = creep.pos.findPathTo( link );
                 console.log( 'Link path', path.length );
-                if( path.length < 10 ) {
+                if( path.length < 5 ) {
                     long_distance.link_id = link.id;
                     return link;
                 }

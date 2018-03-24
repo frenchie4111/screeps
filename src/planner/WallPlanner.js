@@ -25,7 +25,7 @@ class WallPlanner extends ConstructionPlanner {
         let direction = [ DISTANCE, DISTANCE ];
         let pending = [];
         let debug = [];
-        let center_size = 2;
+        let center_size = 1;
 
         for( let vert_or_horiz = 0; vert_or_horiz <= 1; vert_or_horiz++ ) {
             for( let pos_or_negative = -1; pos_or_negative <= 1; pos_or_negative += 2 ) {
@@ -41,7 +41,7 @@ class WallPlanner extends ConstructionPlanner {
                     wall_direction[ vert_or_horiz ] = z;
 
                     let position = this._directionToPosition( room, spawn.pos, wall_direction );
-                    if( this.isValidConstruction( room, position, pending ) && !this._nearThing( room, position ) ) {
+                    if( this.isValidConstruction( room, position, pending ) ) {
                         pending.push( position );
                     }
                 }
